@@ -12,6 +12,7 @@ import ManageCompany from "../Components/Admin/EmployeeAdministration";
 import LeaveType from "../Components/Admin/LeaveType";
 import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
+import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
@@ -23,6 +24,7 @@ const authProtectedRoutes = [
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
+  { path: "/apply-leave", component: <ApplyLeaveModal /> },
 ];
 
 const publicRoutes = [

@@ -9,6 +9,8 @@ import {
   BsClipboardCheck,
   BsEye,
   BsBarChartFill,
+  BsPlus,
+  BsPlusLg,
 } from "react-icons/bs";
 import "../../index.css";
 
@@ -68,6 +70,12 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                       <Link to="/view-leave-requests" className="submenu-item">
                         {" "}
                         <BsEye className="icon" /> View Leave Requests
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/apply-leave" className="submenu-item">
+                        {" "}
+                        <BsPlusLg className="icon" /> Apply Leave
                       </Link>
                     </li>
                   </ul>
