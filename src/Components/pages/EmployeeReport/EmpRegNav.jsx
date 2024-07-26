@@ -46,7 +46,7 @@ const EmpRegNav = (props) => {
       middleName: "",
       lastName: "",
       department: null,
-      email: "",
+      userName: "",
       mobileNumber: "",
       dob: "",
       dateOfJoining: "",
@@ -76,7 +76,7 @@ const EmpRegNav = (props) => {
         value: Yup.string().required("Please Select a Department"),
       }),
 
-      email: Yup.string()
+      userName: Yup.string()
         .email("Enter a Valid Email ID")
         .required("Please Enter the Email"),
       password: Yup.string()
@@ -591,22 +591,22 @@ const EmpRegNav = (props) => {
 
                       <Col md="6">
                         <FormGroup className="mb-3">
-                          <Label htmlFor="email">Email ID</Label>
+                          <Label htmlFor="userName">UserName</Label>
                           <RequiredAsterisk />
                           <Input
-                            name="email"
+                            name="userName"
                             placeholder="Enter the EmailID"
-                            type="email"
-                            id="email"
-                            value={newEmpRegValidation.values.email}
+                            type="userName"
+                            id="userName"
+                            value={newEmpRegValidation.values.userName}
                             onChange={newEmpRegValidation.handleChange}
                             onBlur={newEmpRegValidation.handleBlur}
                             invalid={!!newEmpRegValidation.errors.email}
                           />
 
-                          {newEmpRegValidation.errors.email && (
+                          {newEmpRegValidation.errors.userName && (
                             <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.email}
+                              {newEmpRegValidation.errors.userName}
                             </FormFeedback>
                           )}
                         </FormGroup>
