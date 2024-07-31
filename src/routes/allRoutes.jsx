@@ -12,6 +12,9 @@ import ManageCompany from "../Components/Admin/EmployeeAdministration";
 import LeaveType from "../Components/Admin/LeaveType";
 import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
+import EmployeeAdministration from "../Components/Admin/EmployeeAdministration";
+import DeptInfo from "../Components/Admin/DeptInfo";
+import ManageDepartment from "../Components/Admin/ManageDepartment";
 
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
@@ -19,10 +22,12 @@ const authProtectedRoutes = [
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
   { path: "/leave-administration", component: <LeaveAdministration /> },
-  { path: "/employee-administration", component: <ManageCompany /> },
+  { path: "/employee-administration", component: <EmployeeAdministration /> },
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
+  // { path: "/department-administration", component: <DeptInfo /> },
+  { path: "/department-administration", component: <ManageDepartment /> },
 ];
 
 const publicRoutes = [

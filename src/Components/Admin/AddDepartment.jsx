@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Button,
   Modal,
@@ -10,73 +10,164 @@ import {
   Label,
   Input,
   FormFeedback,
+  Row,
+  Col,
 } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import RequiredAsterisk from "../../Common/components/RequiredAsterisk";
+import { postApiData } from "../../Common/helpers/axiosHelper";
 
 const AddDepartment = ({ isOpen, toggle }) => {
-  const validationSchema = Yup.object({
-    managerId: Yup.string().required("Please Enter Manager ID"),
-    departmentName: Yup.string().required("Please Enter Department Name"),
+  const [departmentData, setDepartmentData] = useState([]);
+  const newAddDeptValidation = useFormik({
+    enableReinitialize: true,
+
+    initialValues: {
+      departmentName: departmentData?.departmentname || "",
+      departmentDescription: departmentData?.departmentDescription || "",
+      managerName: departmentData?.managerName || "",
+    },
+
+    validationSchema: Yup.object({
+      departmentName: Yup.string()
+        .matches(/^[A-Za-z\s]+$/, "Department Name should contain only letters")
+        .required("Please Enter the Department Name"),
+
+      departmentDescription: Yup.string()
+        .matches(
+          /^[A-Za-z\s]+$/,
+          "Department Description should contain only letters"
+        )
+        .required("Please Enter the Department Description"),
+
+      // managerName: Yup.string()
+      //   .matches(/^[A-Za-z\s]+$/, "Manager Name should contain only letters")
+      //   .required("Please Enter the Manager Name"),
+    }),
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        const response = await postApiData(
+          "api/Departments/CreateDepartment",
+          JSON.stringify(values)
+        );
+        if (response.success === true) {
+          toast.success(" Department Added Successfully", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          toggle();
+          resetForm();
+          // if (employeeDetailsResponse.success && addressResponse.success) {
+          //   resetForm();
+          // getCustomer();
+        } else {
+          // toast.error(`${response.message}`,{
+          toast.error("${response.message}", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+        toast.error("An error occurred. Please try again later.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    },
   });
-
-  const initialValues = {
-    managerId: "",
-    departmentName: "",
-  };
-
-  const handleSubmit = (values, { setSubmitting, resetForm }) => {
-    console.log("Department added:", values);
-    setSubmitting(false);
-    resetForm();
-    toggle();
-  };
-
-  // Use Formik for form management
-  const formik = useFormik({
-    initialValues,
-    validationSchema,
-    onSubmit: handleSubmit,
-  });
-
   return (
     <Modal isOpen={isOpen} toggle={toggle} centered>
       <ModalHeader toggle={toggle}>Add Department</ModalHeader>
       <ModalBody>
-        <Form onSubmit={formik.handleSubmit}>
-          <FormGroup>
-            <Label for="managerId">Manager ID</Label>
-            <Input
-              type="text"
-              id="managerId"
-              {...formik.getFieldProps("managerId")}
-              invalid={formik.touched.managerId && formik.errors.managerId}
-            />
-            {formik.touched.managerId && formik.errors.managerId && (
-              <FormFeedback>{formik.errors.managerId}</FormFeedback>
-            )}
-          </FormGroup>
-          <FormGroup>
-            <Label for="departmentName">Department Name</Label>
-            <Input
-              type="text"
-              id="departmentName"
-              {...formik.getFieldProps("departmentName")}
-              invalid={
-                formik.touched.departmentName && formik.errors.departmentName
-              }
-            />
-            {formik.touched.departmentName && formik.errors.departmentName && (
-              <FormFeedback>{formik.errors.departmentName}</FormFeedback>
-            )}
-          </FormGroup>
+        <Form
+          className="needs-validation"
+          onSubmit={(e) => {
+            e.preventDefault();
+            newAddDeptValidation.handleSubmit(e);
+            return false;
+          }}
+        >
+          <Row>
+            <Col md="6">
+              <FormGroup className="mb-3">
+                <Label htmlFor="departmentName">Department Name</Label>
+                <RequiredAsterisk />
+                <Input
+                  name="departmentName"
+                  placeholder="Enter the Department Name"
+                  type="text"
+                  id="departmentName"
+                  value={newAddDeptValidation.values.departmentName}
+                  onChange={newAddDeptValidation.handleChange}
+                  onBlur={newAddDeptValidation.handleBlur}
+                  invalid={!!newAddDeptValidation.errors.departmentName}
+                />
+
+                {newAddDeptValidation.errors.departmentName && (
+                  <FormFeedback type="invalid">
+                    {newAddDeptValidation.errors.departmentName}
+                  </FormFeedback>
+                )}
+              </FormGroup>
+            </Col>
+            <Col md="6">
+              <FormGroup className="mb-3">
+                <Label htmlFor="departmentDescription">
+                  Department Description
+                </Label>
+                <RequiredAsterisk />
+                <Input
+                  name="departmentDescription"
+                  placeholder="Enter the Department Description"
+                  type="text"
+                  id="departmentDescription"
+                  value={newAddDeptValidation.values.departmentDescription}
+                  onChange={newAddDeptValidation.handleChange}
+                  onBlur={newAddDeptValidation.handleBlur}
+                  invalid={!!newAddDeptValidation.errors.departmentDescription}
+                />
+
+                {newAddDeptValidation.errors.departmentDescription && (
+                  <FormFeedback type="invalid">
+                    {newAddDeptValidation.errors.departmentDescription}
+                  </FormFeedback>
+                )}
+              </FormGroup>
+            </Col>
+
+            <Col md="6">
+              <FormGroup className="mb-3">
+                <Label htmlFor="managerName">Manager Name</Label>
+                <RequiredAsterisk />
+                <Input
+                  name="managerName"
+                  placeholder="Enter the Manager Name"
+                  type="text"
+                  id="managerName"
+                  value={newAddDeptValidation.values.managerName}
+                  onChange={newAddDeptValidation.handleChange}
+                  onBlur={newAddDeptValidation.handleBlur}
+                  invalid={!!newAddDeptValidation.errors.managerName}
+                />
+
+                {newAddDeptValidation.errors.managerName && (
+                  <FormFeedback type="invalid">
+                    {newAddDeptValidation.errors.managerName}
+                  </FormFeedback>
+                )}
+              </FormGroup>
+            </Col>
+          </Row>
         </Form>
       </ModalBody>
       <ModalFooter>
         <Button
           color="primary"
-          onClick={formik.handleSubmit}
-          disabled={formik.isSubmitting}
+          onClick={newAddDeptValidation.handleSubmit}
+          disabled={newAddDeptValidation.isSubmitting}
         >
           Add Department
         </Button>
