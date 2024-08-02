@@ -56,10 +56,10 @@ const HolidayList = () => {
   ];
 
   return (
-    //<Card style={{ marginTop: "30px" }}>
+    // <Card style={{ marginTop: "30px" }}>
     <CardBody>
       <CardTitle>
-        <h4 style={{ marginTop: "20px" }}>Holiday List</h4>
+        <h4 className="mt-2">Holiday List</h4>
       </CardTitle>
       {isLoading ? (
         <Loader />

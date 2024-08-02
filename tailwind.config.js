@@ -16,5 +16,6 @@ module.exports = {
       colors: {},
     },
   },
+  variants: {},
   plugins: [],
 };
