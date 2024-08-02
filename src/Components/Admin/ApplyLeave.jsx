@@ -13,46 +13,64 @@ import {
   FormGroup,
 } from "reactstrap";
 import RequiredAsterisk from "../../Common/components/RequiredAsterisk";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { toast, ToastContainer } from "react-toastify";
-import { postApiData } from "../../Common/helpers/axiosHelper";
+import { getApiData, postApiData } from "../../Common/helpers/axiosHelper";
 import Select from "react-select";
+import { useLeaveTypes } from "../../Common/common/commonFunctions.js";
+import { userRole } from "../../Common/common/commonFunctions.js";
 
 const ApplyLeaveModal = (props) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const leaveTypeOptions = [
-    { value: "casual", label: "Casual leave" },
-    { value: "Sick", label: "Sick leave" },
-    { value: "Vacation", label: "Vacation" },
-    { value: "Earned", label: " Earned" },
-    { value: "LWP", label: "Leave without Pay" },
-    { value: "Maternity", label: "Maternity Leave" },
-    { value: "Flexible leave", label: "Flexible leave" },
-  ];
+  const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
+  const [uNameOptions, setuNameOptions] = useState([]);
+  const navigate = useNavigate();
+  const { leaveTypes, getLeaveTypes } = useLeaveTypes();
+  const [docIsValid, setDocIsValid] = useState(true);
+  const [docFormat, setDocFormat] = useState("");
+  const [fileData, setFileData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isEmp, setIsEmp] = useState(false);
 
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
-      uID: "",
-      leaveType: null,
-      leaveStartDate: "",
-      leaveEndDate: "",
+      uId: 0,
+      leaveTypeId: null,
+      fromDate: "",
+      toDate: "",
       reason: "",
+      // proof: null,
     },
     validationSchema: Yup.object({
-      uID: Yup.string().required("Please Enter the Emp ID"),
-      leaveStartDate: Yup.string().required(
-        "Please select the leave start date"
-      ),
-      leaveEndDate: Yup.string().required("Please select the leave end date"),
+      uId: Yup.object().shape({
+        label: Yup.string().required("Please Select a userName"),
+        value: Yup.string().required("Please Select a userName"),
+      }),
+      leaveTypeId: Yup.object().shape({
+        label: Yup.string().required("Please Select a leaveType"),
+        value: Yup.string().required("Please Select a leaveType"),
+      }),
+      fromDate: Yup.string().required("Please select the leave start date"),
+      toDate: Yup.string().required("Please select the leave end date"),
       reason: Yup.string().required("Please provide the reason for the leave"),
     }),
     onSubmit: async (values, { resetForm }) => {
       console.log("button clicked");
+      const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
+      const uIdValue = values.uId && values.uId.value;
+
       // setIsLoading(true);
-      const combinedValues = { ...values };
+      const combinedValues = {
+        ...values,
+        uId: uIdValue,
+        leaveTypeId: leaveTypeValue,
+        // proof: fileData,
+      };
       const response = await postApiData(
         "api/Leave/ApplyLeave",
         JSON.stringify(combinedValues)
@@ -60,30 +78,116 @@ const ApplyLeaveModal = (props) => {
       if (response.success === true) {
         toast.success("Leave Request Submitted", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
         });
+
         setIsLoading(false);
+        resetForm();
       } else {
         toast.error(response.message, {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
         });
         resetForm();
         setIsLoading(false);
       }
+      const timer = setTimeout(() => {
+        navigate("/admin-dashboard");
+      }, 3000);
     },
   });
 
-  useEffect(() => {
-    console.log("validation errors", leaveValidation.errors);
-  }, [leaveValidation.values]);
+  // const getLeaveTypes = async () => {
+  //   setIsLoading(true);
+  //   const response = await getApiData(`api/LeaveType`);
+  //   setIsLoading(false);
+  //   console.log("leave details " + response.data);
+  //   const leaveTypesList = response.data.map((item, key) => ({
+  //     value: item.leaveTypeId,
+  //     label: item.name,
+  //   }));
+  //   console.log(leaveTypesList);
+  //   setLeaveTypeOptions(leaveTypesList);
+  // };
 
-  function FileUpload() {
-    const handleChange = (event) => {
-      const file = event.target.files[0];
-      setSelectedFile(file);
+  const getUserList = async () => {
+    setIsLoading(true);
+    const response = await getApiData(`api/Employee/GetAllEmployees`);
+    setIsLoading(false);
+    console.log("emp details " + response.data);
+    const mappedResponse = response.data.map((item, key) => ({
+      value: item.uId,
+      label: item.firstName + " " + item.lastName + "(" + item.userName + ")",
+    }));
+    const newList = [{ value: 0, label: "Self" }, ...mappedResponse];
+    console.log(newList);
+    setuNameOptions(newList);
+  };
+
+  const getCurrentUserType = async () => {
+    const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+    const userType = authUser?.userType;
+    switch (userType) {
+      case 1:
+        setIsAdmin(true);
+      case 2:
+        setIsManager(true);
+      case "jpeg":
+        setIsEmp(true);
+    }
+  };
+
+  useEffect(() => {
+    getCurrentUserType();
+    getLeaveTypes();
+    getUserList();
+  }, []);
+
+  function handleFileChange(e) {
+    setDocIsValid(true);
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5000 * 1024) {
+      toast.error("File Size Should be less than 5MB", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      // leaveValidation.resetForm();
+      setDocIsValid(false);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const type = reader.result.split(";")[0];
+      const docType = type.split("/")[1];
+      let base64String = "";
+      const indexOfComma = reader.result.indexOf(",");
+      if (indexOfComma !== -1) {
+        base64String = reader.result.substring(indexOfComma + 1);
+      }
+      setDocFormat(docType);
+      setFileData(base64String);
     };
+    reader.readAsDataURL(file);
   }
+
+  const getFileType = (contentType) => {
+    switch (contentType) {
+      case "png":
+        return "image/png";
+      case "jpg":
+        return "image/jpg";
+      case "jpeg":
+        return "image/jpeg";
+      case "pdf":
+        return "application/pdf";
+      case "docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      default:
+        return "application/octet-stream";
+    }
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     leaveValidation.setFieldValue(name, value);
@@ -96,7 +200,8 @@ const ApplyLeaveModal = (props) => {
   return (
     <React.Fragment>
       <div className="page-content">
-        <Container fluid>
+        <Container fluId>
+          <ToastContainer closeButton={false} limit={1} />
           <Card className="overflow-hidden mt-7 mb-3">
             <CardBody>
               <div className="modal-header d-flex justify-content-between">
@@ -110,32 +215,39 @@ const ApplyLeaveModal = (props) => {
                     onSubmit={leaveValidation.handleSubmit}
                   >
                     <Row>
-                      <Col lg="6">
-                        <div className="mb-3">
-                          <Label for="empID">
-                            EmployeeID
-                            <RequiredAsterisk />
-                          </Label>
-                          <Input
-                            type="text"
-                            className="form-control"
-                            name="uID"
-                            id="empID"
-                            placeholder="Enter the EmployeeID"
-                            onChange={handleInputChange}
-                            onBlur={leaveValidation.handleBlur}
-                            // disabled={isLoading}
-                            value={leaveValidation.values.uID}
-                            invalid={!!leaveValidation.errors.uID}
-                          />
-                          {leaveValidation.touched.uID &&
-                          leaveValidation.errors.uID ? (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.uID}
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                      </Col>
+                      {isAdmin && (
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="empID">
+                              Username
+                              <RequiredAsterisk />
+                            </Label>
+                            <Select
+                              name="uId"
+                              id="empID"
+                              onChange={(selectedOption) => {
+                                leaveValidation.setFieldValue(
+                                  "uId",
+                                  selectedOption
+                                );
+                              }}
+                              onBlur={() =>
+                                leaveValidation.setFieldTouched("uId", true)
+                              }
+                              disabled={isLoading}
+                              value={leaveValidation.values.uId}
+                              invalid={!!leaveValidation.errors.uId}
+                              options={uNameOptions}
+                            />
+                            {leaveValidation.touched.uId &&
+                            leaveValidation.errors.uId ? (
+                              <FormFeedback type="invalid">
+                                {leaveValidation.errors.uId}
+                              </FormFeedback>
+                            ) : null}
+                          </div>
+                        </Col>
+                      )}
                       <Col lg="6">
                         <div className="mb-3">
                           <Label for="leaveType">
@@ -144,25 +256,28 @@ const ApplyLeaveModal = (props) => {
                           </Label>
                           <Select
                             name="leaveType"
-                            id="leaveType"
+                            id="leaveTypeId"
                             onChange={(selectedOption) => {
                               leaveValidation.setFieldValue(
-                                "leaveType",
+                                "leaveTypeId",
                                 selectedOption
                               );
                             }}
                             onBlur={() =>
-                              leaveValidation.setFieldTouched("leaveType", true)
+                              leaveValidation.setFieldTouched(
+                                "leaveTypeId",
+                                true
+                              )
                             }
-                            // disabled={isLoading}
-                            value={leaveValidation.values.leaveType}
-                            invalid={!!leaveValidation.errors.leaveType}
-                            options={leaveTypeOptions}
+                            disabled={isLoading}
+                            value={leaveValidation.values.leaveTypeId}
+                            invalid={!!leaveValidation.errors.leaveTypeId}
+                            options={leaveTypes}
                           />
-                          {leaveValidation.touched.leaveType &&
-                          leaveValidation.errors.leaveType ? (
+                          {leaveValidation.touched.leaveTypeId &&
+                          leaveValidation.errors.leaveTypeId ? (
                             <FormFeedback type="invalid">
-                              {leaveValidation.errors.leaveType}
+                              {leaveValidation.errors.leaveTypeId}
                             </FormFeedback>
                           ) : null}
                         </div>
@@ -178,18 +293,18 @@ const ApplyLeaveModal = (props) => {
                           </Label>
                           <Input
                             type="date"
-                            name="leaveStartDate"
+                            name="fromDate"
                             id="startDate"
                             onBlur={leaveValidation.handleBlur}
-                            // disabled={isLoading}
+                            disabled={isLoading}
                             onChange={handleInputChange}
-                            value={leaveValidation.values.leaveStartDate || ""}
-                            invalid={!!leaveValidation.errors.leaveStartDate}
+                            value={leaveValidation.values.fromDate || ""}
+                            invalid={!!leaveValidation.errors.fromDate}
                           />
-                          {leaveValidation.touched.leaveStartDate &&
-                          leaveValidation.errors.leaveStartDate ? (
+                          {leaveValidation.touched.fromDate &&
+                          leaveValidation.errors.fromDate ? (
                             <FormFeedback type="invalid">
-                              {leaveValidation.errors.leaveStartDate}
+                              {leaveValidation.errors.fromDate}
                             </FormFeedback>
                           ) : null}
                         </div>
@@ -202,18 +317,18 @@ const ApplyLeaveModal = (props) => {
                           </Label>
                           <Input
                             type="date"
-                            name="leaveEndDate"
+                            name="toDate"
                             id="endDate"
                             onBlur={leaveValidation.handleBlur}
-                            // disabled={isLoading}
-                            value={leaveValidation.values.leaveEndDate || ""}
+                            disabled={isLoading}
+                            value={leaveValidation.values.toDate || ""}
                             onChange={handleInputChange}
-                            invalid={!!leaveValidation.errors.leaveEndDate}
+                            invalid={!!leaveValidation.errors.toDate}
                           />
-                          {leaveValidation.touched.leaveEndDate &&
-                          leaveValidation.errors.leaveEndDate ? (
+                          {leaveValidation.touched.toDate &&
+                          leaveValidation.errors.toDate ? (
                             <FormFeedback type="invalid">
-                              {leaveValidation.errors.leaveEndDate}
+                              {leaveValidation.errors.toDate}
                             </FormFeedback>
                           ) : null}
                         </div>
@@ -234,7 +349,7 @@ const ApplyLeaveModal = (props) => {
                             placeholder="Provide the reason for leave"
                             onBlur={leaveValidation.handleBlur}
                             onChange={handleInputChange}
-                            // disabled={isLoading}
+                            disabled={isLoading}
                             value={leaveValidation.values.reason || ""}
                             invalid={!!leaveValidation.errors.reason}
                           />
@@ -249,20 +364,38 @@ const ApplyLeaveModal = (props) => {
                       <Col lg="6">
                         <div className="mb-3">
                           <Label for="leaveDocs">Upload Supporting Docs</Label>
-                          <Input
-                            type="file"
-                            onChange={FileUpload}
-                            className="mb-3"
-                          />
-                          {selectedFile && (
-                            <p>Selected File: {selectedFile.name}</p>
-                          )}
+                          <div className="col-md-12">
+                            <Input
+                              type="file"
+                              id="document"
+                              aria-label="Upload"
+                              accept=".png, .jpg, .jpeg, .pdf"
+                              aria-describedby="inputGroupFileAddon04"
+                              onChange={(e) => {
+                                handleFileChange(e);
+                                leaveValidation.handleChange(e);
+                              }}
+                              onBlur={leaveValidation.handleBlur}
+                              invalid={
+                                leaveValidation.touched.proof &&
+                                leaveValidation.errors.proof
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {leaveValidation.touched.proof &&
+                            leaveValidation.errors.proof ? (
+                              <FormFeedback type="invalid">
+                                {leaveValidation.errors.proof}
+                              </FormFeedback>
+                            ) : null}
+                          </div>
                         </div>
                       </Col>
                     </Row>
                   </Form>
                   <Row>
-                    <div className="mt-4 text-center">
+                    <div className="mt-4 mb-3 text-center">
                       <Button
                         className="btn btn-primary btn-block"
                         // type="submit"
