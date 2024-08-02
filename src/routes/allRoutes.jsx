@@ -21,7 +21,7 @@ const authProtectedRoutes = [
     { path: "/leave-administration", component: <LeaveAdministration /> },
     { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
   { path: "/allocated-leaves", component: <LeaveType /> },
-  { path: "/employee-administration", component: <ManageCompany /> },
+    { path: "/employee-administration", component: <EmployeeAdministration /> },
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
