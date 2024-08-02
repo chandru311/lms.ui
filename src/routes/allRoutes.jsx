@@ -9,7 +9,7 @@ import ManagerDashboard from "../Components/Manager/ManagerDashboard";
 import EmployeeDashboard from "../Components/Employee/EmployeeDashboard";
 import LeaveAdministration from "../Components/Admin/LeaveAdministartion";
 import ManageCompany from "../Components/Admin/EmployeeAdministration";
-import LeaveType from "../Components/Admin/LeaveType/LeaveType";
+
 import LeaveBalance from "../Components/Leave/LeaveBalance";
 import HolidayList from "../Components/Leave/HolidayList";
 import Reports from "../Components/Admin/Reports/Reports";
@@ -21,7 +21,7 @@ const authProtectedRoutes = [
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
   { path: "/leave-administration", component: <LeaveAdministration /> },
   { path: "/employee-administration", component: <ManageCompany /> },
-  { path: "/leave-type", component: <LeaveType /> },
+
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
   { path: "/reports", component: <Reports /> },
