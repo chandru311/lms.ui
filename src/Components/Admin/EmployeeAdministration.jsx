@@ -18,7 +18,6 @@ import AddManager from "./AddManager";
 import AddDepartment from "./AddDepartment.jsx";
 import AddEmployee from "./AddEmployee";
 import { ToastContainer, toast } from 'react-toastify';
-import EmpRegNav from "../pages/EmployeeReport/EmpRegNav.jsx";
 import { getApiData,putApiData } from "../../Common/helpers/axiosHelper.js";
 import ViewEmployeeDetails from "./ViewEmployeeDetails.jsx";
 //import ViewManagerDetails from "./ViewManagerDetails.jsx";

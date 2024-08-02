@@ -3,7 +3,6 @@ import Login from "../Components/Login/Authentication/Login";
 import ForgotPassword from "../Components/Login/Authentication/ForgetPassword";
 import Navbar from "../Components/Home/Navbar";
 import Logout from "../Components/Login/Authentication/Logout";
-import EmpRegBut from "../Components/pages/EmployeeReport/EmpRegBut";
 import AdminDashboard from "../Components/Admin/AdminDashboard";
 import ManagerDashboard from "../Components/Manager/ManagerDashboard";
 import EmployeeDashboard from "../Components/Employee/EmployeeDashboard";
@@ -15,8 +14,7 @@ import LeaveBalance from "../Components/Admin/LeaveBalance";
 
 
 const authProtectedRoutes = [
-  { path: "/empregbut", component: <EmpRegBut /> },
-  { path: "/admin-dashboard", component: <AdminDashboard /> },
+    { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
   { path: "/leave-administration", component: <LeaveAdministration /> },
