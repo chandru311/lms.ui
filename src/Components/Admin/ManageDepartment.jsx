@@ -18,6 +18,9 @@ import {
   FormFeedback,
 } from "reactstrap";
 import Loader from "../../Common/components/Loader";
+// import { debounce, values } from "lodash";
+import { debounce } from "lodash";
+
 import DeleteModal from "../../Common/components/DeleteModel";
 import {
   deleteApiData,
@@ -55,6 +58,7 @@ import axios from "axios";
 const ManageDepartment = () => {
   // const badgeColor =
   //   cellProps.row.original.active === 1 ? "bg-green-200" : "bg-red-200";
+  const [managerDropdown, setManagerDropdown] = useState([]);
   const [fetchedDepartmentId, setFetchedDepartmentId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [modal_editDept, setmodal_editDept] = useState(false);
@@ -95,6 +99,7 @@ const ManageDepartment = () => {
       departmentName: deptDetails?.departmentName || "",
       departmentDescription: deptDetails?.departmentDescription || "",
       managerName: deptDetails?.managerName || "",
+      // managerName: managerName.selectedmanagerName || "",
       departmentId: deptDetails?.departmentId || "",
       managerUId: deptDetails?.managerUId || "",
     },
@@ -138,7 +143,8 @@ const ManageDepartment = () => {
           if (hasChanges) {
             const combinedValues = {
               ...values,
-              managerUId: deptDetails?.managerUId,
+              managerUId: values.managerName.value,
+              managerName: values.managerName.selectedmanagerName,
             };
             const response = await putApiData(
               `api/Departments/UpdateDepartment/${deptDetails?.departmentId}`,
@@ -328,6 +334,7 @@ const ManageDepartment = () => {
 
                   //   setDeptDetails(cellProps.row.original || null);
                   console.log(cellProps.row.original);
+                  console.log(deptDetails);
                   // No depaertmentiiiid in this stage so itv is calling create department
                   console.log(
                     "Department details in edit mode " + { deptDetails }
@@ -420,6 +427,7 @@ const ManageDepartment = () => {
       if (response.success === true) {
         // if (action === "approve") {
         //   toast.success("Agent verified and approved!", {
+
         //     position: "top-right",
         //     autoClose: 2000,
         //   });
@@ -433,7 +441,7 @@ const ManageDepartment = () => {
           getDepartmentDetails();
         } else {
           {
-            toast.success("Agent activated successfully!", {
+            toast.success("Department activated successfully!", {
               position: "top-right",
               autoClose: 2000,
             });
@@ -445,6 +453,82 @@ const ManageDepartment = () => {
       console.error(error);
     }
   };
+  const getManager = async (typedtext) => {
+    // try {
+    //   setIsLoading(true);
+    const data = {
+      pageNumber: 1,
+      pageCount: 50,
+      filterColumns: [
+        {
+          columnName: "firstName",
+          // filterValue: `${managerUId}`,
+          filterValue: `${typedtext}`,
+          filterType: 6,
+        },
+        {
+          columnName: "lastName",
+          // filterValue: `${managerUId}`,
+          filterValue: `${typedtext}`,
+          filterType: 6,
+        },
+        {
+          columnName: "username",
+          // filterValue: `${managerUId}`,
+          filterValue: `${typedtext}`,
+          filterType: 6,
+        },
+      ],
+    };
+    const response = await postApiData(
+      "api/Manager/GetNonAllottedManagerByPagination",
+      data
+    );
+    // setIsLoading(false);
+
+    const mappedResponse = response.model.map((item, index) => ({
+      index: index + 1,
+      label: `${item.firstName} ${item.middleName && item.middleName} ${
+        item.lastName
+      } [${item.userName}]`,
+      value: item.managerUId,
+      selectedmanagerName: `${item.firstName} ${
+        item.middleName && item.middleName
+      } ${item.lastName}`,
+      // userStatus: item.userStatus,
+    }));
+    setManagerDropdown(mappedResponse);
+    console.log("mapped:" + mappedResponse);
+    //   setIsLoading(false);
+    // } catch (error) {
+    //   // Error handling scenario
+    //   console.error("Error fetching manager data:", error);
+    //   // Implement additional error handling as needed (e.g., display an error message to the user)
+    // }
+  };
+
+  // if (mappedResponse.length <= 0){
+  //     if(fromCustomerId !== undefined){
+  //         toast.error(`Customer Not Found`,{
+  //             position: 'top-right',
+  //             autoClose: 2000,
+  //             closeButton: false
+  //         })
+  //     }
+  //     else{
+  //         setState((prevState) => ({...prevState, customerList: mappedResponse }))
+  //     }
+  // }else if(mappedResponse.length > 0){
+  //     setState((prevState) => ({...prevState, customerList: mappedResponse }))
+  // }
+
+  // function handleManagerName(typedtext) {
+  //   console.log(typedtext);
+  const delayGetManager = debounce(getManager, 1500);
+  // delayGetManager
+
+  // getManager(typedtext);
+  // }
 
   return (
     <React.Fragment>
@@ -549,13 +633,32 @@ const ManageDepartment = () => {
                   <Col md="6">
                     <FormGroup className="mb-3">
                       <Label htmlFor="managerName">Manager Name</Label>
-                      <Input
+                      <ReactSelect
                         name="managerName"
                         placeholder="Enter ManagerName"
                         id="managerName"
-                        value={deptValidation.values.managerName}
-                        onChange={deptValidation.handleChange}
+                        // value={deptValidation.values.managerName}
+                        // onChange={deptValidation.handleChange}
+                        // onChange={handleManagerName}
+                        // onChange={handleManagerName}
                         disabled={viewMode}
+                        options={managerDropdown}
+                        value={deptValidation.values.managerName}
+                        // onChange={handleDepartmentChange}
+                        onChange={(selectedOption) => {
+                          deptValidation.setFieldValue(
+                            "managerName",
+                            selectedOption
+                          );
+                        }}
+                        onInputChange={(inputValue, { action }) => {
+                          if (
+                            action === "input-change" &&
+                            inputValue.length >= 3
+                          ) {
+                            delayGetManager(inputValue);
+                          }
+                        }}
                       />
                     </FormGroup>
                   </Col>

@@ -31,16 +31,60 @@ const AddEmployee = ({ isOpen, toggle }) => {
   const [isUid, setIsUid] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [maritalStatusError, setMaritalStatusError] = useState("");
+
+  const [genderStatus, setGenderStatus] = useState(null);
+  const [genderStatusError, setGenderStatusError] = useState("");
 
   const [departDetails, setDepartDetails] = useState([]);
   const [addressUid, setAddressUid] = useState([]);
-
+  // if (!document.querySelector('Input[name="gender"]:checked')) {
+  //   // Handle error, e.g., display an error message
+  //   alert("Please select a gender.");
+  //   return;
+  // }
   // const deptoptions = [
   //   { label: "HR", value: 1 },
   //   { label: "Finance", value: 2 },
   //   { label: "IT", value: 3 },
   //   { label: "Sales", value: 4 },
   // ];
+  const validateMaritalStatus = (materialValue) => {
+    console.log(materialValue);
+    if (!materialValue) {
+      return "Marital status is required";
+    }
+    return "";
+  };
+  const validateGenderStatus = (genderValue) => {
+    console.log(genderValue);
+    if (!genderValue) {
+      return "Gender status is required";
+    }
+    return "";
+  };
+
+  const handleMaritalStatusChange = (event) => {
+    console.log("handleMaritalStatusChange");
+    setMaritalStatus(event.target.value);
+    // const materialValue = event.target.value;
+    // setMaritalStatus(materialValue);
+    // console.log("maritalStatus after change:", maritalStatus);
+    // setMaritalStatusError(validateMaritalStatus(materialValue));
+  };
+  const handleGenderStatusChange = (event) => {
+    console.log("handleGenderStatusChange");
+    // setMaritalStatus(event.target.value);
+    const genderValue = event.target.value;
+    setGenderStatus(genderValue);
+    setGenderStatusError(validateGenderStatus(genderValue));
+  };
+
+  // Check if a radio button is selected
+  useEffect(() => {
+    console.log("maritalStatus:", maritalStatus);
+  }, [maritalStatus]);
 
   useEffect(() => {
     getDepartmenDetails();
@@ -65,7 +109,7 @@ const AddEmployee = ({ isOpen, toggle }) => {
         value: item.departmentId,
       }));
       setDepartDetails(mappedResponse);
-      console.log("DepartDetails" + { departDetails });
+      console.log("DepartDetails" + departDetails);
       setIsLoading(false);
     } catch (error) {
       // Error handling scenario
@@ -103,6 +147,8 @@ const AddEmployee = ({ isOpen, toggle }) => {
       firstName: "",
       middleName: "",
       lastName: "",
+      maritalStatus: "",
+      gender: "",
       department: null,
       // department: "",
       userName: "",
@@ -128,6 +174,14 @@ const AddEmployee = ({ isOpen, toggle }) => {
       lastName: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
         .required("Please Enter the Last name"),
+
+      // if (!document.querySelector('Input[name="gender"]:checked')) {
+      //   // Handle error, e.g., display an error message
+      //   alert('Please select a gender.');
+      //   return;
+      // }
+      // maritalStatus: Yup.string().required("Marital status is required"),
+
       department: Yup.object().shape({
         label: Yup.string().required("Please Select a Department"),
         value: Yup.string().required("Please Select a Department"),
@@ -184,7 +238,7 @@ const AddEmployee = ({ isOpen, toggle }) => {
         // };
         setActiveTab(2);
         console.log("save toggle to emp address");
-        console.log({ subdetails });
+        console.log(subdetails);
       }
     },
   });
@@ -230,6 +284,12 @@ const AddEmployee = ({ isOpen, toggle }) => {
 
     onSubmit: async (values, { resetForm }) => {
       const selectedRole = subdetails.roleOptions.label;
+      if (!maritalStatus) {
+        // Handle error, e.g., display an error message
+        // alert("Please select material status.");
+        console.log("Please select material status.");
+        return;
+      }
       const apiEndpoint =
         selectedRole === "Manager"
           ? "api/Manager/CreateManager"
@@ -239,7 +299,7 @@ const AddEmployee = ({ isOpen, toggle }) => {
           apiEndpoint,
           JSON.stringify(subdetails)
         );
-        console.log(detailsresponse);
+        console.log("Newly added emp/manager details" + detailsresponse);
         // const mappedResponse = detailsresponse.data.map((item, index) => ({
         //   uId: item.uId,
         //   // index: index + 1,
@@ -546,11 +606,88 @@ const AddEmployee = ({ isOpen, toggle }) => {
                             ) : null}
                           </FormGroup>
                         </Col>
+                        {/* <div> */}
+
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <h2>
+                              Maritial Status <RequiredAsterisk />
+                            </h2>
+                            <br></br>
+                            <Label style={{ marginRight: "10px" }}>
+                              <Input
+                                type="radio"
+                                id="maritalStatus"
+                                value="single"
+                                checked={maritalStatus === "single"}
+                                onChange={handleMaritalStatusChange}
+                                required
+                              />
+                              Single
+                            </Label>
+                            <Label>
+                              <Input
+                                type="radio"
+                                value="married"
+                                checked={maritalStatus === "married"}
+                                onChange={handleMaritalStatusChange}
+                                required
+                              />
+                              Married
+                            </Label>
+
+                            {maritalStatusError && (
+                              <span
+                                style={{ color: "red", fontWeight: "bold" }}
+                              >
+                                {maritalStatusError}
+                              </span>
+                            )}
+                          </FormGroup>
+                        </Col>
+                        {/* Add more options as needed */}
+                        {/* </div> */}
+
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <h2>
+                              Gender <RequiredAsterisk />
+                            </h2>
+                            <br></br>
+                            <Label style={{ marginRight: "10px" }}>
+                              <Input
+                                type="radio"
+                                id="gender"
+                                value="male"
+                                checked={genderStatus === "male"}
+                                onChange={handleGenderStatusChange}
+                                required
+                              />
+                              Male
+                            </Label>
+                            <Label>
+                              <Input
+                                type="radio"
+                                value="Female"
+                                checked={genderStatus === "Female"}
+                                onChange={handleGenderStatusChange}
+                                required
+                              />
+                              Female
+                            </Label>
+
+                            {genderStatusError && (
+                              <span className="error">{genderStatusError}</span>
+                            )}
+                          </FormGroup>
+                        </Col>
+
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label for="department">
                               Select the Department:
                             </Label>
+                            <RequiredAsterisk />
 
                             <ReactSelect
                               name="department"

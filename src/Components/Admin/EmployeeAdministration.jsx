@@ -101,6 +101,7 @@ const ManageCompany = (props) => {
         name: item.firstName,
         email: item.email,
         // email: item.userName,
+        // department: item.departments,
         department: item.departments,
 
         //console.log("employee details "+response.data);

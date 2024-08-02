@@ -76,7 +76,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             </li>
             <li className="sidebar-list-item">
               <Link
-                to="/department-management"
+                to="/department-administration"
                 style={{ color: "black", textDecoration: "none" }}
               >
                 <BsBuilding className="icon" /> Depart Management
