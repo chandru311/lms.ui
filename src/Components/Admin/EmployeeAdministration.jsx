@@ -28,6 +28,8 @@ const ManageCompany = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const { employeeData, setEmployeeData } = useState([]);
   const [employeeDetails, setEmployeeDetails] = useState([]);
+  const [managerDetails, setManagerDetails] = useState([]);
+
   //newly added end
   const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
   const [isAddDepartmentModalOpen, setIsAddDepartmentModalOpen] =
@@ -77,6 +79,7 @@ const ManageCompany = (props) => {
   //newly added  start
   useEffect(() => {
     getEmployeeDetails();
+    getManagerDetails();
   }, []);
 
   useEffect(() => {
@@ -97,6 +100,8 @@ const ManageCompany = (props) => {
         sno: item.id,
         name: item.firstName,
         email: item.email,
+        // email: item.userName,
+        // department: item.departments,
         department: item.departments,
 
         //console.log("employee details "+response.data);
@@ -110,6 +115,27 @@ const ManageCompany = (props) => {
       // Implement additional error handling as needed (e.g., display an error message to the user)
     }
   };
+  const getManagerDetails = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getApiData("api/Manager/GetAllManagers");
+      setIsLoading(false);
+      const mappedResponse = response.data.map((item, index) => ({
+        index: index + 1,
+        sno: item.id,
+        name: item.firstName,
+        email: item.email,
+        // email: item.userName,
+        department: item.department,
+      }));
+      setManagerDetails(mappedResponse || []);
+      setIsLoading(false);
+      console.log("Manager Details" + managerDetails);
+    } catch (error) {
+      console.log("Error fetching Manager data:", error);
+    }
+  };
+  // }
   const toggleViewEmployeeModal = () =>
     setIsViewEmployeeModalOpen(!isViewEmployeeModalOpen);
 
@@ -324,7 +350,7 @@ const ManageCompany = (props) => {
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
                     <TableContainer
-                      data={managersData}
+                      data={managerDetails}
                       columns={managerColumns}
                       isGlobalFilter={true}
                       isAddOptions={false}
@@ -352,9 +378,9 @@ const ManageCompany = (props) => {
             <AddDepartment
               isOpen={isAddDepartmentModalOpen}
               toggle={toggleAddDepartmentModal}
-            />
-             <AddEmployee */}
-            <EmpRegNav
+            />*/}
+            <AddEmployee
+              // <EmpRegNav
               isOpen={isAddEmployeeModalOpen}
               toggle={toggleAddEmployeeModal}
             />

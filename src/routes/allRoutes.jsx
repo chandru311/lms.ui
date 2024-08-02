@@ -13,6 +13,9 @@ import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
 import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 import LeaveRequestsDashboard from "../Components/Admin/ViewLeaveRequests";
+import EmployeeAdministration from "../Components/Admin/EmployeeAdministration";
+import DeptInfo from "../Components/Admin/DeptInfo";
+import ManageDepartment from "../Components/Admin/ManageDepartment";
 
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
@@ -20,12 +23,14 @@ const authProtectedRoutes = [
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
   { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
-  { path: "/employee-administration", component: <ManageCompany /> },
+  { path: "/employee-administration", component: <EmployeeAdministration /> },
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
   { path: "/apply-leave", component: <ApplyLeaveModal /> },
   { path: "/allocated-leaves", component: <LeaveType /> },
+  // { path: "/department-administration", component: <DeptInfo /> },
+  { path: "/department-administration", component: <ManageDepartment /> },
 ];
 
 const publicRoutes = [

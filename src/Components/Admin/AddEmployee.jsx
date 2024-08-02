@@ -3,7 +3,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import classnames from "classnames";
 import { ToastContainer, toast } from "react-toastify";
-
+import { postApiData } from "../../Common/helpers/axiosHelper";
+import RequiredAsterisk from "../../Common/components/RequiredAsterisk";
+import { getApiData } from "../../Common/helpers/axiosHelper.js";
 import {
   Modal,
   ModalHeader,
@@ -24,60 +26,170 @@ import {
   NavLink,
   FormFeedback,
 } from "reactstrap";
-import RequiredAsterisk from "../../Common/components/RequiredAsterisk.jsx";
-import { getApiData, postApiData } from "../../Common/helpers/axiosHelper.js";
 import ReactSelect from "react-select";
+const AddEmployee = ({ isOpen, toggle }) => {
+  const [isUid, setIsUid] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [maritalStatusError, setMaritalStatusError] = useState("");
 
-const EmpRegNav = (props) => {
-  const deptoptions = [
-    { label: "HR", value: 1 },
-    { label: "Finance", value: 2 },
-    { label: "IT", value: 3 },
-    { label: "Sales", value: 4 },
+  const [genderStatus, setGenderStatus] = useState(null);
+  const [genderStatusError, setGenderStatusError] = useState("");
+
+  const [departDetails, setDepartDetails] = useState([]);
+  const [addressUid, setAddressUid] = useState([]);
+  // if (!document.querySelector('Input[name="gender"]:checked')) {
+  //   // Handle error, e.g., display an error message
+  //   alert("Please select a gender.");
+  //   return;
+  // }
+  // const deptoptions = [
+  //   { label: "HR", value: 1 },
+  //   { label: "Finance", value: 2 },
+  //   { label: "IT", value: 3 },
+  //   { label: "Sales", value: 4 },
+  // ];
+  const validateMaritalStatus = (materialValue) => {
+    console.log(materialValue);
+    if (!materialValue) {
+      return "Marital status is required";
+    }
+    return "";
+  };
+  const validateGenderStatus = (genderValue) => {
+    console.log(genderValue);
+    if (!genderValue) {
+      return "Gender status is required";
+    }
+    return "";
+  };
+
+  const handleMaritalStatusChange = (event) => {
+    console.log("handleMaritalStatusChange");
+    setMaritalStatus(event.target.value);
+    // const materialValue = event.target.value;
+    // setMaritalStatus(materialValue);
+    // console.log("maritalStatus after change:", maritalStatus);
+    // setMaritalStatusError(validateMaritalStatus(materialValue));
+  };
+  const handleGenderStatusChange = (event) => {
+    console.log("handleGenderStatusChange");
+    // setMaritalStatus(event.target.value);
+    const genderValue = event.target.value;
+    setGenderStatus(genderValue);
+    setGenderStatusError(validateGenderStatus(genderValue));
+  };
+
+  // Check if a radio button is selected
+  useEffect(() => {
+    console.log("maritalStatus:", maritalStatus);
+  }, [maritalStatus]);
+
+  useEffect(() => {
+    getDepartmenDetails();
+  }, []);
+  const getDepartmenDetails = async () => {
+    try {
+      setIsLoading(true);
+      console.log("entered");
+      const response = await getApiData(`api/Departments/GetAllDepartments`);
+      // const deptoptions = response.data.departmentName || [];
+      setIsLoading(false);
+      console.log("****************");
+
+      // console.log("Department" + deptoptions);
+      const mappedResponse = response.data.map((item) => ({
+        // index: index + 1,
+        // sno: item.id,
+        // name: item.firstName,
+        // // email: item.email,
+        // email: item.userName,
+        label: item.departmentName,
+        value: item.departmentId,
+      }));
+      setDepartDetails(mappedResponse);
+      console.log("DepartDetails" + departDetails);
+      setIsLoading(false);
+    } catch (error) {
+      // Error handling scenario
+      console.error("Error fetching department data:", error);
+      // Implement additional error handling as needed (e.g., display an error message to the user)
+    }
+  };
+  const [subdetails, setSubdetails] = useState();
+  const roleOptions = [
+    { label: "Manager", value: 11 },
+    { label: "Employee", value: 22 },
   ];
+  const role = roleOptions.value;
+  console.log({ role });
+  // const deptoptions = [
+  //   { label: "HR", value: 1 },
+  //   { label: "Finance", value: 2 },
+  //   { label: "IT", value: 3 },
+  //   { label: "Sales", value: 4 },
+  // ];
+  // const handleRoleChange = (selectedOption) => {
+  //   setSubdetails({ ...subdetails, role: selectedOption.value });
+  // };
+
+  // const handleDepartmentChange = (selectedOption) => {
+  //   setSubdetails({ ...subdetails, department: selectedOption.value });
+  // };
 
   const newEmpRegValidation = useFormik({
     enableReinitialize: true,
 
     initialValues: {
-      empId: "",
+      // empId: "",
+      roleOptions: null,
       firstName: "",
       middleName: "",
       lastName: "",
+      maritalStatus: "",
+      gender: "",
       department: null,
-      email: "",
+      // department: "",
+      userName: "",
       mobileNumber: "",
       dob: "",
       dateOfJoining: "",
       password: "",
       confirmPassword: "",
-
-      personalEmail: "",
     },
 
     validationSchema: Yup.object({
-      empId: Yup.string()
-        .required("Please Enter the EmployeeId")
-        .matches(/^[0-9]*$/, "Please enter only numbers"),
-      // .matches(/^\+?\d{10}$/, "Mobile Number must be 10 digits")
+      roleOptions: Yup.object().shape({
+        label: Yup.string().required("Please Select a Role"),
+        value: Yup.string().required("Please Select a Role"),
+      }),
       firstName: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "First Name should contain only letters")
         .required("Please Enter the First name"),
-      middleName: Yup.string()
-        .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters")
-        .required("Please Enter the Middle name"),
+      // middleName: Yup.string()
+      //   .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters")
+      //   .required("Please Enter the Middle name"),
 
       lastName: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
         .required("Please Enter the Last name"),
+
+      // if (!document.querySelector('Input[name="gender"]:checked')) {
+      //   // Handle error, e.g., display an error message
+      //   alert('Please select a gender.');
+      //   return;
+      // }
+      // maritalStatus: Yup.string().required("Marital status is required"),
+
       department: Yup.object().shape({
         label: Yup.string().required("Please Select a Department"),
         value: Yup.string().required("Please Select a Department"),
       }),
 
-      email: Yup.string()
+      userName: Yup.string()
         .email("Enter a Valid Email ID")
-        .required("Please Enter the Email"),
+        .required("Please Enter the UserEmailID"),
       password: Yup.string()
         .required("Please Enter Password")
         .matches(
@@ -89,12 +201,6 @@ const EmpRegNav = (props) => {
         .oneOf([Yup.ref("password"), null], "Passwords must match")
         .required("Confirm password is required"),
 
-      personalEmail: Yup.string()
-        .email("Enter a Valid Email ID")
-        .required("Please Enter the PersonalEmail"),
-      // pincode: Yup.string()
-      //   .required("Please Enter the Pincode")
-      //   .matches(/^[0-9]*$/, "Please enter only numbers"),
       mobileNumber: Yup.string()
         .required("Please Enter Mobile Number")
         .matches(/^[0-9]*$/, "Please enter only numbers")
@@ -113,107 +219,58 @@ const EmpRegNav = (props) => {
         .required("Please select the Date of Joining"),
     }),
 
-    // onSubmit: async (values) => {
-    //   // onSubmit: async (values, { resetForm }) => {
-    //   if (newEmpRegValidation.isValid) {
-    //     console.log("save validation true");
-    //     //API Call
-    //     setActiveTab(2);
-    //     console.log("save toggle to emp address");
-    //   } else {
-    //     newEmpRegValidation.setTouched({
-    //       empId: true,
-    //       firstName: true,
-    //       middleName: true,
-    //       lastName: true,
-    //       department: true,
-    //       emailId: true,
-    //       mobileNo: true,
-    //       dob: true,
-    //       dateOfJoining: true,
-    //       password: true,
-    //       confirmPassword: true,
-    //       personalEmail: true,
-    //     });
-    //   }
-    //   // const branchValue = values.branchId && values.branchId.value;
-    //   // const roleValue = values.role && values.role.value;
-    //   // const combinedValues = {
-    //   //   ...values,
-    //   //   email: values.userName,
-    //   //   branchId: branchValue,
-    //   //   role: roleValue,
-    //   // };
-    //   // const response = await postApiData(
-    //   //   "api/User/CreateSystemUser",
-    //   //   JSON.stringify(combinedValues)
-    //   // );
-    //   // if (response.success === true) {
-    //   //   toast.success("EmpDetails Saved Successfully", {
-    //   //     position: "top-right",
-    //   //     autoClose: 3000,
-    //   //   });
-    //   //   toggle();
-    //   //   resetForm();
-    //   //   // getAllSystemUser();
-    //   // } else {
-    //   //   toast.error(`${response.message}`, {
-    //   //     position: "top-right",
-    //   //     autoClose: 3000,
-    //   //   });
-    //   // }
-    // },
-    onSubmit: async (values, { resetForm }) => {
-      const response = await postApiData(
-        "api/Employee/CreateEmployee",
-        JSON.stringify(values)
-      );
-      if (response.success === true) {
-        toast.success("Customer Created Successfully", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        toggle();
-        resetForm();
-        // getCustomer();
-      } else {
-        toast.error(`${response.message}`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
+    onSubmit: async (values) => {
+      if (newEmpRegValidation.isValid) {
+        console.log("save validation true");
+        // setSubdetails(values);
+        setSubdetails({ ...values, email: values.userName });
+        // const Subdetails = {
+        //   firstName: values.firstName,
+        //   middleName: values.middleName,
+        //   lastName: values.lastName,
+        //   department: values.department,
+        //   email: values.email,
+        //   mobileNumber: values.mobileNumber,
+        //   dob: values.dob,
+        //   dateOfJoining: values.dateOfJoining,
+        //   password: values.password,
+        //   confirmPassword: values.confirmPassword,
+        // };
+        setActiveTab(2);
+        console.log("save toggle to emp address");
+        console.log(subdetails);
       }
     },
   });
-
   const EmpAddressRegValidation = useFormik({
     enableReinitialize: true,
-
     initialValues: {
       country: "",
       state: "",
       city: "",
       street: "",
-      houseNo: "",
-      pincode: "",
+      homeNo: "",
+      postalCode: "",
+      landMark: "",
     },
-
     validationSchema: Yup.object({
-      pincode: Yup.string()
-        .required("Please Enter the Pincode")
+      postalCode: Yup.string()
+        .required("Please Enter the postalCode")
         .matches(/^[0-9]*$/, "Please enter only numbers"),
 
-      houseNo: Yup.string()
-        .required("Please Enter the House No")
+      homeNo: Yup.string()
+        .required("Please Enter the Home No")
         .matches(
           /^[a-zA-Z0-9-]+$/,
           "House No should contain only Alphanumeric with hypens"
         ),
       street: Yup.string()
-        .required("Please Enter the Street Name")
-        .matches(
-          /^[a-zA-Z0-9-]+$/,
-          "Street Name should contain only Alphanumeric with hypens"
-        ),
+        // Allow any combination of allowed characters
+        .matches(/^[a-zA-Z0-9\s\-,\.]+$/, "Invalid street address format")
+        // Ensure there's at least one non-whitespace character
+        .trim()
+        // .required('Street address is required');
+        .required("Please Enter the Street Name"),
       country: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "Country Name should contain only letters")
         .required("Please Enter the Country name"),
@@ -224,582 +281,1105 @@ const EmpRegNav = (props) => {
         .matches(/^[A-Za-z\s]+$/, "City Name should contain only letters")
         .required("Please Enter City name"),
     }),
-    onSubmit: async (values) => {
-      // onSubmit: async (values, { resetForm }) => {
-      //API CALL
-      // onSubmit: async (values, { resetForm }) => {
-      // const branchValue = values.branchId && values.branchId.value;
-      // const roleValue = values.role && values.role.value;
-      // const combinedValues = {
-      //   ...values,
-      //   email: values.userName,
-      //   branchId: branchValue,
-      //   role: roleValue,
-      // };
-      // const response = await postApiData(
-      //   "api/User/CreateSystemUser",
-      //   JSON.stringify(combinedValues)
-      // );
-      // if (response.success === true) {
-      //   toast.success("System User Created Successfully", {
-      //     position: "top-right",
-      //     autoClose: 3000,
-      //   });
-      //   toggle();
-      //   resetForm();
-      //   // getAllSystemUser();
-      // } else {
-      //   toast.error(`${response.message}`, {
-      //     position: "top-right",
-      //     autoClose: 3000,
-      //   });
-      // }
+
+    onSubmit: async (values, { resetForm }) => {
+      const selectedRole = subdetails.roleOptions.label;
+      if (!maritalStatus) {
+        // Handle error, e.g., display an error message
+        // alert("Please select material status.");
+        console.log("Please select material status.");
+        return;
+      }
+      const apiEndpoint =
+        selectedRole === "Manager"
+          ? "api/Manager/CreateManager"
+          : "api/Employee/CreateEmployee";
+      try {
+        const detailsresponse = await postApiData(
+          apiEndpoint,
+          JSON.stringify(subdetails)
+        );
+        console.log("Newly added emp/manager details" + detailsresponse);
+        // const mappedResponse = detailsresponse.data.map((item, index) => ({
+        //   uId: item.uId,
+        //   // index: index + 1,
+        //   // sno: item.id,
+        //   // name: item.firstName,
+        //   // email: item.email,
+        //   // // email: item.userName,
+        //   // department: item.departments,
+
+        //   //console.log("employee details "+response.data);
+        // }));
+        // setIsUid(mappedResponse||[]);
+
+        if (detailsresponse.success === true) {
+          toast.success(
+            `${
+              selectedRole === "Manager" ? "Manager" : "Employee"
+            } Details saved Successfully`,
+            {
+              position: "top-right",
+              autoClose: 3000,
+            }
+          );
+          const uId = detailsresponse.data.uId;
+          console.log(uId);
+
+          // const selectedRole = subdetails.roleOptions.label;
+          console.log("****" + detailsresponse);
+          // setSubdetails({ ...values, email: values.userName });
+          const combinedvalues = { ...values, uId };
+          const addressresponse = await postApiData(
+            "api/Address/CreateAddress",
+            JSON.stringify(combinedvalues)
+          );
+          // const addressresponse = await postApiData(
+          //   "api/Address/CreateAddress",
+          //   JSON.stringify(values)
+          // );
+          if (addressresponse.success === true) {
+            toast.success(" Address Saved Successfully", {
+              position: "top-right",
+              autoClose: 3000,
+            });
+            toggle();
+            resetForm();
+            // setSubmitting(true);
+
+            newEmpRegValidation.resetForm();
+            setActiveTab(1);
+          } else {
+            // toast.error(`${response.message}`,{
+            toast.error(`${addressresponse.message}`, {
+              position: "top-right",
+              autoClose: 3000,
+            });
+          }
+
+          // Additional actions after successful employee details save (optional)
+        } else {
+          toast.error(`${detailsresponse.message}`, {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+        toast.error("An error occurred. Please try again later.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     },
   });
 
-  const { isOpen, toggle } = props;
   const [activeTab, setActiveTab] = useState(1);
-
   const handlePrevious = () => {
     setActiveTab(1);
   };
 
-  //
   useEffect(() => {
+    console.log(roleOptions.value);
     console.log(newEmpRegValidation.values);
     console.log(newEmpRegValidation.errors);
   }, [newEmpRegValidation.values]);
 
   return (
-    <Modal
-      size="lg"
-      isOpen={isOpen}
-      // role="dialog"
-      autoFocus={true}
-      centered={true}
-      className="exampleModal"
-      tabIndex="-1"
-      toggle={toggle}
-    >
-      <div className="modal-content">
-        <ModalHeader
-          toggle={() => {
-            toggle();
-          }}
-        >
-          Employee Registration
-        </ModalHeader>
-        <ModalBody>
-          <div>
-            <div className="d-flex justify-content-between">
-              <Nav tabs>
-                <NavItem
-                  className={classnames({ current: activeTab === 1 })}
-                  mx-20
-                >
-                  <NavLink
+    <>
+      <ToastContainer closeButton={false} limit={1} />
+
+      <Modal
+        size="lg"
+        isOpen={isOpen}
+        // role="dialog"
+        autoFocus={true}
+        centered={true}
+        className="exampleModal"
+        tabIndex="-1"
+        toggle={toggle}
+      >
+        <div className="modal-content">
+          <ModalHeader
+            toggle={() => {
+              toggle();
+            }}
+          >
+            Employee Registration
+          </ModalHeader>
+          <ModalBody>
+            <div>
+              <div className="d-flex justify-content-between">
+                <Nav tabs>
+                  <NavItem
                     className={classnames({ current: activeTab === 1 })}
-                    color={activeTab === 1 ? "primary" : "secondary"}
-                    onClick={() => setActiveTab(1)}
+                    mx-20
                   >
-                    EmpDetails
-                  </NavLink>
-                </NavItem>
-                <NavItem
-                  className={classnames({ current: activeTab === 2 })}
-                  mx-20
-                >
-                  <NavLink
+                    <NavLink
+                      className={classnames({ current: activeTab === 1 })}
+                      color={activeTab === 1 ? "primary" : "secondary"}
+                      onClick={() => setActiveTab(1)}
+                      // style={{ backgroundColor: "#9060ff" }}
+                      // #5e2ced
+                    >
+                      EmpDetails
+                    </NavLink>
+                  </NavItem>
+                  <NavItem
                     className={classnames({ current: activeTab === 2 })}
-                    color={activeTab === 2 ? "primary" : "secondary"}
-                    onClick={() => setActiveTab(2)}
+                    mx-20
                   >
-                    EmpAddress
-                    {/* </Button> */}
-                  </NavLink>
-                </NavItem>
-              </Nav>
-            </div>
-            {activeTab === 1 && (
-              <Card>
-                <CardBody>
-                  <Form
-                    className="needs-validation"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      newEmpRegValidation.handleSubmit(e);
-                      return false;
-                    }}
-                  >
-                    <Row>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="empId">Employee Id</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            // {...register('empID',{required:'Please Enter the EmployeeId'})}
-                            name="empId"
-                            placeholder="Enter the EmpID"
-                            type="number"
-                            id="empId"
-                            value={newEmpRegValidation.values.empId}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            onChange={newEmpRegValidation.handleChange}
-                            invalid={!!newEmpRegValidation.errors.empId} // Check if there's an error for empId
-                          />
+                    <NavLink
+                      className={classnames({ current: activeTab === 2 })}
+                      color={activeTab === 2 ? "primary" : "secondary"}
+                      onClick={() => setActiveTab(2)}
+                    >
+                      EmpAddress
+                      {/* </Button> */}
+                    </NavLink>
+                  </NavItem>
+                </Nav>
+              </div>
+              {activeTab === 1 && (
+                <Card>
+                  <CardBody>
+                    <Form
+                      className="needs-validation"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        newEmpRegValidation.handleSubmit(e);
+                        return false;
+                      }}
+                    >
+                      <Row>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label for="roleOptions">Select the Role:</Label>
 
-                          {newEmpRegValidation.errors.empId && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.empId}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="firstName">First name</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="firstName"
-                            placeholder="Enter the First name"
-                            type="text"
-                            id="firstName"
-                            value={newEmpRegValidation.values.firstName}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.firstName}
-                          />
+                            <ReactSelect
+                              name="roleOptions"
+                              placeholder="Enter the Role"
+                              id="roleOptions"
+                              options={roleOptions}
+                              value={newEmpRegValidation.values.roleOptions}
+                              // onChange={handleRoleChange}
+                              onChange={(selectedOption) => {
+                                newEmpRegValidation.setFieldValue(
+                                  "roleOptions",
+                                  selectedOption
+                                );
+                              }}
+                              invalid={
+                                newEmpRegValidation.touched.roleOptions &&
+                                newEmpRegValidation.errors.roleOptions
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.values.roleOptions === null &&
+                              newEmpRegValidation.touched.roleOptions &&
+                              newEmpRegValidation.errors.roleOptions && (
+                                <span
+                                  className="text-danger"
+                                  style={{ fontSize: "80%" }}
+                                >
+                                  Please Select a Role
+                                </span>
+                              )}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="firstName">First name</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="firstName"
+                              placeholder="Enter the First name"
+                              type="text"
+                              id="firstName"
+                              value={newEmpRegValidation.values.firstName}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.firstName &&
+                                newEmpRegValidation.errors.firstName
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.firstName &&
+                            newEmpRegValidation.errors.firstName ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.firstName}
+                              </FormFeedback>
+                            ) : null}
 
-                          {newEmpRegValidation.errors.firstName && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.firstName}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="middleName">Middle name</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="middleName"
-                            placeholder="Enter the Middle name"
-                            type="text"
-                            id="middleName"
-                            value={newEmpRegValidation.values.middleName}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.middleName}
-                          />
+                            {/*} //   invalid={!!newEmpRegValidation.errors.firstName}
+                            // />
 
-                          {newEmpRegValidation.errors.middleName && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.middleName}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
+                            // {newEmpRegValidation.errors.firstName && (
+                            //   <FormFeedback type="invalid">
+                            //     {newEmpRegValidation.errors.firstName}
+                            //   </FormFeedback>
+                            // )}*/}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="middleName">Middle name</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="middleName"
+                              placeholder="Enter the Middle name"
+                              type="text"
+                              id="middleName"
+                              value={newEmpRegValidation.values.middleName}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.middleName &&
+                                newEmpRegValidation.errors.middleName
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.middleName &&
+                            newEmpRegValidation.errors.middleName ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.middleName}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
 
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="lastName">Last name</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="lastName"
-                            placeholder="Enter Last name"
-                            type="text"
-                            id="lastName"
-                            value={newEmpRegValidation.values.lastName}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.lastName}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="lastName">Last name</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="lastName"
+                              placeholder="Enter Last name"
+                              type="text"
+                              id="lastName"
+                              value={newEmpRegValidation.values.lastName}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.lastName &&
+                                newEmpRegValidation.errors.lastName
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.lastName &&
+                            newEmpRegValidation.errors.lastName ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.lastName}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="dob">Date of Birth</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="dob"
+                              placeholder="Enter the DOB"
+                              type="date"
+                              id="dob"
+                              value={newEmpRegValidation.values.dob}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.dob}
+                              invalid={
+                                newEmpRegValidation.touched.dob &&
+                                newEmpRegValidation.errors.dob
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.dob &&
+                            newEmpRegValidation.errors.dob ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.dob}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        {/* <div> */}
 
-                          {newEmpRegValidation.errors.lastName && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.lastName}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="dob">Date of Birth</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="dob"
-                            placeholder="Enter the DOB"
-                            type="date"
-                            id="dob"
-                            value={newEmpRegValidation.values.dob}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.dob}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <h2>
+                              Maritial Status <RequiredAsterisk />
+                            </h2>
+                            <br></br>
+                            <Label style={{ marginRight: "10px" }}>
+                              <Input
+                                type="radio"
+                                id="maritalStatus"
+                                value="single"
+                                checked={maritalStatus === "single"}
+                                onChange={handleMaritalStatusChange}
+                                required
+                              />
+                              Single
+                            </Label>
+                            <Label>
+                              <Input
+                                type="radio"
+                                value="married"
+                                checked={maritalStatus === "married"}
+                                onChange={handleMaritalStatusChange}
+                                required
+                              />
+                              Married
+                            </Label>
 
-                          {newEmpRegValidation.errors.dob && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.dob}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label for="department">Select the Department:</Label>
-
-                          <ReactSelect
-                            name="department"
-                            placeholder="Enter the Department"
-                            id="department"
-                            options={deptoptions}
-                            value={newEmpRegValidation.values.department}
-                            onChange={(selectedOption) => {
-                              newEmpRegValidation.setFieldValue(
-                                "department",
-                                selectedOption
-                              );
-                            }}
-                            invalid={
-                              newEmpRegValidation.touched.department &&
-                              newEmpRegValidation.errors.department
-                                ? true
-                                : false
-                            }
-                          />
-                          {newEmpRegValidation.values.department === null &&
-                            newEmpRegValidation.touched.department &&
-                            newEmpRegValidation.errors.department && (
+                            {maritalStatusError && (
                               <span
-                                className="text-danger"
-                                style={{ fontSize: "80%" }}
+                                style={{ color: "red", fontWeight: "bold" }}
                               >
-                                Please Select a Department
+                                {maritalStatusError}
                               </span>
                             )}
-                        </FormGroup>
-                      </Col>
+                          </FormGroup>
+                        </Col>
+                        {/* Add more options as needed */}
+                        {/* </div> */}
 
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="dateOfJoining">
-                            Enter the Date Of Joining{" "}
-                          </Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="dateOfJoining"
-                            placeholder="Enter the Date Of Joining"
-                            type="date"
-                            id="dateOfJoining"
-                            value={newEmpRegValidation.values.dateOfJoining}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.dateOfJoining}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <h2>
+                              Gender <RequiredAsterisk />
+                            </h2>
+                            <br></br>
+                            <Label style={{ marginRight: "10px" }}>
+                              <Input
+                                type="radio"
+                                id="gender"
+                                value="male"
+                                checked={genderStatus === "male"}
+                                onChange={handleGenderStatusChange}
+                                required
+                              />
+                              Male
+                            </Label>
+                            <Label>
+                              <Input
+                                type="radio"
+                                value="Female"
+                                checked={genderStatus === "Female"}
+                                onChange={handleGenderStatusChange}
+                                required
+                              />
+                              Female
+                            </Label>
 
-                          {newEmpRegValidation.errors.dateOfJoining && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.dateOfJoining}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
+                            {genderStatusError && (
+                              <span className="error">{genderStatusError}</span>
+                            )}
+                          </FormGroup>
+                        </Col>
 
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="email">Email ID</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="email"
-                            placeholder="Enter the EmailID"
-                            type="email"
-                            id="email"
-                            value={newEmpRegValidation.values.email}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.emailId}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label for="department">
+                              Select the Department:
+                            </Label>
+                            <RequiredAsterisk />
 
-                          {newEmpRegValidation.errors.email && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.email}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="password">Password</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="password"
-                            placeholder="Enter the Password"
-                            type="password"
-                            id="password"
-                            value={newEmpRegValidation.values.password}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.password}
-                          />
+                            <ReactSelect
+                              name="department"
+                              placeholder="Enter the Department"
+                              id="department"
+                              // options={deptoptions}
+                              options={departDetails}
+                              value={newEmpRegValidation.values.department}
+                              // onChange={handleDepartmentChange}
+                              onChange={(selectedOption) => {
+                                newEmpRegValidation.setFieldValue(
+                                  "department",
+                                  selectedOption
+                                );
+                              }}
+                              invalid={
+                                newEmpRegValidation.touched.department &&
+                                newEmpRegValidation.errors.department
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.values.department === null &&
+                              newEmpRegValidation.touched.department &&
+                              newEmpRegValidation.errors.department && (
+                                <span
+                                  className="text-danger"
+                                  style={{ fontSize: "80%" }}
+                                >
+                                  Please Select a Department
+                                </span>
+                              )}
+                          </FormGroup>
+                        </Col>
 
-                          {newEmpRegValidation.errors.password && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.password}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="confirmPassword">
-                            Confirm Password
-                          </Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            type="password"
-                            id="confirmPassword"
-                            value={newEmpRegValidation.values.confirmPassword}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={
-                              !!newEmpRegValidation.errors.confirmPassword
-                            }
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="dateOfJoining">
+                              Enter the Date Of Joining{" "}
+                            </Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="dateOfJoining"
+                              placeholder="Enter the Date Of Joining"
+                              type="date"
+                              id="dateOfJoining"
+                              value={newEmpRegValidation.values.dateOfJoining}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.dateOfJoining &&
+                                newEmpRegValidation.errors.dateOfJoining
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.dateOfJoining &&
+                            newEmpRegValidation.errors.dateOfJoining ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.dateOfJoining}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="mobileNumber">Mobile</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="mobileNumber"
+                              placeholder="Enter the Mobile No"
+                              type="text"
+                              id="mobileNumber"
+                              value={newEmpRegValidation.values.mobileNumber}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.mobileNumber &&
+                                newEmpRegValidation.errors.mobileNumber
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.mobileNumber &&
+                            newEmpRegValidation.errors.mobileNumber ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.mobileNumber}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
 
-                          {newEmpRegValidation.errors.confirmPassword && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.confirmPassword}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="personalEmail">
-                            Personal Email ID
-                          </Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="personalEmail"
-                            placeholder="Enter the Personal EmailID"
-                            type="email"
-                            id="personalEmail"
-                            value={newEmpRegValidation.values.personalEmail}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.personalEmail}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="userName">UserName</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="userName"
+                              placeholder="Enter the UserEmailID"
+                              type="email"
+                              id="userName"
+                              value={newEmpRegValidation.values.userName}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.userName &&
+                                newEmpRegValidation.errors.userName
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.userName &&
+                            newEmpRegValidation.errors.userName ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.userName}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="password">Password</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="password"
+                              placeholder="Enter the Password"
+                              type="password"
+                              id="password"
+                              value={newEmpRegValidation.values.password}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.password &&
+                                newEmpRegValidation.errors.password
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.password &&
+                            newEmpRegValidation.errors.password ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.password}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="confirmPassword">
+                              Confirm Password
+                            </Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="confirmPassword"
+                              placeholder="Confirm Password"
+                              type="password"
+                              id="confirmPassword"
+                              value={newEmpRegValidation.values.confirmPassword}
+                              onChange={newEmpRegValidation.handleChange}
+                              onBlur={newEmpRegValidation.handleBlur}
+                              invalid={
+                                newEmpRegValidation.touched.confirmPassword &&
+                                newEmpRegValidation.errors.confirmPassword
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {newEmpRegValidation.touched.confirmPassword &&
+                            newEmpRegValidation.errors.confirmPassword ? (
+                              <FormFeedback type="invalid">
+                                {newEmpRegValidation.errors.confirmPassword}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <div className="d-flex justify-content-end">
+                        <Button
+                          type="submit"
+                          style={{ backgroundColor: "#5e2ced" }}
+                          // color="primary"
+                          // onClick={handleSaveAndContinue}
+                        >
+                          Save & Continue
+                        </Button>
+                      </div>
+                    </Form>
+                  </CardBody>
+                </Card>
+              )}
+              {activeTab === 2 && (
+                //   <TabPane tabId="EmpAddress">
+                <Card>
+                  <CardBody>
+                    <Form
+                      className="needs-validation"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        newEmpRegValidation.handleSubmit(e);
+                        return false;
+                      }}
+                    >
+                      <Row>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="homeNo"> Home no:</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="homeNo"
+                              placeholder="Enter the Home No:"
+                              type="text"
+                              id="homeNo"
+                              value={EmpAddressRegValidation.values.homeNo}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.homeNo &&
+                                EmpAddressRegValidation.errors.homeNo
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.homeNo &&
+                            EmpAddressRegValidation.errors.homeNo ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.homeNo}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="street"> Street</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="street"
+                              placeholder="Enter the Street Name"
+                              type="text"
+                              id="street"
+                              value={EmpAddressRegValidation.values.street}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.street &&
+                                EmpAddressRegValidation.errors.street
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.street &&
+                            EmpAddressRegValidation.errors.street ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.street}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
 
-                          {newEmpRegValidation.errors.personalEmail && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.personalEmail}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="mobileNumber">Mobile</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="mobileNumber"
-                            placeholder="Enter the Mobile No"
-                            type="text"
-                            id="mobileNumber"
-                            value={newEmpRegValidation.values.mobileNumber}
-                            onChange={newEmpRegValidation.handleChange}
-                            onBlur={newEmpRegValidation.handleBlur}
-                            invalid={!!newEmpRegValidation.errors.mobileNumber}
-                          />
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="city"> City</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="city"
+                              placeholder="Enter the City"
+                              type="text"
+                              id="city"
+                              value={EmpAddressRegValidation.values.city}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.city &&
+                                EmpAddressRegValidation.errors.city
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.city &&
+                            EmpAddressRegValidation.errors.city ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.city}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="state">State</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="state"
+                              placeholder="Enter the State"
+                              type="text"
+                              id="state"
+                              value={EmpAddressRegValidation.values.state}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.state &&
+                                EmpAddressRegValidation.errors.state
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.state &&
+                            EmpAddressRegValidation.errors.state ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.state}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
 
-                          {newEmpRegValidation.errors.mobileNumber && (
-                            <FormFeedback type="invalid">
-                              {newEmpRegValidation.errors.mobileNumber}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                    <div className="d-flex justify-content-end">
-                      <Button
-                        type="submit"
-                        color="primary"
-                        // onClick={handleSaveAndContinue}
-                      >
-                        Save & Continue
-                      </Button>
-                    </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            )}
-            {activeTab === 2 && (
-              //   <TabPane tabId="EmpAddress">
-              <Card>
-                <CardBody>
-                  <Form
-                    className="needs-validation"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      newEmpRegValidation.handleSubmit(e);
-                      return false;
-                    }}
-                  >
-                    <Row>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="houseNo"> House no:</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="houseNo"
-                            placeholder="Enter the House No:"
-                            type="text"
-                            id="houseNo"
-                            value={EmpAddressRegValidation.values.houseNo}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.houseNo} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.houseNo && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.houseNo}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="street"> Street</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="street"
-                            placeholder="Enter the Street Name"
-                            type="text"
-                            id="street"
-                            value={EmpAddressRegValidation.values.street}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.street} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.street && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.street}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="city"> City</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="city"
-                            placeholder="Enter the City"
-                            type="text"
-                            id="city"
-                            value={EmpAddressRegValidation.values.city}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.city} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.city && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.city}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="state">State</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="state"
-                            placeholder="Enter the State"
-                            type="text"
-                            id="state"
-                            value={EmpAddressRegValidation.values.state}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.state} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.state && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.state}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="country">Country</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="country"
-                            placeholder="Enter the Country"
-                            type="text"
-                            id="country"
-                            value={EmpAddressRegValidation.values.country}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.country} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.country && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.country}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                      <Col md="6">
-                        <FormGroup className="mb-3">
-                          <Label htmlFor="pincode"> Pincode:</Label>
-                          <RequiredAsterisk />
-                          <Input
-                            name="pincode"
-                            placeholder="Enter the Pincode:"
-                            type="number"
-                            id="pincode"
-                            value={EmpAddressRegValidation.values.pincode}
-                            onBlur={EmpAddressRegValidation.handleBlur}
-                            onChange={EmpAddressRegValidation.handleChange}
-                            invalid={!!EmpAddressRegValidation.errors.pincode} // Check if there's an error for empId
-                          />
-                          {EmpAddressRegValidation.errors.pincode && (
-                            <FormFeedback type="invalid">
-                              {EmpAddressRegValidation.errors.pincode}
-                            </FormFeedback>
-                          )}
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                    <div className="d-flex justify-content-end">
-                      <Button
-                        color="primary"
-                        // type="submit"
-                        disabled={activeTab === 1}
-                        onClick={handlePrevious}
-                        className="mx-1"
-                      >
-                        Previous
-                      </Button>
-                      <Button type="submit" color="primary" className="mx-1">
-                        Submit
-                      </Button>
-                    </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            )}
-          </div>
-        </ModalBody>
-        <ModalFooter></ModalFooter>
-      </div>
-    </Modal>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="country">Country</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="country"
+                              placeholder="Enter the Country"
+                              type="text"
+                              id="country"
+                              value={EmpAddressRegValidation.values.country}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.country &&
+                                EmpAddressRegValidation.errors.country
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.country &&
+                            EmpAddressRegValidation.errors.country ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.country}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="postalCode"> postalCode:</Label>
+                            <RequiredAsterisk />
+                            <Input
+                              name="postalCode"
+                              placeholder="Enter the postalCode:"
+                              type="text"
+                              id="postalCode"
+                              value={EmpAddressRegValidation.values.postalCode}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.postalCode &&
+                                EmpAddressRegValidation.errors.postalCode
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.postalCode &&
+                            EmpAddressRegValidation.errors.postalCode ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.postalCode}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label htmlFor="landMark"> LandMark</Label>
+                            {/* <RequiredAsterisk /> */}
+                            <Input
+                              name="landMark"
+                              placeholder="Enter the LandMark Name"
+                              type="text"
+                              id="landMark"
+                              value={EmpAddressRegValidation.values.landMark}
+                              onBlur={EmpAddressRegValidation.handleBlur}
+                              onChange={EmpAddressRegValidation.handleChange}
+                              invalid={
+                                EmpAddressRegValidation.touched.landMark &&
+                                EmpAddressRegValidation.errors.landMark
+                                  ? true
+                                  : false
+                              }
+                            />
+                            {EmpAddressRegValidation.touched.landMark &&
+                            EmpAddressRegValidation.errors.landMark ? (
+                              <FormFeedback type="invalid">
+                                {EmpAddressRegValidation.errors.landMark}
+                              </FormFeedback>
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                      </Row>
+                      <div className="d-flex justify-content-end">
+                        <Button
+                          // color="primary"
+                          // type="submit"
+                          style={{ backgroundColor: "#5e2ced" }}
+                          disabled={activeTab === 1}
+                          onClick={handlePrevious}
+                          className="mx-1"
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          onClick={EmpAddressRegValidation.handleSubmit}
+                          style={{ backgroundColor: "#5e2ced" }}
+                          type="submit"
+                          // color="primary"
+                          className="mx-1"
+                        >
+                          Submit
+                        </Button>
+                      </div>
+                    </Form>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </div>
+      </Modal>
+    </>
   );
 };
-export default EmpRegNav;
+export default AddEmployee;
+
+// export default EmpRegNav;
+
+// import React from "react";
+// import {
+//   Button,
+//   Modal,
+//   ModalHeader,
+//   ModalBody,
+//   ModalFooter,
+//   Form,
+//   FormGroup,
+//   Label,
+//   Input,
+//   FormFeedback,
+//   Row,
+//   Col,
+// } from "reactstrap";
+// import { useFormik } from "formik";
+// import * as Yup from "yup";
+
+// const AddEmployee = ({ isOpen, toggle }) => {
+//   const validationSchema = Yup.object({
+//     firstName: Yup.string().required("Please Enter First Name"),
+//     middleName: Yup.string(),
+//     lastName: Yup.string().required("Please Enter Last Name"),
+//     email: Yup.string()
+//       .email("Invalid Email Address")
+//       .required("Please Enter Email"),
+//     mobileNumber: Yup.string()
+//       .matches(/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number")
+//       .required("Please Enter Mobile Number"),
+//     country: Yup.string().required("Please Enter Country"),
+//     city: Yup.string().required("Please Enter City"),
+//     state: Yup.string().required("Please Enter State"),
+//     dob: Yup.date().required("Please Enter Date of Birth"),
+//     dateOfJoining: Yup.date().required("Please Enter Date of Joining"),
+//     address: Yup.string().required("Please Enter Address"),
+//     password: Yup.string()
+//       .min(6, "Password must be at least 6 characters long")
+//       .required("Please Enter Password"),
+//   });
+
+//   const initialValues = {
+//     firstName: "",
+//     middleName: "",
+//     lastName: "",
+//     email: "",
+//     mobileNumber: "",
+//     country: "",
+//     city: "",
+//     state: "",
+//     dob: "",
+//     dateOfJoining: "",
+//     address: "",
+//     password: "",
+//   };
+
+//   const handleSubmit = (values, { setSubmitting, resetForm }) => {
+//     console.log("Employee added:", values);
+//     setSubmitting(false);
+//     resetForm();
+//     toggle();
+//   };
+
+//   const formik = useFormik({
+//     initialValues,
+//     validationSchema,
+//     onSubmit: handleSubmit,
+//   });
+
+//   return (
+//     <Modal isOpen={isOpen} toggle={toggle} centered>
+//       <ModalHeader toggle={toggle}>Add Employee</ModalHeader>
+//       <ModalBody>
+//         <Form onSubmit={formik.handleSubmit}>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="firstName">First Name</Label>
+//                 <Input
+//                   type="text"
+//                   id="firstName"
+//                   {...formik.getFieldProps("firstName")}
+//                   invalid={formik.touched.firstName && formik.errors.firstName}
+//                 />
+//                 {formik.touched.firstName && formik.errors.firstName && (
+//                   <FormFeedback>{formik.errors.firstName}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="lastName">Last Name</Label>
+//                 <Input
+//                   type="text"
+//                   id="lastName"
+//                   {...formik.getFieldProps("lastName")}
+//                   invalid={formik.touched.lastName && formik.errors.lastName}
+//                 />
+//                 {formik.touched.lastName && formik.errors.lastName && (
+//                   <FormFeedback>{formik.errors.lastName}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="email">Email</Label>
+//                 <Input
+//                   type="email"
+//                   id="email"
+//                   {...formik.getFieldProps("email")}
+//                   invalid={formik.touched.email && formik.errors.email}
+//                 />
+//                 {formik.touched.email && formik.errors.email && (
+//                   <FormFeedback>{formik.errors.email}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="mobileNumber">Mobile Number</Label>
+//                 <Input
+//                   type="text"
+//                   id="mobileNumber"
+//                   {...formik.getFieldProps("mobileNumber")}
+//                   invalid={
+//                     formik.touched.mobileNumber && formik.errors.mobileNumber
+//                   }
+//                 />
+//                 {formik.touched.mobileNumber && formik.errors.mobileNumber && (
+//                   <FormFeedback>{formik.errors.mobileNumber}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="country">Country</Label>
+//                 <Input
+//                   type="text"
+//                   id="country"
+//                   {...formik.getFieldProps("country")}
+//                   invalid={formik.touched.country && formik.errors.country}
+//                 />
+//                 {formik.touched.country && formik.errors.country && (
+//                   <FormFeedback>{formik.errors.country}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="city">City</Label>
+//                 <Input
+//                   type="text"
+//                   id="city"
+//                   {...formik.getFieldProps("city")}
+//                   invalid={formik.touched.city && formik.errors.city}
+//                 />
+//                 {formik.touched.city && formik.errors.city && (
+//                   <FormFeedback>{formik.errors.city}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="state">State</Label>
+//                 <Input
+//                   type="text"
+//                   id="state"
+//                   {...formik.getFieldProps("state")}
+//                   invalid={formik.touched.state && formik.errors.state}
+//                 />
+//                 {formik.touched.state && formik.errors.state && (
+//                   <FormFeedback>{formik.errors.state}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="dob">Date of Birth</Label>
+//                 <Input
+//                   type="date"
+//                   id="dob"
+//                   {...formik.getFieldProps("dob")}
+//                   invalid={formik.touched.dob && formik.errors.dob}
+//                 />
+//                 {formik.touched.dob && formik.errors.dob && (
+//                   <FormFeedback>{formik.errors.dob}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="dateOfJoining">Date of Joining</Label>
+//                 <Input
+//                   type="date"
+//                   id="dateOfJoining"
+//                   {...formik.getFieldProps("dateOfJoining")}
+//                   invalid={
+//                     formik.touched.dateOfJoining && formik.errors.dateOfJoining
+//                   }
+//                 />
+//                 {formik.touched.dateOfJoining &&
+//                   formik.errors.dateOfJoining && (
+//                     <FormFeedback>{formik.errors.dateOfJoining}</FormFeedback>
+//                   )}
+//               </FormGroup>
+//             </Col>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="address">Address</Label>
+//                 <Input
+//                   type="text"
+//                   id="address"
+//                   {...formik.getFieldProps("address")}
+//                   invalid={formik.touched.address && formik.errors.address}
+//                 />
+//                 {formik.touched.address && formik.errors.address && (
+//                   <FormFeedback>{formik.errors.address}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//           <Row form>
+//             <Col md={6}>
+//               <FormGroup>
+//                 <Label for="password">Password</Label>
+//                 <Input
+//                   type="password"
+//                   id="password"
+//                   {...formik.getFieldProps("password")}
+//                   invalid={formik.touched.password && formik.errors.password}
+//                 />
+//                 {formik.touched.password && formik.errors.password && (
+//                   <FormFeedback>{formik.errors.password}</FormFeedback>
+//                 )}
+//               </FormGroup>
+//             </Col>
+//           </Row>
+//         </Form>
+//       </ModalBody>
+//       <ModalFooter>
+//         <Button
+//           color="primary"
+//           onClick={formik.handleSubmit}
+//           disabled={formik.isSubmitting}
+//         >
+//           Add Employee
+//         </Button>
+//         <Button color="secondary" onClick={toggle}>
+//           Cancel
+//         </Button>
+//       </ModalFooter>
+//     </Modal>
+//   );
+// };
+
+// export default AddEmployee;
