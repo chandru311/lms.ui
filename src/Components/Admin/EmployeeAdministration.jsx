@@ -33,7 +33,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-const ManageCompany = (props) => {
+const EmployeeAdministartion = (props) => {
   const [activeTab, setActiveTab] = useState("1"); // To handle active tab
   //newly added  start
   const [isLoading, setIsLoading] = useState(false);
@@ -275,7 +275,7 @@ const ManageCompany = (props) => {
               aria-label="view"
               onClick={()=>{
                 setViewMode(true)
-                viewEmployeeData(cellProps.row.original);
+            /*    viewEmployeeData(cellProps.row.original);*/
                 console.log(cellProps.row.original)
                 toggleViewEmployeeModal();
             
@@ -292,7 +292,7 @@ const ManageCompany = (props) => {
               style={{ marginRight: "5px" }}
               onClick={()=>{
                 setViewMode(false)
-                viewEmployeeData(cellProps.row.original);
+              /*  viewEmployeeData(cellProps.row.original);*/
                 toggleViewEmployeeModal();
             
               }}
@@ -396,7 +396,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
               style={{ marginRight: "5px" }}
               onClick={()=>{
                 setViewMode(true)
-                viewEmployeeData(cellProps.row.original, "EMPLOYEE");
+            /*    viewEmployeeData(cellProps.row.original, "EMPLOYEE");*/
                 console.log(cellProps.row.original)
                 toggleViewEmployeeModal();
             
@@ -414,7 +414,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
               style={{ marginRight: "5px" }}
               onClick={()=>{
                 setViewMode(false)
-                viewEmployeeData(cellProps.row.original, "EMPLOYEE");
+            /*    viewEmployeeData(cellProps.row.original, "EMPLOYEE");*/
                 toggleViewEmployeeModal();
             
               }}
@@ -576,4 +576,4 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
   );
 };
 
-export default ManageCompany;
+export default EmployeeAdministartion;
