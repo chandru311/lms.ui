@@ -13,7 +13,7 @@ import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
 import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 import LeaveRequestsDashboard from "../Components/Admin/ViewLeaveRequests";
-
+import LeaveHistroy from "../Components/Admin/LeaveHistroy";
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
   { path: "/admin-dashboard", component: <AdminDashboard /> },
@@ -24,7 +24,10 @@ const authProtectedRoutes = [
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
-  { path: "/apply-leave", component: <ApplyLeaveModal /> },
+    { path: "/apply-leave", component: <ApplyLeaveModal /> },
+    {
+        path: "/leave-history", component: <LeaveHistroy />
+    }
 ];
 
 const publicRoutes = [

@@ -1,13 +1,15 @@
 import React from 'react';
-import { BsFillBellFill, BsFillGrid3X3GapFill, BsClipboardCheck, BsPencilSquare } from 'react-icons/bs';
+import { BsFillBellFill, BsFillGrid3X3GapFill, BsClipboardCheck, BsPencilSquare, BsFileText } from 'react-icons/bs';
 import '../../index.css';
 
 function EmployeeDashboard() {
     const cardData = [
-        { title: 'Holiday List', icon: <BsFillBellFill className='card_icon' />, count: 8 },
-        { title: 'Leave Requests', icon: <BsFillGrid3X3GapFill className='card_icon' />, count: 12 },
+        { title: 'Holiday List', icon: <BsFillBellFill className='card_icon' /> },
+        { title: 'My Leave Requests', icon: <BsFillGrid3X3GapFill className='card_icon' />, count: 12 },
+        { title: 'My Leave Record', icon: <BsFileText className='card_icon' /> },
+        { title: 'Apply Leave', icon: <BsPencilSquare className='card_icon' />, },
         { title: 'My Leave Balance', icon: <BsClipboardCheck className='card_icon' />, count: 15 },
-        { title: 'Apply Leave', icon: <BsPencilSquare className='card_icon' />, count: 0 },
+
     ];
 
     return (
@@ -15,7 +17,7 @@ function EmployeeDashboard() {
             <div className='main-title'>
                 <h3>Welcome Back! Employee</h3>
             </div>
-         
+
             <div className='main-cards'>
                 {cardData.map((card, index) => (
                     <div className='card1' key={index}>
