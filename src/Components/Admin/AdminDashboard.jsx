@@ -36,7 +36,7 @@ function AdminDashboard() {
                 const response = await getApiData(endpoint);
                 if (response?.success) {
                     if (key === 'Leave Requests') {
-                        const pendingLeaves = response.data.filter(leave => leave.status === 0).length;
+                        const pendingLeaves = response.data.filter(leave => leave.status === 1).length;
                         updateCardCount('Leave Requests', pendingLeaves);
                     } else {
                         const totalCount = response.data.length;
