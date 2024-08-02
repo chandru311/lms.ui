@@ -12,11 +12,12 @@ import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
 import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 import LeaveRequestsDashboard from "../Components/Admin/ViewLeaveRequests";
+import LeaveAdministration from '../Components/Admin/LeaveAdministartion'
 import LeaveHistroy from "../Components/Admin/LeaveHistroy";
 const authProtectedRoutes = [
     { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
-  { path: "/employee-dashboard", component: <EmployeeDashboard /> },
+    { path: "/employee-dashboard", component: <EmployeeDashboard /> },
     { path: "/leave-administration", component: <LeaveAdministration /> },
     { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
   { path: "/allocated-leaves", component: <LeaveType /> },
