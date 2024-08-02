@@ -61,7 +61,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                 {isLeaveManagementOpen && (
                                     <ul className="submenu-list">
                                         <li>
-                                            <Link to="/allocate-leaves" className="submenu-item">
+                                            <Link to="/allocated-leaves" className="submenu-item">
                                                 <BsClipboardCheck className="icon" /> Allocate Leaves
                                             </Link>
                                         </li>
@@ -83,7 +83,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                         </li>
                         <li className="sidebar-list-item">
                             <Link
-                                to="/department-management"
+                                to="/department-administration"
                                 style={{ color: "black", textDecoration: "none" }}
                             >
                                 <BsBuilding className="icon" /> Depart Management

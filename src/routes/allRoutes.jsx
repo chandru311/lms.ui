@@ -14,6 +14,7 @@ import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 import LeaveRequestsDashboard from "../Components/Admin/ViewLeaveRequests";
 import LeaveAdministration from '../Components/Admin/LeaveAdministartion'
 import LeaveHistroy from "../Components/Admin/LeaveHistroy";
+import ManageDepartment from "../Components/Admin/ManageDepartment";
 
 const authProtectedRoutes = [
     { path: "/admin-dashboard", component: <AdminDashboard /> },
@@ -27,6 +28,8 @@ const authProtectedRoutes = [
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
     { path: "/apply-leave", component: <ApplyLeaveModal /> },
+    { path: "/department-administration", component: <ManageDepartment /> },
+
     {
         path: "/leave-history", component: <LeaveHistroy />
     }
