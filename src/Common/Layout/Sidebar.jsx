@@ -60,7 +60,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                 {isLeaveManagementOpen && (
                   <ul className="submenu-list">
                     <li>
-                      <Link to="/allocate-leaves" className="submenu-item">
+                      <Link to="/allocated-leaves" className="submenu-item">
                         <BsClipboardCheck className="icon" /> Allocate Leaves
                       </Link>
                     </li>

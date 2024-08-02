@@ -13,12 +13,14 @@ import LeaveType from "../Components/Admin/LeaveType";
 import HolidayList from "../Components/Admin/HolidayList";
 import LeaveBalance from "../Components/Admin/LeaveBalance";
 
+
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
   { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
   { path: "/leave-administration", component: <LeaveAdministration /> },
+  { path: "/allocated-leaves", component: <LeaveType /> },
   { path: "/employee-administration", component: <ManageCompany /> },
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },

@@ -61,40 +61,12 @@ const ManageCompany = (props) => {
   const [deactivateTitle, setDeactivateTitle] = useState(false)
  
   //newly added end
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"))
+  const userType = authUser.userType
+  console.log("usertype"+userType)
+ 
 
-  const [managersData, setManagersData] = useState([
-    {
-      sno: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      department: "HR",
-      active: true,
-    },
-    {
-      sno: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      department: "Finance",
-      active: false,
-    },
-  ]);
 
-  const [employeesData, setEmployeesData] = useState([
-    {
-      sno: 1,
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      department: "Marketing",
-      active: true,
-    },
-    {
-      sno: 2,
-      name: "Bob Brown",
-      email: "bob.brown@example.com",
-      department: "Sales",
-      active: false,
-    },
-  ]);
 
   //newly added  start
   useEffect(() => {
@@ -110,18 +82,21 @@ const ManageCompany = (props) => {
     setDeleteModal(true);
     setDeactivateTitle(true);
   };
-  const changeAgentStatus = async(empoyeeId, flag, action) => {
+  const changeEmployeeStatus = async(uId, flag, action,target) => {
+   
     try
     {
+     // const { employeeId,managerId} = cellProps;
+      if(target === "EMPLOYEE"){
       // console.log("Agent ID to approve " + approveAgentUid);
      // const response = await putApiData(`api/AgentProfile/ApproveOrReject?AgentID=${agentUid}&Approved=${flag}`)
-     const response = await putApiData(`api/Employee/Active_Deactive/${empoyeeId}?isActive=${flag}`)
+     const response = await putApiData(`api/Employee/Active_Deactive/${uId}?isActive=${flag}`)
     // api/Employee/Active_Deactive/1?isActive=false
     if(response.success=== true)
        {
         if (action==="deactivate")
       {
-        toast.success("Agent deactivated successfully!", {
+        toast.success("Employee deactivated successfully!", {
           position:"top-right",
           autoClose:2000,
         })
@@ -130,14 +105,41 @@ const ManageCompany = (props) => {
       else
       {
         {
-          toast.success("Agent activated successfully!", {
+          toast.success("Employee activated successfully!", {
             position:"top-right",
             autoClose:2000,
           })
           getEmployeeDetails();
         }}
       }
-      
+    }
+    else
+    {
+      const response = await putApiData(`api/Manager/Active_Deactive/${uId}?isActive=${flag}`)
+      if(response.success=== true)
+        {
+         if (action==="deactivate")
+       {
+         toast.success("Employee deactivated successfully!", {
+           position:"top-right",
+           autoClose:2000,
+         })
+         getManagerDetails();
+       }
+       else
+       {
+         {
+           toast.success("Employee activated successfully!", {
+             position:"top-right",
+             autoClose:2000,
+           })
+           getManagerDetails();
+         }}
+       }
+    }
+    
+    
+    
       
     } catch(error)
     {
@@ -152,22 +154,47 @@ const ManageCompany = (props) => {
     try {
       setIsLoading(true);
       console.log("entered");
-      const response = await getApiData(`api/Employee/GetAllEmployees`);
-      setIsLoading(false);
-      const mappedResponse = response.data.map((item, index) => ({
-        index: index + 1,
-        uId:item.uId,
-        sno: index+ 1,
-        name: item.firstName,
-        email: item.email,
-        department: item.departments,
-        employeeId:item.employeeId,
-        addressId:item.addressId,
-       active:item.active,
-
-        //console.log("employee details "+response.data);
-      }));
-      setEmployeeDetails(mappedResponse || []);
+      let response
+      if(userType === 1)
+      {
+         const response = await getApiData(`api/Employee/GetAllEmployees`);
+        setIsLoading(false);
+         const mappedResponse = response.data.map((item, index) => ({
+           index: index + 1,
+           uId:item.uId,
+           sno: index+ 1,
+           name: item.firstName,
+           email: item.email,
+           department: item.departments,
+           employeeId:item.employeeId,
+           addressId:item.addressId,
+          active:item.active,
+   
+           //console.log("employee details "+response.data);
+         }));
+         setEmployeeDetails(mappedResponse || []);
+      }
+      else{
+        const response = await getApiData(`api/Employee/GetEmployeesByManager`);
+        setIsLoading(false);
+        const mappedResponse = response.data.map((item, index) => ({
+          index: index + 1,
+          uId:item.uId,
+          sno: index+ 1,
+          name: item.firstName,
+          email: item.email,
+          department: item.departments,
+          employeeId:item.employeeId,
+          addressId:item.addressId,
+         active:item.active,
+  
+          //console.log("employee details "+response.data);
+        }));
+        setEmployeeDetails(mappedResponse || []);
+      }
+     
+     
+     
       setIsLoading(false);
       console.log("employeedeatils" + employeeDetails);
     } catch (error) {
@@ -190,6 +217,7 @@ const ManageCompany = (props) => {
         addressId:item.addressId,
         email: item.email,
         department: item.departments,
+        active:item.active,
 
         //console.log("employee details "+response.data);
       }));
@@ -262,7 +290,7 @@ const ManageCompany = (props) => {
      console.log("mangerdetails"+employeeData)
      
     };
-    const getEmployeeAddressData= async () => {
+    const getEmployeeAddressData= async () => { 
       // setIsLoading(true)
       
       const response = await getApiData(`api/Address/GetAddressById/${addressId}`);
@@ -393,15 +421,35 @@ const ManageCompany = (props) => {
               {edit()}
             </Button>
 
-            <Button
-              type="button"
-              color="danger"
-              className="btn-sm btn-rounded"
-              title="Deactivate"
-              style={{ marginRight: "5px" }}
-            >
-              {deactivate()}
-            </Button>
+            {(cellProps.row.original.active === 1) && ( 
+        
+        <Button
+        type="button"
+        color="danger"
+        className="btn-sm btn-rounded"
+        title="Deactivate"
+        onClick={() => {                      
+              
+changeEmployeeStatus(cellProps.row.original.managerId,false,"deactivate");
+            } }                       
+        style={{ marginRight: "5px" }}
+        >
+        <FontAwesomeIcon icon={faX} />
+      </Button>)}
+       {cellProps.row.original.active === 0 && ( 
+        <Button
+        type="button"
+        color="success"
+        className="btn-sm btn-rounded"
+        title="Activate"
+        onClick={() => {                      
+              
+changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
+            } }
+        style={{ marginRight: "5px"  }}
+        >
+        <FontAwesomeIcon icon={faCheck} />
+    </Button>)}
           </React.Fragment>
         ),
       },
@@ -502,9 +550,10 @@ const ManageCompany = (props) => {
                     className="btn-sm btn-rounded"
                     title="Deactivate"
                     onClick={() => {                      
-                          changeAgentStatus(cellProps.row.original.employeeId,false,"deactivate");
+                          
+  changeEmployeeStatus(cellProps.row.original.employeeId,false,"deactivate","EMPLOYEE");
                         } }                       
-                    style={{ marginRight: "5px" , marginBottom : "5px"}}
+                    style={{ marginRight: "5px" }}
                     >
                     <FontAwesomeIcon icon={faX} />
                   </Button>)}
@@ -515,9 +564,10 @@ const ManageCompany = (props) => {
                     className="btn-sm btn-rounded"
                     title="Activate"
                     onClick={() => {                      
-                          changeAgentStatus(cellProps.row.original.employeeId,true,"activate");
+                          
+   changeEmployeeStatus(cellProps.row.original.employeeId,true,"activate","EMPLOYEE");
                         } }
-                    style={{ marginRight: "5px" , marginBottom : "5px" }}
+                    style={{ marginRight: "5px" }}
                     >
                     <FontAwesomeIcon icon={faCheck} />
                 </Button>)}
@@ -568,7 +618,9 @@ const ManageCompany = (props) => {
                   </Button>
                 </div>
                 <Nav tabs>
+                {userType === 1 && (
                   <NavItem>
+
                     <NavLink
                       className={activeTab === "1" ? "active" : ""}
                       onClick={() => toggleTab("1")}
@@ -576,6 +628,7 @@ const ManageCompany = (props) => {
                       Manager
                     </NavLink>
                   </NavItem>
+                  )}
                   <NavItem>
                     <NavLink
                       className={activeTab === "2" ? "active" : ""}
@@ -586,6 +639,7 @@ const ManageCompany = (props) => {
                   </NavItem>
                 </Nav>
                 <TabContent activeTab={activeTab}>
+                {userType === 1 && (
                   <TabPane tabId="1">
                     <TableContainer
                       data={managerDetails}
@@ -597,6 +651,7 @@ const ManageCompany = (props) => {
                       isPageSelect={false}
                     />
                   </TabPane>
+                      )}
                   <TabPane tabId="2">
                     <TableContainer
                       data={employeeDetails}

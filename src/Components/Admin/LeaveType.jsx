@@ -1,178 +1,190 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, Container, CardBody } from "reactstrap";
+import { Button, Card, Container, CardBody, CardTitle } from "reactstrap";
 import TableContainer from "../../Common/components/TableContainer.jsx";
 import Loader from "../../Common/components/Loader.jsx";
-import { view, edit, deactivate } from "../../Common/common/icons.js";
-import AddLeaveType from "../Admin/AddLeaveType.jsx";
+import { ToastContainer, toast } from "react-toastify";
+import { getApiData } from "../../Common/helpers/axiosHelper.js";
+import { edit, trash, view } from "../../Common/common/icons.js";
+import LeaveTypeForm from "./LeaveTypeForm.jsx";
+import axios from "axios";
+import Swal from "sweetalert2";
 
-const LeaveType = (props) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [leaveTypes, setLeaveTypes] = useState([]);
-  const [isAddLeaveTypeModalOpen, setIsAddLeaveTypeModalOpen] = useState(false);
-  const [viewLeaveTypeModalOpen, setViewLeaveTypeModalOpen] = useState(false);
-  const [deactivateLeaveTypeModalOpen, setDeactivateLeaveTypeModalOpen] =
-    useState(false);
-  const [editLeaveTypeModalOpen, setEditLeaveTypeModalOpen] = useState(false);
-  const [leaveTypeDetails, setLeaveTypeDetails] = useState(null);
-  const [activeTab, setActiveTab] = useState(1);
+const LeaveType = () => {
+  const [leaveState, setLeaveState] = useState({
+    leaveTypes: [],
+    isLoading: false,
+    isModalOpen: false,
+    modalMode: "",
+    leaveTypeDetail: null,
+  });
 
-  // const fetchLeaveTypes = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await getApiData("api/LeaveType");
-  //     setLeaveTypes(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching leave types:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchLeaveTypes();
-  // }, []);
-
-  const toggle = (tab) => {
-    if (activeTab !== tab) setActiveTab(tab);
+  const toggle = () => {
+    setLeaveState((prevState) => ({
+      ...prevState,
+      isModalOpen: !leaveState.isModalOpen,
+    }));
   };
 
-  const toggleAddLeaveTypeModal = () => {
-    setIsAddLeaveTypeModalOpen(!isAddLeaveTypeModalOpen);
+  const fetchLeaveTypes = async () => {
+    const response = await getApiData("api/LeaveType");
+    const mappedResponse = response.data.map((data) => ({
+      leaveTypeId: data.leaveTypeId,
+      name: data.name,
+      noOfDays: data.noOfDays,
+      active: data.active,
+    }));
+    setLeaveState((prevState) => ({
+      ...prevState,
+      leaveTypes: mappedResponse,
+    }));
   };
 
-  const toggleViewLeaveTypeModal = () => {
-    setViewLeaveTypeModalOpen(!viewLeaveTypeModalOpen);
+  const openModal = async (leaveTypeId, mode) => {
+    const response = await getApiData(`${leaveTypeId}`);
+    setLeaveState((prevState) => ({
+      ...prevState,
+      leaveTypeDetail: response.data,
+      modalMode: mode,
+      isModalOpen: true,
+    }));
   };
 
-  const toggleEditLeaveTypeModal = () => {
-    setEditLeaveTypeModalOpen(!editLeaveTypeModalOpen);
+  const changeDeactivate = async (leaveTypeId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      showCancelButton: true,
+      confirmButtonColor: "#5e2ced",
+      cancelButtonColor: "#eb3b3b",
+      confirmButtonText: "Yes Deactivate",
+      cancelButtonText: "cancel",
+      width: "300px",
+    });
+
+    if (result.isConfirmed) {
+      const response = await axios.delete(`api/LeaveType/${leaveTypeId}`);
+      if (response.data.success) {
+        toast.success("Leave successfully deactivated", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        fetchLeaveTypes();
+      } else {
+        toast.error(`${response.message}`, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    }
   };
 
-  const toggleDeactivateLeaveTypeModal = () => {
-    setDeactivateLeaveTypeModalOpen(!deactivateLeaveTypeModalOpen);
-  };
+  useEffect(() => {
+    fetchLeaveTypes();
+  }, []);
 
-  const handleView = (leaveTypeDetails) => {
-    setLeaveTypeDetails(leaveTypeDetails);
-    toggleViewLeaveTypeModal();
+  const handleAdd = () => {
+    setLeaveState((prevState) => ({
+      ...prevState,
+      leaveTypeDetail: null,
+      modalMode: "add",
+      isModalOpen: true,
+    }));
   };
-
-  const handleEdit = (leaveTypeDetails) => {
-    setLeaveTypeDetails(leaveTypeDetails);
-    toggleEditLeaveTypeModal();
-  };
-
-  const handleDeactivate = (leaveTypeDetails) => {
-    setLeaveTypeDetails(leaveTypeDetails);
-    toggleDeactivateLeaveTypeModal();
-  };
-
-  const handleDeactivateConfirm = (leaveTypeDetails) => {
-    console.log("Deactivating leave type:", leaveTypeDetails);
-  };
-
-  const handleSave = (updatedLeaveType) => {
-    console.log("Updated leave type:", updatedLeaveType);
-  };
-
-  const data = [
-    { leavename: "Casual Leave", noofdays: "3" },
-    { leavename: "Sick Leave", noofdays: "5" },
-  ];
 
   const columns = [
     {
       Header: "Leave Name",
-      accessor: "leavename",
-      filterable: false,
-      disableFilters: true,
+      accessor: "name",
     },
     {
       Header: "No of Days",
-      accessor: "noofdays",
-      filterable: false,
-      disableFilters: true,
+      accessor: "noOfDays",
     },
     {
       Header: "Actions",
       disableFilters: true,
       accessor: "actions",
-      Cell: (cellProps) => (
-        <React.Fragment>
-          <Button
-            type="button"
-            color="primary"
-            className="btn-sm btn-rounded"
-            title="View"
-            style={{ marginRight: "5px" }}
-            aria-label="view"
-            onClick={() => handleView(cellProps.row.original)}
-          >
-            {view()}
-          </Button>
+      Cell: ({ row }) => {
+        const leaveType = row.original;
 
-          <Button
-            type="button"
-            color="success"
-            className="btn-sm btn-rounded"
-            title="Edit"
-            style={{ marginRight: "5px" }}
-            onClick={() => handleEdit(cellProps.row.original)}
-          >
-            {edit()}
-          </Button>
-
-          <Button
-            type="button"
-            color="danger"
-            className="btn-sm btn-rounded"
-            title="Deactivate"
-            onClick={() => handleDeactivate(cellProps.row.original)}
-          >
-            {deactivate()}
-          </Button>
-        </React.Fragment>
-      ),
+        return (
+          <>
+            <Button
+              type="button"
+              style={{ background: "#5e2ced", borderColor: "#5e2ced" }}
+              aria-label="view"
+              className="btn-sm btn-rounded mr-1 mb-1"
+              onClick={() => {
+                openModal(leaveType.leaveTypeId, "view");
+              }}
+            >
+              {view()}
+            </Button>
+            <Button
+              type="button"
+              color="success"
+              className="btn-sm btn-rounded mr-1 mb-1"
+              onClick={() => openModal(leaveType.leaveTypeId, "edit")}
+            >
+              {edit()}
+            </Button>
+            <Button
+              type="button"
+              color="danger"
+              className="btn-sm btn-rounded mr-1 mb-1"
+              onClick={() => changeDeactivate(leaveType.leaveTypeId)}
+            >
+              {trash()}
+            </Button>
+          </>
+        );
+      },
     },
   ];
 
   return (
     <Container fluid>
-      <div className="page-title-box p-4">
-        <h4 className="mb-sm-0 font-size-18">Leave Type</h4>
-      </div>
-      <Card>
+      <LeaveTypeForm
+        toggle={toggle}
+        leaveState={leaveState}
+        getAllLeaveTypes={fetchLeaveTypes}
+      />
+      <Card style={{ marginTop: "20px" }}>
         <CardBody>
-          <div className="text-sm-end mb-3">
+          <div className="mb-4 h4 mt-4 card-title">Leave Types</div>
+          <div className="text-sm-end mb-2">
             <Button
               type="button"
-              color="primary"
-              onClick={toggleAddLeaveTypeModal}
-              className="me-2"
+              style={{
+                backgroundColor: "#5e2ced",
+                color: "white",
+                border: "none",
+              }}
+              onClick={handleAdd}
             >
               Add Leave Type
             </Button>
           </div>
 
-          {isLoading ? (
+          {leaveState.isLoading ? (
             <Loader />
           ) : (
-            <TableContainer
-              columns={columns}
-              data={data}
-              isGlobalFilter={true}
-              isAddOptions={false}
-              customPageSize={10}
-              isPageSelect={false}
-            />
+            <>
+              <TableContainer
+                columns={columns}
+                data={leaveState.leaveTypes}
+                isGlobalFilter={true}
+                customPageSize={10}
+              />
+              {leaveState.leaveTypes.length < 1 && (
+                <div>
+                  <p>No Records to Show</p>
+                </div>
+              )}
+            </>
           )}
-
-          <AddLeaveType
-            isOpen={isAddLeaveTypeModalOpen}
-            toggle={toggleAddLeaveTypeModal}
-          />
         </CardBody>
       </Card>
+      <ToastContainer />
     </Container>
   );
 };
