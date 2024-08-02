@@ -25,6 +25,7 @@ const authProtectedRoutes = [
   { path: "/holiday-list", component: <HolidayList /> },
   { path: "/leave-balance", component: <LeaveBalance /> },
   { path: "/apply-leave", component: <ApplyLeaveModal /> },
+  { path: "/allocated-leaves", component: <LeaveType /> },
 ];
 
 const publicRoutes = [

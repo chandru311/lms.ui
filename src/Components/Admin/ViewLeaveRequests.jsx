@@ -310,7 +310,7 @@ const LeaveRequestsDashboard = () => {
                         ></Input>
                       </div>
                     </Col>
-                    {/* <Col lg="6">
+                    <Col lg="6">
                       <div className="mb-3">
                         <Label for="leaveType">Leave Type</Label>
                         <Select
@@ -327,7 +327,7 @@ const LeaveRequestsDashboard = () => {
                           options={leaveTypes}
                         ></Select>
                       </div>
-                    </Col> */}
+                    </Col>
                   </Row>
                   <Row>
                     <Col lg="6">
