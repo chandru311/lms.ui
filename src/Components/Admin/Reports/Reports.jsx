@@ -236,11 +236,13 @@ const Reports = () => {
                     </FormGroup>
                   </Col>
                   <Col md={2}>
-                    <div className="d-inline-block mt-8">
+                    <div className="d-inline-block ">
                       <Button
                         style={{
                           background: "#5e2ced",
                           border: "none",
+                          marginRight: "10px",
+                          marginTop: "30px",
                         }}
                         type="submit"
                         disabled={state.isLoading}
@@ -258,6 +260,7 @@ const Reports = () => {
                           style={{
                             background: "green",
                             color: "white",
+                            marginTop: "30px",
                           }}
                         >
                           <FaDownload />
@@ -267,14 +270,14 @@ const Reports = () => {
                             onClick={downloadExcel}
                             className="d-flex align-items-center"
                           >
-                            <FaFileExcel className="mr-1 text-green-700" />
+                            <FaFileExcel style={{ color: "green" }} />
                             <span>Excel</span>
                           </DropdownItem>
                           <DropdownItem
                             onClick={downloadPDF}
                             className="d-flex align-items-center"
                           >
-                            <FaFilePdf className="mr-1 text-red-500" />
+                            <FaFilePdf style={{ color: "red" }} />
                             <span>PDF</span>
                           </DropdownItem>
                         </DropdownMenu>
