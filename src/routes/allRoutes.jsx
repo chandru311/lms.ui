@@ -3,7 +3,6 @@ import Login from "../Components/Login/Authentication/Login";
 import ForgotPassword from "../Components/Login/Authentication/ForgetPassword";
 import Navbar from "../Components/Home/Navbar";
 import Logout from "../Components/Login/Authentication/Logout";
-import EmpRegBut from "../Components/pages/EmployeeReport/EmpRegBut";
 import AdminDashboard from "../Components/Admin/AdminDashboard";
 import ManagerDashboard from "../Components/Manager/ManagerDashboard";
 import EmployeeDashboard from "../Components/Employee/EmployeeDashboard";
@@ -15,11 +14,12 @@ import ApplyLeaveModal from "../Components/Admin/ApplyLeave";
 import LeaveRequestsDashboard from "../Components/Admin/ViewLeaveRequests";
 import LeaveHistroy from "../Components/Admin/LeaveHistroy";
 const authProtectedRoutes = [
-  { path: "/empregbut", component: <EmpRegBut /> },
-  { path: "/admin-dashboard", component: <AdminDashboard /> },
+    { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
   { path: "/employee-dashboard", component: <EmployeeDashboard /> },
-  { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
+    { path: "/leave-administration", component: <LeaveAdministration /> },
+    { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
+  { path: "/allocated-leaves", component: <LeaveType /> },
   { path: "/employee-administration", component: <ManageCompany /> },
   { path: "/leave-type", component: <LeaveType /> },
   { path: "/holiday-list", component: <HolidayList /> },

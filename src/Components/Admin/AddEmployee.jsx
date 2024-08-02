@@ -35,6 +35,7 @@ const EmpRegNav = (props) => {
     { label: "IT", value: 3 },
     { label: "Sales", value: 4 },
   ];
+  
 
   const newEmpRegValidation = useFormik({
     enableReinitialize: true,
