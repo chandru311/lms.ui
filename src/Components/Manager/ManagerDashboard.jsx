@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BsFillBellFill,
   BsFillGrid3X3GapFill,
@@ -6,8 +6,12 @@ import {
   BsClipboardCheck,
 } from "react-icons/bs";
 import "../../index.css";
+import HolidayList from "../Leave/HolidayList";
+import LeaveBalance from "../Leave/LeaveBalance";
 
 function ManagerDashboard({ OpenSidebar }) {
+  const [currentView, setCurrentView] = useState("Dashboard");
+
   const cardData = [
     {
       title: "Colleagues on Leave",
@@ -31,26 +35,44 @@ function ManagerDashboard({ OpenSidebar }) {
     },
   ];
 
+  const handleCardClick = (title) => {
+    if (title === "Holiday List") {
+      setCurrentView("HolidayList");
+    } else if (title === "My Leave Balance") {
+      setCurrentView("LeaveBalance");
+    }
+  };
+
   return (
     <main className="main-container">
-      <div className="main-title">
-        <div className="menu-icon">
-          {/* <MenuIcon className="icon" onClick={OpenSidebar} /> */}
-        </div>
-        <h3>Welcome Back! Your Daily Summary</h3>
-      </div>
-
-      <div className="main-cards">
-        {cardData.map((card, index) => (
-          <div className="card1" key={index}>
-            <div className="card-inner">
-              <h3>{card.title}</h3>
-              {card.icon}
+      {currentView === "Dashboard" && (
+        <>
+          <div className="main-title">
+            <div className="menu-icon">
+              {/* <MenuIcon className="icon" onClick={OpenSidebar} /> */}
             </div>
-            <h1>{card.count}</h1>
+            <h3>Welcome Back! Your Daily Summary</h3>
           </div>
-        ))}
-      </div>
+
+          <div className="main-cards">
+            {cardData.map((card, index) => (
+              <div
+                className="card1"
+                key={index}
+                onClick={() => handleCardClick(card.title)}
+              >
+                <div className="card-inner">
+                  <h3>{card.title}</h3>
+                  {card.icon}
+                </div>
+                <h1>{card.count}</h1>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {currentView === "HolidayList" && <HolidayList />}
+      {currentView === "LeaveBalance" && <LeaveBalance />}
     </main>
   );
 }
