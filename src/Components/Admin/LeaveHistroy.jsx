@@ -13,6 +13,7 @@ const LeaveHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [modal, setModal] = useState(false);
     const [currentProof, setCurrentProof] = useState(null);
+    const [noDocumentMessage, setNoDocumentMessage] = useState('');
 
     const toggleModal = () => setModal(!modal);
 
@@ -21,7 +22,7 @@ const LeaveHistory = () => {
         try {
             const response = await getApiData('api/Leave/GetAllLeaves');
             const mappedResponse = response.data.map((item, index) => ({
-                name: item.firstName ,
+                name: item.firstName,
                 reason: item.reason,
                 leaveType: item.leaveTypeName,
                 index: index + 1,
@@ -81,6 +82,7 @@ const LeaveHistory = () => {
                 Cell: ({ row }) => (
                     row.original.proof ? (
                         <Button
+                            color="primary"
                             type="button"
                             title="View Proof"
                             className="btn-sm btn-rounded"
@@ -88,12 +90,28 @@ const LeaveHistory = () => {
                             aria-label="view"
                             onClick={() => {
                                 setCurrentProof(row.original.proof);
+                                setNoDocumentMessage('');
                                 toggleModal();
                             }}
                         >
                             {view()}
                         </Button>
-                    ) : null
+                    ) : (
+                        <p
+                           
+                            title="No Document"
+                                style={{ fontFamily: 'Poppins' }}
+                          
+                            aria-label="no-document"
+                            onClick={() => {
+                                setCurrentProof(null);
+                                setNoDocumentMessage('No document available');
+                                toggleModal();
+                            }}
+                        >
+                            No Document
+                        </p>
+                    )
                 ),
             }
         ],
@@ -102,7 +120,7 @@ const LeaveHistory = () => {
 
     return (
         <Container fluid style={{ fontFamily: 'Poppins' }}>
-            <h2 className="text-center my-4">Leave History</h2>
+            <h2 className="text-center my-4" style={{ color: '#5e2ced' }}>Leave History</h2>
             {isLoading ? (
                 <Loader />
             ) : (
@@ -118,10 +136,14 @@ const LeaveHistory = () => {
                     </CardBody>
                 </Card>
             )}
-            <Modal isOpen={modal} toggle={toggleModal}>
+            <Modal isOpen={modal} toggle={toggleModal} style={{ fontFamily: 'Poppins' }}>
                 <ModalHeader toggle={toggleModal}>Proof Document</ModalHeader>
                 <ModalBody>
-                    {currentProof && <img src={currentProof} alt="Proof Document" style={{ width: '100%' }} />}
+                    {currentProof ? (
+                        <img src={currentProof} alt="Proof Document" style={{ width: '100%' }} />
+                    ) : (
+                        <p>{noDocumentMessage}</p>
+                    )}
                 </ModalBody>
             </Modal>
         </Container>

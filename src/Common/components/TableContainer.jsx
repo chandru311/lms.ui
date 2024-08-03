@@ -394,7 +394,8 @@ const TableContainer = ({
             >
               {!canPreviousPage ? null : (
                 <Button
-                  color="primary"
+                                      color="primary"
+                                   
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={previousPage}
@@ -441,7 +442,8 @@ const TableContainer = ({
             >
               {!canNextPage ? null : (
                 <Button
-                  color="primary"
+                                      color="primary"
+                                    
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={nextPage}
