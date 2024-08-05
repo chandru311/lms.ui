@@ -13,6 +13,7 @@ import ManageCompany from "../Components/Admin/EmployeeAdministration";
 import LeaveBalance from "../Components/Leave/LeaveBalance";
 import HolidayList from "../Components/Leave/HolidayList";
 import Reports from "../Components/Admin/Reports/Reports";
+import ChangePassword from "../Components/ChangePassword/ChangePassword";
 
 const authProtectedRoutes = [
   { path: "/empregbut", component: <EmpRegBut /> },
@@ -32,6 +33,7 @@ const publicRoutes = [
   { path: "/login", component: <Login /> },
   { path: "/forget-password", component: <ForgotPassword /> },
   { path: "/logout", component: <Logout /> },
+  { path: "/change-password", component: <ChangePassword /> },
 ];
 
 export { authProtectedRoutes, publicRoutes };
