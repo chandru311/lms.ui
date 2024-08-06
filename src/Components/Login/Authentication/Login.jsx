@@ -8,7 +8,7 @@ import "../../../css/Login.css";
 import logo from "../../../assets/ai4soln-logo.png";
 import { postApiData } from "../../../Common/helpers/axiosHelper";
 import { ToastContainer, toast } from "react-toastify";
-import { roles } from "../../../Common/common/roles";
+import { role, roles } from "../../../Common/common/roles";
 
 const Login = () => {
   document.title = "Login";
@@ -95,8 +95,8 @@ const Login = () => {
                 <Input
                   type="text"
                   name="userName"
-                  id="userName"
-                  placeholder="Username"
+                  //id="userName"
+                  placeholder="UserName"
                   value={formik.values.userName}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -122,7 +122,7 @@ const Login = () => {
                 />
                 {formik.values.password.length > 0 && (
                   <>
-                    {/* {passwordShown ? (
+                    {passwordShown ? (
                       <FaEyeSlash
                         className="password-icon-login"
                         onClick={togglePasswordVisibility}
@@ -132,7 +132,7 @@ const Login = () => {
                         className="password-icon-login"
                         onClick={togglePasswordVisibility}
                       />
-                    )} */}
+                    )}
                   </>
                 )}
               </div>
