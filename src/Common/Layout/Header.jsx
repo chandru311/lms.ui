@@ -6,18 +6,15 @@ import {
     DropdownMenu,
     DropdownItem,
 } from "reactstrap";
-import { BsChevronDown, BsPerson, BsCalendar, BsPower } from "react-icons/bs";
-import { withTranslation } from "react-i18next";
-import withRouter from "../components/withRouter";
-import logo from "../../assets/ai4soln-logo.png";
-import { roleList } from "../common/roles";
-import "../../index.css";
+import { BsChevronDown, BsPerson, BsPower } from "react-icons/bs";
 import { Link } from "react-router-dom";
-import Profile from "./Profile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
+import Profile from "./Profile";
+import logo from "../../assets/ai4soln-logo.png";
+import { roleList } from "../common/roles";
 
-const Header = ({ OpenSidebar, t, userRole }) => {
+const Header = ({ OpenSidebar, userRole }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [username, setUsername] = useState("");
@@ -25,7 +22,7 @@ const Header = ({ OpenSidebar, t, userRole }) => {
 
     useEffect(() => {
         const obj = JSON.parse(sessionStorage.getItem("authUser"));
-        if (obj) setUsername(obj.name);
+        if (obj) setUsername(obj.userName);
 
         const role = roleList.find((role) => role.value === userRole);
         if (role) setRoleLabel(role.label);
@@ -44,8 +41,7 @@ const Header = ({ OpenSidebar, t, userRole }) => {
             </div>
 
             <div className="header-right">
-                {/* <PersonIcon className='person-icon' /> */}
-                <p>{roleLabel}</p>
+                <p>{roleLabel}</p> {/* Display the role label */}
                 <Dropdown
                     isOpen={dropdownOpen}
                     toggle={toggleDropdown}
@@ -61,14 +57,14 @@ const Header = ({ OpenSidebar, t, userRole }) => {
                     <DropdownMenu className="dropdown-menu-end">
                         <DropdownItem onClick={toggleProfileModal}>
                             <BsPerson className="font-size-16 align-middle me-1" />
-                            {t("Profile")}
+                            Profile
                         </DropdownItem>
 
                         <DropdownItem />
                         <Link to="/login" style={{ textDecoration: "none" }}>
                             <DropdownItem>
                                 <BsPower className="font-size-16 align-middle me-1 text-danger" />
-                                {t("Logout")}
+                                Logout
                             </DropdownItem>
                         </Link>
                     </DropdownMenu>
@@ -81,9 +77,7 @@ const Header = ({ OpenSidebar, t, userRole }) => {
 
 Header.propTypes = {
     OpenSidebar: PropTypes.func.isRequired,
-    t: PropTypes.func.isRequired,
     userRole: PropTypes.string.isRequired,
 };
 
-export default withRouter(withTranslation()(Header));
-
+export default Header;

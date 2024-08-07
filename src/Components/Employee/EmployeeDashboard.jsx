@@ -10,6 +10,7 @@ import HolidayList from "../Leave/HolidayList";
 import LeaveBalance from "../Leave/LeaveBalance";
 
 function EmployeeDashboard() {
+    document.title = "Employee Dashboard";
   const [currentView, setCurrentView] = useState("Dashboard");
 
   const cardData = [
