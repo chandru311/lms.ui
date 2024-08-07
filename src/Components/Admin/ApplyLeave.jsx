@@ -69,20 +69,48 @@ const ApplyLeaveModal = (props) => {
         ...values,
         uId: uIdValue,
         leaveTypeId: leaveTypeValue,
-        // proof: fileData,
       };
       const response = await postApiData(
         "api/Leave/ApplyLeave",
         JSON.stringify(combinedValues)
       );
       if (response.success === true) {
-        toast.success("Leave Request Submitted", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-
-        setIsLoading(false);
-        resetForm();
+        if (fileData !== null) {
+          const docValues = {
+            leaveId: response.data.leaveId,
+            document: fileData,
+            contentType: docFormat,
+          };
+          const docResponse = await postApiData(
+            "api/LeaveDocuments",
+            JSON.stringify(docValues)
+          );
+          if (docResponse.success === true) {
+            toast.success("Leave Request Submitted", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+            setIsLoading(false);
+            resetForm();
+          } else if (docResponse.success === false) {
+            toast.error("Document upload failed, please retry", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+          } else {
+            toast.error(response.message, {
+              position: "top-right",
+              autoClose: 2000,
+            });
+          }
+        } else {
+          toast.success("Leave Request Submitted", {
+            position: "top-right",
+            autoClose: 2000,
+          });
+          setIsLoading(false);
+          resetForm();
+        }
       } else {
         toast.error(response.message, {
           position: "top-right",
@@ -96,6 +124,14 @@ const ApplyLeaveModal = (props) => {
       }, 3000);
     },
   });
+
+  const uploadDoc = async (docValues) => {
+    const docResponse = await postApiData(
+      "api/LeaveDocuments",
+      JSON.stringify(docValues)
+    );
+    console.log("document upload" + docResponse.success);
+  };
 
   // const getLeaveTypes = async () => {
   //   setIsLoading(true);
@@ -397,9 +433,12 @@ const ApplyLeaveModal = (props) => {
                   <Row>
                     <div className="mt-4 mb-3 text-center">
                       <Button
-                        className="btn btn-primary btn-block"
                         // type="submit"
-
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         onClick={() => {
                           leaveValidation.handleSubmit();
                         }}

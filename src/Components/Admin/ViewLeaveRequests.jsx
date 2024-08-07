@@ -27,15 +27,16 @@ import { useLeaveTypes } from "../../Common/common/commonFunctions.js";
 const LeaveRequestsDashboard = () => {
   const [allLeaveRequests, setAllLeaveRequests] = useState(null);
   const [pendingLeaveRequests, setPendingLeaveRequests] = useState([]);
-  const [leaveRequest, setLeaveRequest] = useState({
-    uId: null,
-    userName: null,
-    leaveTypeName: null,
-    leaveTypeId: null,
-    fromDate: null,
-    toDate: null,
-    reason: "",
-  });
+  const [leaveRequest, setLeaveRequest] = useState([]);
+  //   {
+  //   uId: null,
+  //   userName: null,
+  //   leaveTypeName: null,
+  //   leaveTypeId: null,
+  //   fromDate: null,
+  //   toDate: null,
+  //   reason: "",
+  // });
   const [isLoading, setIsLoading] = useState(false);
   const [modal_viewLeaveRequest, setModal_viewLeaveRequest] = useState(false);
   const [currentLeaveReqId, setCurrentLeaveReqId] = useState("");
@@ -54,6 +55,7 @@ const LeaveRequestsDashboard = () => {
       leaveId: item.leaveId,
       uId: item.uId,
       firstName: item.firstName + " " + item.lastName,
+      leaveTypeId: item.leaveTypeId,
       userName: item.userName,
       leaveTypeName: item.leaveTypeName,
       fromDate: item.fromDate,
@@ -93,9 +95,13 @@ const LeaveRequestsDashboard = () => {
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
+      leaveId: leaveRequest?.leaveId || null,
       uId: leaveRequest?.uId || null,
       uName: leaveRequest?.userName || null,
-      leaveTypeName: leaveRequest?.leaveTypeName || null,
+      // leaveTypeName: leaveRequest?.leaveTypeName || null,
+      leaveTypeName: leaveTypes.find(
+        (option) => option.value === leaveRequest?.leaveTypeId
+      ),
       leaveTypeId:
         leaveTypes.find(
           (option) => option.value === leaveRequest?.leaveTypeId
@@ -110,8 +116,41 @@ const LeaveRequestsDashboard = () => {
     }),
     onSubmit: async (values, { resetForm }) => {
       console.log("button clicked");
-      const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
-      const uIdValue = values.uId && values.uId.value;
+      if (values.leaveId > 0) {
+        if (
+          JSON.stringify(values) ===
+          JSON.stringify(leaveValidation.initialValues)
+        ) {
+          toast.info("No changes to save", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          return;
+        }
+        try {
+          setIsLoading(true);
+          const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
+          const uIdValue = values.uId && values.uId.value;
+          const combinedValues = {
+            ...values,
+            leaveId: leaveRequest.leaveId,
+            uId: uIdValue,
+            leaveTypeId: leaveTypeValue,
+          };
+          const response = await putApiData(
+            "api/Leave/UpdateLeave",
+            JSON.stringify(combinedValues)
+          );
+        } catch (error) {
+          console.error("Error updating Agent data:", error);
+          toast.error("Failed to update Agent details", {
+            position: "top-right",
+            autoClose: 2000,
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
     },
   });
 
@@ -201,7 +240,9 @@ const LeaveRequestsDashboard = () => {
                 onClick={() => {
                   setViewMode(true);
                   console.log("View Mode " + viewMode);
-                  viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  setLeaveRequest(cellProps.row.original);
+                  tog_leaveReq();
+                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {view()}
@@ -215,7 +256,9 @@ const LeaveRequestsDashboard = () => {
                   console.log("View Mode before edit " + viewMode);
                   setViewMode(false);
                   console.log("View Mode " + viewMode);
-                  viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  setLeaveRequest(cellProps.row.original);
+                  tog_leaveReq();
+                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {edit()}
@@ -276,25 +319,13 @@ const LeaveRequestsDashboard = () => {
               <h5 className="modal-title mt-0" id="myModalLabel">
                 View the leave Requests
               </h5>
-              {/* <button
-                                        type="button"
-                                        onClick={() => {
-                                            handleClose();
-                                        }}
-                                        className="close"
-                                        data-dismiss="modal"
-                                        aria-label="Close"
-                                        style={{ border: "none"}}
-                                    >
-                                        <span aria-hidden="true">&times;</span>
-                                    </button> */}
             </div>
             <Card className="overflow-hidden">
               <div className="modal-body">
                 <Form
                   className="needs-validation"
                   onSubmit={(e) => {
-                    e.preventDefault();
+                    leaveValidation.handleSubmit();
                   }}
                 >
                   <Row>
@@ -307,7 +338,16 @@ const LeaveRequestsDashboard = () => {
                           id="userName"
                           value={leaveValidation.values.uName}
                           disabled={true}
-                        ></Input>
+                          onBlur={leaveValidation.handleBlur}
+                          onChange={leaveValidation.handleChange}
+                          invalid={!!leaveValidation.errors.uName}
+                        >
+                          {leaveValidation.errors.uName && (
+                            <FormFeedback type="invalid">
+                              {leaveValidation.errors.uName}
+                            </FormFeedback>
+                          )}
+                        </Input>
                       </div>
                     </Col>
                     <Col lg="6">
@@ -323,8 +363,8 @@ const LeaveRequestsDashboard = () => {
                               selectedOption
                             );
                           }}
-                          disabled={viewMode}
                           options={leaveTypes}
+                          isDisabled={viewMode}
                         ></Select>
                       </div>
                     </Col>
@@ -343,24 +383,42 @@ const LeaveRequestsDashboard = () => {
                         <Input
                           type="date"
                           name="startDate"
-                          id="startDate"
+                          id="fromDate"
                           value={leaveValidation.values.fromDate}
                           disabled={viewMode}
-                        ></Input>
+                          onBlur={leaveValidation.handleBlur}
+                          onChange={leaveValidation.handleChange}
+                          invalid={!!leaveValidation.errors.fromDate}
+                        >
+                          {leaveValidation.errors.fromDate && (
+                            <FormFeedback type="invalid">
+                              {leaveValidation.errors.fromDate}
+                            </FormFeedback>
+                          )}
+                        </Input>
                       </div>
                     </Col>
                     <Col lg="6">
                       <div className="mb-3">
-                        <Label for="endDate" className="text-left">
+                        <Label for="toDate" className="text-left">
                           Leave End Date
                         </Label>
                         <Input
                           type="date"
-                          name="endDate"
-                          id="endDate"
+                          name="toDate"
+                          id="toDate"
                           value={leaveValidation.values.toDate}
                           disabled={viewMode}
-                        ></Input>
+                          onBlur={leaveValidation.handleBlur}
+                          onChange={leaveValidation.handleChange}
+                          invalid={!!leaveValidation.errors.toDate}
+                        >
+                          {leaveValidation.errors.toDate && (
+                            <FormFeedback type="invalid">
+                              {leaveValidation.errors.toDate}
+                            </FormFeedback>
+                          )}
+                        </Input>
                       </div>
                     </Col>
                   </Row>
@@ -376,9 +434,16 @@ const LeaveRequestsDashboard = () => {
                           placeholder="Provide the reason for leave"
                           value={leaveValidation.values.reason}
                           disabled={viewMode}
-                          // value={formData.reason}
-                          // onChange={handleChange}
-                        />
+                          onBlur={leaveValidation.handleBlur}
+                          onChange={leaveValidation.handleChange}
+                          invalid={!!leaveValidation.errors.reason}
+                        >
+                          {leaveValidation.errors.reason && (
+                            <FormFeedback type="invalid">
+                              {leaveValidation.errors.reason}
+                            </FormFeedback>
+                          )}
+                        </Input>
                       </div>
                     </Col>
                     <Col lg="6">
@@ -425,7 +490,12 @@ const LeaveRequestsDashboard = () => {
                     <div className="d-flex justify-content-center">
                       <Button
                         type="button"
-                        className="btn btn-primary m-3 "
+                        className="btn m-3"
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         hidden={!viewMode}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -437,7 +507,12 @@ const LeaveRequestsDashboard = () => {
                       </Button>
                       <Button
                         type="button"
-                        className="btn btn-primary m-3 "
+                        className="btn m-3"
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         hidden={!viewMode}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -449,10 +524,15 @@ const LeaveRequestsDashboard = () => {
                       </Button>
                       <Button
                         type="button"
-                        className="btn btn-primary m-3 "
+                        className="btn m-3"
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         hidden={viewMode}
                         onClick={(event) => {
-                          event.stopPropagation();
+                          // event.stopPropagation();
                           console.log("Save Changes clicked");
                           leaveValidation.handleSubmit();
                         }}
@@ -461,7 +541,12 @@ const LeaveRequestsDashboard = () => {
                       </Button>
                       <Button
                         type="button"
-                        className="btn btn-primary m-3 "
+                        className="btn m-3"
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         onClick={handleClose}
                         // hidden={viewMode}
                         // disabled={staffValidation.isSubmitting}
