@@ -35,6 +35,7 @@ const ApplyLeaveModal = (props) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isEmp, setIsEmp] = useState(false);
+  let bManager = false;
 
   const leaveValidation = useFormik({
     enableReinitialize: true,
@@ -56,7 +57,17 @@ const ApplyLeaveModal = (props) => {
         value: Yup.string().required("Please Select a leaveType"),
       }),
       fromDate: Yup.string().required("Please select the leave start date"),
-      toDate: Yup.string().required("Please select the leave end date"),
+      toDate: Yup.string()
+        .required("Please select the leave end date")
+        .test(
+          "is-after",
+          "specify a date is/after the Leave start date",
+          (value, context) => {
+            const fromDate = new Date(context.parent.fromDate);
+            const toDate = new Date(value);
+            return toDate >= fromDate;
+          }
+        ),
       reason: Yup.string().required("Please provide the reason for the leave"),
     }),
     onSubmit: async (values, { resetForm }) => {
@@ -120,18 +131,20 @@ const ApplyLeaveModal = (props) => {
         setIsLoading(false);
       }
       const timer = setTimeout(() => {
-        navigate("/admin-dashboard");
+        if (isAdmin) navigate("/admin-dashboard");
+        else if (isManager) navigate("/manager-dashboard");
+        else navigate("/employee-dashboard");
       }, 3000);
     },
   });
 
-  const uploadDoc = async (docValues) => {
-    const docResponse = await postApiData(
-      "api/LeaveDocuments",
-      JSON.stringify(docValues)
-    );
-    console.log("document upload" + docResponse.success);
-  };
+  // const uploadDoc = async (docValues) => {
+  //   const docResponse = await postApiData(
+  //     "api/LeaveDocuments",
+  //     JSON.stringify(docValues)
+  //   );
+  //   console.log("document upload" + docResponse.success);
+  // };
 
   // const getLeaveTypes = async () => {
   //   setIsLoading(true);
@@ -146,37 +159,86 @@ const ApplyLeaveModal = (props) => {
   //   setLeaveTypeOptions(leaveTypesList);
   // };
 
-  const getUserList = async () => {
+  const getUserList = async (userType) => {
+    let response = null;
     setIsLoading(true);
-    const response = await getApiData(`api/Employee/GetAllEmployees`);
-    setIsLoading(false);
-    console.log("emp details " + response.data);
-    const mappedResponse = response.data.map((item, key) => ({
-      value: item.uId,
-      label: item.firstName + " " + item.lastName + "(" + item.userName + ")",
-    }));
-    const newList = [{ value: 0, label: "Self" }, ...mappedResponse];
-    console.log(newList);
-    setuNameOptions(newList);
+
+    const bAdmin = userType === 1;
+    const bManager = userType === 2;
+
+    // const endpoint = bAdmin
+    //   ? `api/Employee/GetAllEmployees`
+    //   : `api/Employee/GetEmployeesByManager`;
+
+    // console.log(bAdmin, bManager, endpoint);
+    try {
+      if (bManager) {
+        const response = await getApiData("api/Employee/GetEmployeesByManager");
+        setIsLoading(false);
+        const mappedResponse = response.data.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        const newList = [{ value: 0, label: "Self" }, ...mappedResponse];
+        console.log(newList);
+        setuNameOptions(newList);
+      } else if (bAdmin) {
+        const empResponse = await getApiData("api/Employee/GetAllEmployees");
+        const mappedEmpResponse = empResponse.data.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        console.log("Emp details " + mappedEmpResponse);
+        const mgrResponse = await getApiData("api/Manager/GetAllManagers");
+        const mappedMgrResponse = mgrResponse.data.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        console.log("Manager details " + mappedMgrResponse);
+        const newList =
+          //  [{ value: 0, label: "Self" }].concat(
+          //   mappedMgrResponse,
+          //   mappedEmpResponse
+          // );
+          [
+            { value: 0, label: "Self" },
+            ...mappedMgrResponse,
+            ...mappedEmpResponse,
+          ];
+        setuNameOptions(newList);
+      }
+    } catch (error) {
+      console.error("Error fetching user list:", error);
+      // Handle error appropriately (e.g., display an error message to the user)
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getCurrentUserType = async () => {
-    const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
-    const userType = authUser?.userType;
-    switch (userType) {
-      case 1:
-        setIsAdmin(true);
-      case 2:
-        setIsManager(true);
-      case "jpeg":
-        setIsEmp(true);
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const bAdmin = userType === 1;
+      const bManager = userType === 2;
+      const bEmp = userType === 3;
+
+      setIsAdmin(bAdmin);
+      setIsManager(bManager);
+      setIsEmp(bEmp);
+
+      getUserList(userType);
+    } catch (error) {
+      console.error("Error getting user type:", error);
     }
   };
 
   useEffect(() => {
     getCurrentUserType();
     getLeaveTypes();
-    getUserList();
   }, []);
 
   function handleFileChange(e) {
@@ -251,7 +313,7 @@ const ApplyLeaveModal = (props) => {
                     onSubmit={leaveValidation.handleSubmit}
                   >
                     <Row>
-                      {isAdmin && (
+                      {(isAdmin || isManager) && (
                         <Col lg="6">
                           <div className="mb-3">
                             <Label for="empID">
