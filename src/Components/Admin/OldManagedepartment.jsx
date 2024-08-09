@@ -64,7 +64,7 @@ const ManageDepartment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [modal_editDept, setmodal_editDept] = useState(false);
   const [deptData, setDeptData] = useState([]);
-  const [deptDetails, setDeptDetails] = useState();
+  const [deptDetails, setDeptDetails] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   // const [deleteAgentUid, setDeleteAgentUid] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -73,7 +73,6 @@ const ManageDepartment = () => {
   //   const { branchId } = useLatestTransactions();
   //   const { dept, fetchDept } = use();
   const [departmentId, setDepartmentId] = useState();
-  const [managerOptions, setManagerOptions] = useState();
 
   // const onClickDelete = () => {
   //     setDeleteModal(true);
@@ -82,40 +81,40 @@ const ManageDepartment = () => {
     setmodal_editDept(!modal_editDept);
   }
   // change on5/08 starts
-  // const getManagerDetails = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     console.log("entered");
-  //     const response = await getApiData(`api/Manager/GetAllManagers`);
-  //     // const deptoptions = response.data.departmentName || [];
-  //     setIsLoading(false);
-  //     console.log("****************");
+  const getManagerDetails = async () => {
+    try {
+      setIsLoading(true);
+      console.log("entered");
+      const response = await getApiData(`api/Manager/GetAllManagers`);
+      // const deptoptions = response.data.departmentName || [];
+      setIsLoading(false);
+      console.log("****************");
 
-  //     // console.log("Department" + deptoptions);
+      // console.log("Department" + deptoptions);
 
-  //     const mappedResponse = response.model.map((item, index) => ({
-  //       index: index + 1,
-  //       label: `${item.firstName} ${item.middleName && item.middleName} ${
-  //         item.lastName
-  //       } [${item.userName}]`,
-  //       value: item.managerUId,
-  //       allManagerDeptName: item.departmentName,
-  //       allManagerDeptId: item.departmentId,
-  //       selectedallmanagerName: `${item.firstName} ${
-  //         item.middleName && item.middleName
-  //       } ${item.lastName}`,
-  //       // userStatus: item.userStatus,
-  //     }));
-  //     setManagerAllDropdown(mappedResponse);
-  //     console.log("mapped:" + mappedResponse);
-  //     // console.log("DepartDetails" + departDetails);
-  //     // setIsLoading(false);
-  //   } catch (error) {
-  //     // Error handling scenario
-  //     console.error("Error fetching All Managers  data:", error);
-  //     // Implement additional error handling as needed (e.g., display an error message to the user)
-  //   }
-  // };
+      const mappedResponse = response.model.map((item, index) => ({
+        index: index + 1,
+        label: `${item.firstName} ${item.middleName && item.middleName} ${
+          item.lastName
+        } [${item.userName}]`,
+        value: item.managerUId,
+        allManagerDeptName: item.departmentName,
+        allManagerDeptId: item.departmentId,
+        selectedallmanagerName: `${item.firstName} ${
+          item.middleName && item.middleName
+        } ${item.lastName}`,
+        // userStatus: item.userStatus,
+      }));
+      setManagerAllDropdown(mappedResponse);
+      console.log("mapped:" + mappedResponse);
+      // console.log("DepartDetails" + departDetails);
+      // setIsLoading(false);
+    } catch (error) {
+      // Error handling scenario
+      console.error("Error fetching All Managers  data:", error);
+      // Implement additional error handling as needed (e.g., display an error message to the user)
+    }
+  };
   //change on 5/08 ends
 
   //   useEffect(() => {
@@ -127,7 +126,7 @@ const ManageDepartment = () => {
     // if (departmentId !== null && departmentId !== undefined) {
     getDepartmentDetails();
     //change on 5/08 starts
-    // getManagerDetails();
+    getManagerDetails();
     // change on5/08 ends
   }, []);
   //   }, [departmentId]);
@@ -147,10 +146,6 @@ const ManageDepartment = () => {
       departmentId: deptDetails?.departmentId || "",
       managerUId: deptDetails?.managerUId || "",
       // managerName: deptDetails?.managerName || "",
-      managerName:
-        deptData.find(
-          (option) => option.managerName === deptDetails?.managerName
-        ) || null,
 
       //change on 5/08 starts
       // if(deptDetails.departmentId===managerAllDropdown.departmentId)
@@ -164,10 +159,10 @@ const ManageDepartment = () => {
       //       (option) => option.managerName === deptDetails?.managerName
       //     ) || null,
 
-      // managerName:
-      //   managerAllDropdown.find(
-      //     (option) => option.selectedallmanagerName === deptDetails?.managerName
-      //   ) || null,
+      managerName:
+        managerAllDropdown.find(
+          (option) => option.selectedallmanagerName === deptDetails?.managerName
+        ) || null,
       //   }
       //Change on 5/08 ends
       // managerName:
@@ -216,17 +211,10 @@ const ManageDepartment = () => {
             // const roleValue = values.roleId && values.roleId.value;
             const combinedValues = {
               ...values,
-              // managerUId: deptData.managerUId,
-              // managerName: deptData.managerName,
 
               managerUId: values.managerName.value,
-
-              managerName: values.managerName.label,
-              // managerName: values.managerName.selectedmanagerName,
+              managerName: values.managerName.selectedmanagerName,
             };
-            // console.log(combinedValues);
-            console.log(JSON.stringify(combinedValues, null, 2));
-
             const response = await putApiData(
               `api/Departments/UpdateDepartment/${deptDetails?.departmentId}`,
 
@@ -299,14 +287,6 @@ const ManageDepartment = () => {
       // console.log("entered");
       const response = await getApiData(`api/Departments/GetAllDepartments`);
       // setIsLoading(false);
-      //   const managerOptions = response.data.map(dept => ({
-      //     value: dept.managerId, // Assuming managerId exists
-      //     label: dept.managerName
-      //   });
-
-      //   setManagerOptions(managerOptions);
-      //  //
-      //   setIsLoading(false)
 
       // console.log("department details " + response.data);
       // console.log("department details:", response.data);
@@ -318,21 +298,13 @@ const ManageDepartment = () => {
         departmentName: item.departmentName,
         departmentDescription: item.departmentDescription,
         active: item.active,
-        managerUId: item.managerUId,
+        //managerUId: item.managerUId;
 
         // DepartmentDescription: item.departmentDescription,
         managerName: item.managerName,
-        label: item.managerName,
-        value: item.managerUId,
       }));
-
-      console.log("department details&&&:", mappedResponse);
-      //changed on 07/08 during update API check  setDeptData(mappedResponse || []); to  setDeptData(mappedResponse);
-      // setDeptData(mappedResponse);
       setDeptData(mappedResponse || []);
-      console.log("&&&");
-      console.log(JSON.stringify(deptData, null, 2));
-      console.log("Mapped Response&&&&" + { deptData });
+      console.log("Mapped Response" + mappedResponse);
       setIsLoading(false);
 
       // console.log("deptdetails" + DepartmentDetails);
@@ -340,24 +312,6 @@ const ManageDepartment = () => {
     } catch (error) {
       console.error("Error fetching department data:", error);
     }
-  };
-
-  const ManagerRemoval = async () => {
-    const response = await getApiData(
-      `api/Departments/RemoveManager/${deptDetails?.departmentId}`
-    );
-    // const response = await getApiData(`api/Departments/GetAllDepartments`);
-    // console.log(JSON.stringify(deptDetails, null, 2));
-    // console.log("cell" + deptDetails);
-    // managerName:
-    // if (
-    //   deptData.find((option) => option.managerName === deptDetails?.managerName)
-    // )
-    //   deptData.managerName = null;
-    // deptData.managerUId = 0;
-
-    // deptDetails.managerUId = 0;
-    // deptDetails.managerName = null;
   };
 
   //   useEffect(() => {
@@ -656,14 +610,10 @@ const ManageDepartment = () => {
 
   // getManager(typedtext);
   // }
-  useEffect(() => {
-    // if (departmentId !== null && departmentId !== undefined) {
-    getDepartmentDetails();
-    //change on 5/08 starts
-    // getManagerDetails();
-    // change on5/08 ends
-  }, []);
-  //   }, [departmentId]);
+  // const notDeptmanager = async () => {
+  //   managerUId = 0;
+  //   managerName = null;
+  // };
 
   return (
     <React.Fragment>
@@ -766,40 +716,10 @@ const ManageDepartment = () => {
                       ) : null}
                     </FormGroup>
                   </Col>
-
-                  {/* <Col md="6">
-                    <FormGroup className="mb-3">
-                      <Label htmlFor="managerName">ManagerName</Label>
-                      <RequiredAsterisk />
-                      <Input
-                        name="managerName"
-                        placeholder="Enter the managerName"
-                        type="text"
-                        id="managerName"
-                        disabled={viewMode}
-                        value={deptValidation.values.managerName}
-                        onChange={deptValidation.handleChange}
-                        onBlur={deptValidation.handleBlur}
-                        invalid={
-                          deptValidation.touched.managerName &&
-                          deptValidation.errors.managerName
-                            ? true
-                            : false
-                        }
-                      />
-                      {deptValidation.touched.managerName &&
-                      deptValidation.errors.managerName ? (
-                        <FormFeedback type="invalid">
-                          {deptValidation.errors.managerName}
-                        </FormFeedback>
-                      ) : null}
-                    </FormGroup>
-                  </Col> */}
-
                   <Col md="6">
                     <FormGroup className="mb-3">
                       <Label htmlFor="managerName">Manager Name</Label>
-                      {/* start change on 5/08}*/}
+                      {/*// start change on 5/08}*/}
                       {/* if(setDeptData.departmentId ===
                       setManagerAllDropdown.departmentId)
                       {
@@ -823,10 +743,9 @@ const ManageDepartment = () => {
                         // onChange={deptValidation.handleChange}
                         // onChange={handleManagerName}
                         // onChange={handleManagerName}
-                        isDisabled={viewMode}
+                        disabled={viewMode}
                         // options={managerPagiDropdown}
-                        // options={managerAllDropdown}
-                        options={deptData}
+                        options={managerAllDropdown}
                         value={deptValidation.values.managerName}
                         // onChange={handleDepartmentChange}
 
@@ -836,30 +755,28 @@ const ManageDepartment = () => {
                             selectedOption
                           );
                         }}
-                        // onInputChange={(inputValue, { action }) => {
-                        //   if (
-                        //     action === "input-change" &&
-                        //     inputValue.length >= 3
-                        //   ) {
-                        //     delayGetManager(inputValue);
-                        //   }
-                        // }}
+                        onInputChange={(inputValue, { action }) => {
+                          if (
+                            action === "input-change" &&
+                            inputValue.length >= 3
+                          ) {
+                            delayGetManager(inputValue);
+                          }
+                        }}
                       />
                       <a
                         style={{ color: "red" }}
-                        onClick={
-                          () => {
-                            ManagerRemoval();
-                          }
+                        onClick={() => {
                           // Your set of actions here
-                          // console.log("Link clicked!"); // Example action
+                          console.log("Link clicked!"); // Example action
                           // You can perform API calls, update state, etc.
-                        }
+                        }}
                       >
                         Remove Manager
                       </a>
                     </FormGroup>
                   </Col>
+                  <aref> </aref>
                 </Row>
               </Form>
               {/* </ModalBody> */}
@@ -911,8 +828,6 @@ const ManageDepartment = () => {
                   onClick={() => {
                     setViewMode(false);
                     setDeptDetails(null);
-                    //newly added to make dropdown null while creating department deptData is the statevariable with mappedresponse of all managernamefrom getAllDepartment //setDeptData([])
-                    setDeptData([]);
                     tog_editDept();
                   }}
                   style={{ backgroundColor: "#5e2ced" }}
