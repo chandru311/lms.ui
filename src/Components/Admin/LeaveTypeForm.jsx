@@ -18,6 +18,7 @@ import {
 } from "../../Common/helpers/axiosHelper";
 import { toast } from "react-toastify";
 import RequiredAsterisk from '../../Common/components/RequiredAsterisk';
+import { differenceInCalendarDays } from 'date-fns';
 import ReactSelect from "react-select";
 
 const LeaveTypeForm = (props) => {
@@ -28,6 +29,10 @@ const LeaveTypeForm = (props) => {
   const isAddMode = leaveState?.modalMode === "add";
   const [isChecked, setIsChecked] = useState(false);
   const [isAdvancedLeave, setIsAdvancedLeave] = useState(false);
+  // const [data, setData] = useState({
+  //   isCarry: !!leaveState?.leaveTypeDetail?.isCarry // Replace with your actual data
+  // });
+
   const leaveoption = [
     { label: "Paid", value: 1 },
     { label: "Unpaid", value: 2 },
@@ -41,7 +46,12 @@ const LeaveTypeForm = (props) => {
       name: leaveState?.leaveTypeDetail?.name || "",
       fromDate: "",
       toDate: "",
-      noOfDays: leaveState?.leaveTypeDetail?.noOfDays || "",
+      noOfDays: "",
+      
+      isCarry:0,
+      isAdvance:0,
+     
+
     },
     validationSchema: Yup.object({
         name: Yup.string().required("Leave type is required"),
@@ -55,8 +65,9 @@ const LeaveTypeForm = (props) => {
           .required("Number of days is required")
           .positive("Must be a positive number")
           .integer("Must be an integer"),
-         advancedLeave: Yup.boolean(), // If mandatory
-        carryForward:Yup.boolean(), // If mandatory
+          isCarry:Yup.number(), 
+          isAdvance: Yup.number(), // If mandatory
+       // If mandatory
         //   category:Yup.object().shape({
         //     label: Yup.string().required("Please Select a leave category"),
         //     value: Yup.string().required("Please Select a leave category"),
@@ -99,21 +110,70 @@ const LeaveTypeForm = (props) => {
       formik.setValues({
         name: leaveState?.leaveTypeDetail?.name,
         noOfDays: leaveState?.leaveTypeDetail?.noOfDays,
+        fromDate: leaveState?.leaveTypeDetail?.fromDate,
+        toDate: leaveState?.leaveTypeDetail?.toDate,
+       isCarry:leaveState?.leaveTypeDetail?.isCarry,
+       isAdvance:leaveState?.leaveTypeDetail?.isAdvance,
+      
+
+
       });
     } else {
       formik.resetForm();
     }
   }, [leaveState]);
-  const handleCarryForwardChange = () => {
-    setIsChecked(!isChecked);
+  useEffect(() => {
+    calculateNoOfDays();
+  }, [formik.values.fromDate, formik.values.toDate]);
+
+
+  const calculateNoOfDays = () => {
+    const { fromDate, toDate } = formik.values;
+    if (fromDate && toDate) {
+      const diffInDays = differenceInCalendarDays(new Date(toDate), new Date(fromDate)) + 1; // Add 1 to include both start and end dates
+      formik.setFieldValue('noOfDays', diffInDays);
+    } else {
+      formik.setFieldValue('noOfDays', '');
+    }
   };
-  const handleAdvanceLeaveChange = () => {
-    setIsAdvancedLeave(!isAdvancedLeave);
+  const handleCarryForwardChange = (e) => {
+    e.stopPropagation();
+    formik.setFieldValue('isCarry', e.target.checked ? 1 : 0);
+    // formik.setFieldValue('isCarry', e.target.checked ? 1 : 0);
+    // e.target.checked = formik.values.isCarry === 1;
+    // if(e.currentTarget.checked=== true)
+    // {
+    //   formik.values.isCarry = 1}
+    // else{
+    //     formik.values.isCarry = 0 
+    // }
+  
+    
+    //formik.values.isCarry = 1
+    //const t = 1
+    //const testVar = e.currentTarget.values.checked ? 1 : 0
+    //setIsChecked(!isChecked);
+    // if(isChecked=== true)
+    // {
+    //     isCarry=1
+        
+    // }
   };
+  const handleAdvanceLeaveChange = (e) => {
+    e.stopPropagation();
+    formik.setFieldValue('isAdvance', e.target.checked ? 1 : 0);
+  //   if(e.currentTarget.checked=== true)
+  //       {formik.values.isAdvance = 1}
+  //       else{
+  //           formik.values.isAdvance = 0 
+  // }
+  };
+
   const renderSubmitButton = () => {
     if (isViewMode) {
       return null;
     }
+    
    
     return (
       <Button
@@ -215,13 +275,26 @@ const LeaveTypeForm = (props) => {
                   {/* <RequiredAsterisk /> */}
                   <span style={{ marginLeft: '10px' }}>
                     <Input
-                      name="carryForward"
+                      name="isCarry"
                       type="checkbox"
-                      checked={isChecked} 
-                      onChange={handleCarryForwardChange}
+                      checked={formik.values.isCarry === 1}
+                    //  checked={isChecked} 
+                    //  value={formik.values.isCarry}
+                    //   onChange={(isChecked) => {
+                    //     // Update value to 1 when checked
+                    //     formik.handleChange(isChecked);
+                    //     formik.setFieldValue('isCarry', 1);
+                    //   }}
+                    //value={formik.values.isCarry}
+                    onChange={(e) => {
+                        handleCarryForwardChange(e)
+                    }}
+                   // checked={data.isCarry}
+                  
+                   disabled={isViewMode}
                       onBlur={formik.handleBlur}
-                      invalid={formik.touched.carryForward &&
-                        formik.errors.carryForward
+                      invalid={formik.touched.isCarry &&
+                        formik.errors.isCarry
                         ? true
                         : false}
                 />{" "}
@@ -232,10 +305,22 @@ const LeaveTypeForm = (props) => {
                   {/* <RequiredAsterisk /> */}
                   <span style={{ marginLeft: '10px' }}>
                     <Input
-                      type="checkbox" name="advancedLeave" checked={isAdvancedLeave} onChange={handleAdvanceLeaveChange}
+                      type="checkbox" name="isAdvance" 
+                      onChange={(e) => {
+                        handleAdvanceLeaveChange(e)
+                    }}
+                    checked={formik.values.isAdvance === 1}
+                    disabled={isViewMode}
+                  //    checked={isAdvancedLeave}  
+                  //    value={formik.values.isAdvance}
+                    //   onChange={(isAdvancedLeave) => {
+                    //     // Update value to 1 when checked
+                    //     formik.handleChange(isAdvancedLeave);
+                    //     formik.setFieldValue('isAdvance', 1);
+                    //   }}
                       onBlur={formik.handleBlur}
-                      invalid={formik.touched.carryForward &&
-                        formik.errors.carryForward
+                      invalid={formik.touched.isAdvance &&
+                        formik.errors.isAdvance
                         ? true
                         : false}
                 />{" "}
