@@ -55,12 +55,13 @@ const Header = ({ OpenSidebar, userRole }) => {
                         <BsChevronDown />
                     </DropdownToggle>
                     <DropdownMenu className="dropdown-menu-end">
-                        <DropdownItem onClick={toggleProfileModal}>
-                            <BsPerson className="font-size-16 align-middle me-1" />
-                            Profile
-                        </DropdownItem>
-
-                        <DropdownItem />
+                        {/* Conditionally render the Profile menu item */}
+                        {userRole !== "Admin" && (
+                            <DropdownItem onClick={toggleProfileModal}>
+                                <BsPerson className="font-size-16 align-middle me-1" />
+                                Profile
+                            </DropdownItem>
+                        )}
                         <Link to="/login" style={{ textDecoration: "none" }}>
                             <DropdownItem>
                                 <BsPower className="font-size-16 align-middle me-1 text-danger" />
@@ -70,7 +71,10 @@ const Header = ({ OpenSidebar, userRole }) => {
                     </DropdownMenu>
                 </Dropdown>
             </div>
-            <Profile isOpen={profileModalOpen} toggle={toggleProfileModal} />
+            {/* Only render Profile component when userRole is not Admin */}
+            {userRole !== "Admin" && (
+                <Profile isOpen={profileModalOpen} toggle={toggleProfileModal} uld={userRole} />
+            )}
         </header>
     );
 };
