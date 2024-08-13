@@ -20,6 +20,10 @@ import {
 import Loader from "../../Common/components/Loader";
 // import { debounce, values } from "lodash";
 import { debounce } from "lodash";
+// import { mapStatus } from '../../Common/common/StatusLabels';
+// import '../../Common/common/status.css';
+import { mapStatusDept } from "../../Common/common/ActivedeactLabels";
+import "../../Common/common/DeptActDecLabels.css";
 
 import DeleteModal from "../../Common/components/DeleteModel";
 import {
@@ -58,12 +62,13 @@ import axios from "axios";
 const ManageDepartment = () => {
   // const badgeColor =
   //   cellProps.row.original.active === 1 ? "bg-green-200" : "bg-red-200";
-  const [managerDropdown, setManagerDropdown] = useState([]);
+  const [managerPagiDropdown, setManagerPagiDropdown] = useState([]);
+  const [managerAllDropdown, setManagerAllDropdown] = useState([]);
   const [fetchedDepartmentId, setFetchedDepartmentId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [modal_editDept, setmodal_editDept] = useState(false);
   const [deptData, setDeptData] = useState([]);
-  const [deptDetails, setDeptDetails] = useState(null);
+  const [deptDetails, setDeptDetails] = useState();
   const [deleteModal, setDeleteModal] = useState(false);
   // const [deleteAgentUid, setDeleteAgentUid] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -72,6 +77,7 @@ const ManageDepartment = () => {
   //   const { branchId } = useLatestTransactions();
   //   const { dept, fetchDept } = use();
   const [departmentId, setDepartmentId] = useState();
+  const [managerOptions, setManagerOptions] = useState();
 
   // const onClickDelete = () => {
   //     setDeleteModal(true);
@@ -79,6 +85,43 @@ const ManageDepartment = () => {
   function tog_editDept() {
     setmodal_editDept(!modal_editDept);
   }
+  // change on5/08 starts
+  // const getManagerDetails = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     console.log("entered");
+  //     const response = await getApiData(`api/Manager/GetAllManagers`);
+  //     // const deptoptions = response.data.departmentName || [];
+  //     setIsLoading(false);
+  //     console.log("****************");
+
+  //     // console.log("Department" + deptoptions);
+
+  //     const mappedResponse = response.model.map((item, index) => ({
+  //       index: index + 1,
+  //       label: `${item.firstName} ${item.middleName && item.middleName} ${
+  //         item.lastName
+  //       } [${item.userName}]`,
+  //       value: item.managerUId,
+  //       allManagerDeptName: item.departmentName,
+  //       allManagerDeptId: item.departmentId,
+  //       selectedallmanagerName: `${item.firstName} ${
+  //         item.middleName && item.middleName
+  //       } ${item.lastName}`,
+  //       // userStatus: item.userStatus,
+  //     }));
+  //     setManagerAllDropdown(mappedResponse);
+  //     console.log("mapped:" + mappedResponse);
+  //     // console.log("DepartDetails" + departDetails);
+  //     // setIsLoading(false);
+  //   } catch (error) {
+  //     // Error handling scenario
+  //     console.error("Error fetching All Managers  data:", error);
+  //     // Implement additional error handling as needed (e.g., display an error message to the user)
+  //   }
+  // };
+  //change on 5/08 ends
+
   //   useEffect(() => {
   //     fetchDept();
   //   }, []);
@@ -87,6 +130,9 @@ const ManageDepartment = () => {
   useEffect(() => {
     // if (departmentId !== null && departmentId !== undefined) {
     getDepartmentDetails();
+    //change on 5/08 starts
+    // getManagerDetails();
+    // change on5/08 ends
   }, []);
   //   }, [departmentId]);
 
@@ -98,10 +144,40 @@ const ManageDepartment = () => {
     initialValues: {
       departmentName: deptDetails?.departmentName || "",
       departmentDescription: deptDetails?.departmentDescription || "",
-      managerName: deptDetails?.managerName || "",
-      // managerName: managerName.selectedmanagerName || "",
+      // const foundDay = daysOption.find(option => option.value === state.days); // { value: 'Tuesday', label: 'Tuesday' }
+      // roleId:
+      // roleList.find((option) => option.value === staffDetails?.roleId) ||
+      // null,
       departmentId: deptDetails?.departmentId || "",
       managerUId: deptDetails?.managerUId || "",
+      // managerName: deptDetails?.managerName || "",
+      managerName:
+        deptData.find(
+          (option) => option.managerName === deptDetails?.managerName
+        ) || null,
+
+      //change on 5/08 starts
+      // if(deptDetails.departmentId===managerAllDropdown.departmentId)
+      //   {
+      // managerName=  managerAllDropdown.selectedallmanagerName
+
+      //   }
+      // else {
+      //  managerName:
+      //     managerAllDropdown.find(
+      //       (option) => option.managerName === deptDetails?.managerName
+      //     ) || null,
+
+      // managerName:
+      //   managerAllDropdown.find(
+      //     (option) => option.selectedallmanagerName === deptDetails?.managerName
+      //   ) || null,
+      //   }
+      //Change on 5/08 ends
+      // managerName:
+      //   managerPagiDropdown.find(
+      //     (option) => option.value === deptDetails?.managerUId
+      //   ) || null,
     },
 
     validationSchema: Yup.object({
@@ -141,17 +217,27 @@ const ManageDepartment = () => {
             (key) => values[key] !== deptValidation.initialValues[key]
           );
           if (hasChanges) {
+            // const roleValue = values.roleId && values.roleId.value;
             const combinedValues = {
               ...values,
+              // managerUId: deptData.managerUId,
+              // managerName: deptData.managerName,
+
               managerUId: values.managerName.value,
-              managerName: values.managerName.selectedmanagerName,
+
+              managerName: values.managerName.label,
+              // managerName: values.managerName.selectedmanagerName,
             };
+            // console.log(combinedValues);
+            console.log(JSON.stringify(combinedValues, null, 2));
+
             const response = await putApiData(
               `api/Departments/UpdateDepartment/${deptDetails?.departmentId}`,
 
               JSON.stringify(combinedValues)
               // JSON.stringify(values)
             );
+            console.log("COMVALUES:" + combinedValues);
             if (response.success === true) {
               toast.success("Department Successfully Updated", {
                 position: "top-right",
@@ -216,7 +302,15 @@ const ManageDepartment = () => {
 
       // console.log("entered");
       const response = await getApiData(`api/Departments/GetAllDepartments`);
-      setIsLoading(false);
+      // setIsLoading(false);
+      //   const managerOptions = response.data.map(dept => ({
+      //     value: dept.managerId, // Assuming managerId exists
+      //     label: dept.managerName
+      //   });
+
+      //   setManagerOptions(managerOptions);
+      //  //
+      //   setIsLoading(false)
 
       // console.log("department details " + response.data);
       // console.log("department details:", response.data);
@@ -227,14 +321,24 @@ const ManageDepartment = () => {
         // Department: item.departmentName,
         departmentName: item.departmentName,
         departmentDescription: item.departmentDescription,
+        // active: mapStatusDept(item.active),
         active: item.active,
-        //managerUId: item.managerUId;
+        // status: mapStatus(item.status),
+        managerUId: item.managerUId,
 
         // DepartmentDescription: item.departmentDescription,
         managerName: item.managerName,
+        label: item.managerName,
+        value: item.managerUId,
       }));
+
+      console.log("department details&&&:", mappedResponse);
+      //changed on 07/08 during update API check  setDeptData(mappedResponse || []); to  setDeptData(mappedResponse);
+      // setDeptData(mappedResponse);
       setDeptData(mappedResponse || []);
-      console.log("Mapped Response" + deptData);
+      console.log("&&&");
+      console.log(JSON.stringify(deptData, null, 2));
+      console.log("Mapped Response&&&&" + { deptData });
       setIsLoading(false);
 
       // console.log("deptdetails" + DepartmentDetails);
@@ -243,6 +347,36 @@ const ManageDepartment = () => {
       console.error("Error fetching department data:", error);
     }
   };
+
+  const ManagerRemoval = async () => {
+    const response = await getApiData(
+      `api/Departments/RemoveManager/${deptDetails?.departmentId}`
+    );
+    if (response.success === true) {
+      toast.success(" Manager removed from Department Successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } else {
+      toast.error("Error , Contact Admin", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  };
+  // const response = await getApiData(`api/Departments/GetAllDepartments`);
+  // console.log(JSON.stringify(deptDetails, null, 2));
+  // console.log("cell" + deptDetails);
+  // managerName:
+  // if (
+  //   deptData.find((option) => option.managerName === deptDetails?.managerName)
+  // )
+  //   deptData.managerName = null;
+  // deptData.managerUId = 0;
+
+  // deptDetails.managerUId = 0;
+  // deptDetails.managerName = null;
+  // };
 
   //   useEffect(() => {
   //     console.log("validation values" + JSON.stringify(deptValidation.values));
@@ -265,40 +399,82 @@ const ManageDepartment = () => {
         filterable: false,
         disableFilters: true,
         Cell: (cellProps) => {
+          // <Badge
+          //   className={`font-size-11 ${
+          //     value === 0 ? "Badge-danger" : "Badge-success"
+          //   }`}
+          // >
+          //   {value === 0 ? "Deactive" : "Active"}
+          // </Badge>;
           return (
             <span>
               {cellProps.value ? (
                 cellProps.value
               ) : (
-                <div>
-                  <Badge className="bg-red-400">not assigned</Badge>
-                </div>
+                <Badge className="font-size-11 Badge-warning">
+                  not assigned
+                </Badge>
               )}
             </span>
           );
         },
       },
+      // {
+      //   Header: "Active",
+      //   accessor: "status",
+      //   disableFilters: true,
+      //   filterable: false,
+      //   Cell: ({ cellProps }) => {
+      //     // console.log({ value });
+      //     return (
+      //       <Badge
+      //         className={`font-size-11 ${
+      //           cellProps.value === 0 ? "Badge-danger" : "Badge-success"
+      //         }`}
+      //       >
+      //         {cellProps.value === 0 ? "Deactive" : "Active"}
+      //       </Badge>
+
+      //       // <Badge className={`font-size-11 Badge-${value.color}`}>
+      //       //   {value.label}
+      //       // </Badge>
+      //     );
+      //   },
+      // },
+      // {
+      //   Header: "Active",
+      //   accessor: "status",
+      //   disableFilters: true,
+      //   filterable: false,
+      //   Cell: ({ value }) => (
+      //     <Badge
+      //       className={
+      //         'font-size-11 ${value ? "Badge-success" : "Badge-danger"'
+      //       }
+      //     >
+      //       {value ? "Active" : "Deactive"}
+      //     </Badge>
+      //   ),
+      // },
       {
         Header: "Active",
-        accessor: "status",
+        accessor: "active",
         disableFilters: true,
         filterable: false,
-        Cell: (cellProps) => {
-          // const badgeColor =
-          // cellProps.row.original.active === 1 ? "bg-green-200" : "bg-red-200";
+        Cell: ({ value }) => {
+          console.log("Active value:", value); // Add this line to debug
           return (
             <Badge
-              className={
-                cellProps.row.original.active === 1
-                  ? "bg-green-200  text-white font-bold px-3 py-2  rounded-full shadow-sm "
-                  : "bg-red-200  text-white font-bold px-3 py-2  rounded-full shadow-sm "
-              }
+              className={`font-size-11 ${
+                value === 0 ? "badge-danger" : "badge-success"
+              }`}
             >
-              {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+              {value === 0 ? "Deactivate" : "Active"}
             </Badge>
           );
         },
       },
+
       {
         Header: "Actions",
         disableFilters: true,
@@ -314,7 +490,13 @@ const ManageDepartment = () => {
                 onClick={() => {
                   setViewMode(true);
                   tog_editDept();
-                  setDeptDetails(cellProps.row.original || null);
+                  // if (cellProps.row.original.selectedmanagerName !== null) {
+                  //   getManager(
+                  //     cellProps.row.original.selectedmanagerName?.slice(0, 3)
+                  //   );
+                  // }
+                  // setDeptDetails(cellProps.row.original || null);
+                  setDeptDetails(cellProps.row.original);
                 }}
               >
                 <FontAwesomeIcon icon={faEye} />
@@ -327,6 +509,11 @@ const ManageDepartment = () => {
                 onClick={() => {
                   setViewMode(false);
                   tog_editDept();
+                  // if (cellProps.row.original.selectedmanagerName !== null) {
+                  //   getManager(
+                  //     cellProps.row.original.selectedmanagerName?.slice(0, 3)
+                  //   );
+                  // }
                   setDeptDetails(
                     cellProps.row.original // Spread operator to copy existing properties
                   );
@@ -497,7 +684,7 @@ const ManageDepartment = () => {
       } ${item.lastName}`,
       // userStatus: item.userStatus,
     }));
-    setManagerDropdown(mappedResponse);
+    setManagerPagiDropdown(mappedResponse);
     console.log("mapped:" + mappedResponse);
     //   setIsLoading(false);
     // } catch (error) {
@@ -529,13 +716,27 @@ const ManageDepartment = () => {
 
   // getManager(typedtext);
   // }
+  useEffect(() => {
+    // if (departmentId !== null && departmentId !== undefined) {
+    getDepartmentDetails();
+    //change on 5/08 starts
+    // getManagerDetails();
+    // change on5/08 ends
+  }, []);
+  //   }, [departmentId]);
 
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div
+      //  className="page-content"
+      >
         <Container fluid>
           <ToastContainer closeButton={false} limit={1} />
           <Modal
+            className="exampleModal"
+            autoFocus={true}
+            centered={true}
+            tabIndex="-1"
             isOpen={modal_editDept}
             toggle={() => {
               tog_editDept();
@@ -544,13 +745,35 @@ const ManageDepartment = () => {
             size="lg"
             onClosed={() => {
               deptValidation.resetForm();
+              // setManagerPagiDropdown([]);
             }}
           >
-            <div className="modal-header">
-              <h5 className="modal-title mt-0" id="myModalLabel">
-                DEPARTMENT DETAILS
-              </h5>
-              <button
+            {/* <div id="myModal" class="modal"> */}
+            {/* <div className="modal-content"> */}
+            <ModalHeader>
+              {/* <div style={{ display: "flex", justifyContent: "space-between" }}> */}
+              {/* // <div className="modal-header">
+            //   <h5 className="modal-title mt-0" id="myModalLabel"> */}
+              DEPARTMENT DETAILS
+              {/* <Button
+                type="button"
+                className="close"
+                style={{ position: "absolute", top: 0, right: 0 }}
+                onClick={() => tog_editDept()}
+              >
+                <span aria-hidden="true">&times;</span>
+              </Button> */}
+              {/* <span class="close">&times;</span> */}
+              <span
+                className="icon close_icon"
+                style={{ position: "absolute", top: 10, right: 10 }}
+                onClick={() => tog_editDept()}
+              >
+                X
+              </span>
+            </ModalHeader>
+            {/* // </h5> */}
+            {/* <button
                 type="button"
                 onClick={() => {
                   setmodal_editDept(!modal_editDept);
@@ -559,9 +782,11 @@ const ManageDepartment = () => {
                 data-dismiss="modal"
                 aria-label="Close"
               >
+               </ModalHeader>
                 <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
+              </button> */}
+            {/* //{" "} */}
+            {/* </div> */}
             <div className="modal-body">
               <Form
                 className="needs-validation"
@@ -630,9 +855,55 @@ const ManageDepartment = () => {
                       ) : null}
                     </FormGroup>
                   </Col>
+
+                  {/* <Col md="6">
+                    <FormGroup className="mb-3">
+                      <Label htmlFor="managerName">ManagerName</Label>
+                      <RequiredAsterisk />
+                      <Input
+                        name="managerName"
+                        placeholder="Enter the managerName"
+                        type="text"
+                        id="managerName"
+                        disabled={viewMode}
+                        value={deptValidation.values.managerName}
+                        onChange={deptValidation.handleChange}
+                        onBlur={deptValidation.handleBlur}
+                        invalid={
+                          deptValidation.touched.managerName &&
+                          deptValidation.errors.managerName
+                            ? true
+                            : false
+                        }
+                      />
+                      {deptValidation.touched.managerName &&
+                      deptValidation.errors.managerName ? (
+                        <FormFeedback type="invalid">
+                          {deptValidation.errors.managerName}
+                        </FormFeedback>
+                      ) : null}
+                    </FormGroup>
+                  </Col> */}
+
                   <Col md="6">
                     <FormGroup className="mb-3">
                       <Label htmlFor="managerName">Manager Name</Label>
+                      {/* start change on 5/08}*/}
+                      {/* if(setDeptData.departmentId ===
+                      setManagerAllDropdown.departmentId)
+                      {
+                        // <Label htmlFor="managerName">Manager Name</Label>
+                        <Input
+                          name="managerName"
+                          placeholder="Enter ManagerName"
+                          id="managerName"
+                          disabled={viewMode}
+                          value={deptValidation.values.setDeptData.managerName}
+                        />
+                      }
+                      else */}
+
+                      {/* change on 5/08 ends*/}
                       <ReactSelect
                         name="managerName"
                         placeholder="Enter ManagerName"
@@ -641,25 +912,41 @@ const ManageDepartment = () => {
                         // onChange={deptValidation.handleChange}
                         // onChange={handleManagerName}
                         // onChange={handleManagerName}
-                        disabled={viewMode}
-                        options={managerDropdown}
+                        isDisabled={viewMode}
+                        // options={managerPagiDropdown}
+                        // options={managerAllDropdown}
+                        options={deptData}
                         value={deptValidation.values.managerName}
                         // onChange={handleDepartmentChange}
+
                         onChange={(selectedOption) => {
                           deptValidation.setFieldValue(
                             "managerName",
                             selectedOption
                           );
                         }}
-                        onInputChange={(inputValue, { action }) => {
-                          if (
-                            action === "input-change" &&
-                            inputValue.length >= 3
-                          ) {
-                            delayGetManager(inputValue);
-                          }
-                        }}
+                        // onInputChange={(inputValue, { action }) => {
+                        //   if (
+                        //     action === "input-change" &&
+                        //     inputValue.length >= 3
+                        //   ) {
+                        //     delayGetManager(inputValue);
+                        //   }
+                        // }}
                       />
+                      <a
+                        style={{ color: "red" }}
+                        onClick={
+                          () => {
+                            ManagerRemoval();
+                          }
+                          // Your set of actions here
+                          // console.log("Link clicked!"); // Example action
+                          // You can perform API calls, update state, etc.
+                        }
+                      >
+                        Remove Manager
+                      </a>
                     </FormGroup>
                   </Col>
                 </Row>
@@ -676,6 +963,15 @@ const ManageDepartment = () => {
                 >
                   Close
                 </Button>
+                {/* <Button
+                  type="submit"
+                  className="btn btn-primary "
+                  // onClick={notDeptmanager}
+                  hidden={viewMode}
+                  disabled={deptValidation.isSubmitting}
+                >
+                  Remove Manager
+                </Button> */}
                 <Button
                   type="submit"
                   // type="button"
@@ -685,11 +981,10 @@ const ManageDepartment = () => {
                   disabled={deptValidation.isSubmitting}
                 >
                   Save Changes
-                  {/* </Button>
-                <Button> */}
                 </Button>
               </div>
             </div>
+            {/* </div> */}
           </Modal>
           {/* <DeleteModal
             show={deleteModal}
@@ -706,6 +1001,8 @@ const ManageDepartment = () => {
                   onClick={() => {
                     setViewMode(false);
                     setDeptDetails(null);
+                    //newly added to make dropdown null while creating department deptData is the statevariable with mappedresponse of all managernamefrom getAllDepartment //setDeptData([])
+                    setDeptData([]);
                     tog_editDept();
                   }}
                   style={{ backgroundColor: "#5e2ced" }}
