@@ -10,14 +10,21 @@ import {
     BsEye,
     BsPlusLg,
     BsBarChartFill,
+    BsSearch,
+    BsCalendar,
 } from "react-icons/bs";
 import "../../index.css";
 
 const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
     const [isLeaveManagementOpen, setIsLeaveManagementOpen] = useState(false);
+    const [isReportsOpen, setIsReportsOpen] = useState(false);
 
     const toggleLeaveManagement = () => {
         setIsLeaveManagementOpen(!isLeaveManagementOpen);
+    };
+
+    const toggleReports = () => {
+        setIsReportsOpen(!isReportsOpen);
     };
 
     return (
@@ -31,10 +38,10 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                 </span>
             </div>
             <ul className="sidebar-list" style={{ marginTop: "3rem" }}>
-                {userRole === "Admin" && (
+                {(userRole === "Admin" || userRole === "Manager") && (
                     <>
                         <li className="sidebar-list-item">
-                            <Link to="/admin-dashboard" style={{ color: "black", textDecoration: "none" }}>
+                            <Link to={`/${userRole.toLowerCase()}-dashboard`} style={{ color: "black", textDecoration: "none" }}>
                                 <BsBarChartFill className="icon" /> Dashboard
                             </Link>
                         </li>
@@ -43,65 +50,61 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                 <BsPeopleFill className="icon" /> Emp Management
                             </Link>
                         </li>
+                        {userRole === "Admin" && (
+                            <>
+                                <li className="sidebar-list-item">
+                                    <div className="submenu">
+                                        <div className="submenu-title" onClick={toggleLeaveManagement}>
+                                            <BsMenuButtonWideFill className="icon" /> Leave Management <BsChevronDown />
+                                        </div>
+                                        {isLeaveManagementOpen && (
+                                            <ul className="submenu-list">
+                                                <li>
+                                                    <Link to="/allocated-leaves" className="submenu-item">
+                                                        <BsClipboardCheck className="icon" /> Allocate Leaves
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link to="/view-leave-requests" className="submenu-item">
+                                                        <BsEye className="icon" /> View Leave Requests
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link to="/apply-leave" className="submenu-item">
+                                                        <BsPlusLg className="icon" /> Apply Leave
+                                                    </Link>
+                                                </li>
+                                            </ul>
+                                        )}
+                                    </div>
+                                </li>
+                                <li className="sidebar-list-item">
+                                    <Link to="/department-administration" style={{ color: "black", textDecoration: "none" }}>
+                                        <BsBuilding className="icon" /> Depart Management
+                                    </Link>
+                                </li>
+                            </>
+                        )}
                         <li className="sidebar-list-item">
                             <div className="submenu">
-                                <div className="submenu-title" onClick={toggleLeaveManagement}>
-                                    <BsMenuButtonWideFill className="icon" /> Leave Management <BsChevronDown />
+                                <div className="submenu-title" onClick={toggleReports}>
+                                    <BsFileText className="icon" /> Reports <BsChevronDown />
                                 </div>
-                                {isLeaveManagementOpen && (
+                                {isReportsOpen && (
                                     <ul className="submenu-list">
                                         <li>
-                                            <Link to="/allocated-leaves" className="submenu-item">
-                                                <BsClipboardCheck className="icon" /> Allocate Leaves
+                                            <Link to="/overall-employee-report" className="submenu-item">
+                                                <BsSearch className="icon" />   Emp Report 
                                             </Link>
                                         </li>
                                         <li>
-                                            <Link to="/view-leave-requests" className="submenu-item">
-                                                <BsEye className="icon" /> View Leave Requests
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link to="/apply-leave" className="submenu-item">
-                                                <BsPlusLg className="icon" /> Apply Leave
+                                            <Link to="/annual-report" className="submenu-item">
+                                                <BsCalendar className="icon" /> Annual Report
                                             </Link>
                                         </li>
                                     </ul>
                                 )}
                             </div>
-                        </li>
-                        <li className="sidebar-list-item">
-                            <Link to="/department-administration" style={{ color: "black", textDecoration: "none" }}>
-                                <BsBuilding className="icon" /> Depart Management
-                            </Link>
-                        </li>
-                        <li className="sidebar-list-item">
-                            <Link to="/reports" style={{ color: "black", textDecoration: "none" }}>
-                                <BsFileText className="icon" /> Reports
-                            </Link>
-                        </li>
-                    </>
-                )}
-                {userRole === "Manager" && (
-                    <>
-                        <li className="sidebar-list-item">
-                            <Link to="/manager-dashboard" style={{ color: "black", textDecoration: "none" }}>
-                                <BsBarChartFill className="icon" /> Dashboard
-                            </Link>
-                        </li>
-                        <li className="sidebar-list-item">
-                            <Link to="/employee-administration" style={{ color: "black", textDecoration: "none" }}>
-                                <BsPeopleFill className="icon" /> Emp Management
-                            </Link>
-                        </li>
-                        <li className="sidebar-list-item">
-                            <Link to="/leave-management" style={{ color: "black", textDecoration: "none" }}>
-                                <BsMenuButtonWideFill className="icon" /> Leave Management
-                            </Link>
-                        </li>
-                        <li className="sidebar-list-item">
-                            <Link to="/reports" style={{ color: "black", textDecoration: "none" }}>
-                                <BsFileText className="icon" /> Reports
-                            </Link>
                         </li>
                     </>
                 )}
