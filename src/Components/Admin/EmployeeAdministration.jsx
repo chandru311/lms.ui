@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import axios from "../../Common/helpers/axiosHelper.js";
 import {
   Button,
+  Badge,
   Card,
   CardBody,
   Container,
@@ -32,6 +33,8 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { mapStatus } from '../../Common/common/StatusLabels';
+import '../../Common/common/status.css';
 
 const ManageCompany = (props) => {
   const [activeTab, setActiveTab] = useState("1"); // To handle active tab
@@ -170,6 +173,7 @@ const ManageCompany = (props) => {
            employeeId:item.employeeId,
            addressId:item.addressId,
           active:item.active,
+          //active:mapStatus(item.active),
    
            //console.log("employee details "+response.data);
          }));
@@ -189,7 +193,8 @@ const ManageCompany = (props) => {
            department:item.departmentName,
           employeeId:item.employeeId,
           addressId:item.addressId,
-         active:item.active,
+           active:item.active,
+      //   active:mapStatus(item.active),
   
           //console.log("employee details "+response.data);
         }));
@@ -374,25 +379,33 @@ const ManageCompany = (props) => {
         filterable: false,
         disableFilters: true,
       },
-      // {
-      //   Header: "Active",
-      //   accessor: "status",
-      //   disableFilters: true,
-      //   filterable: false,
-      //   Cell: cellProps => {
+      {
+        Header: "Active",
+        accessor: "active",
+        disableFilters: true,
+        filterable: false,
+      //   Cell: ({ value }) => {
       //     return (
-      //         <Badge              
-      //           className={
-      //            "font-size-11 badge-soft-" +
-      //             (cellProps.row.original.active === 1 ? "success" : "danger")
-      //         }
-      //          >
-      //         {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+      //         <Badge className={`font-size-11 badge-${value.color}`}>
+      //             {value.label}
       //         </Badge>
-           
       //     );
-      //   },
       // },
+        Cell: cellProps => {
+          return (
+              <Badge              
+                className={
+                 "font-size-11 badge-" +
+                  (cellProps.row.original.active === 1 ? "success" : "danger")
+              }
+               >
+              {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+              </Badge>
+              
+           
+          );
+        },
+      },
       {
         Header: "Actions",
         disableFilters: true,
@@ -496,25 +509,34 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
         filterable: false,
         disableFilters: true,
       },
-      // {
-      //   Header: "Active",
-      //   accessor: "status",
-      //   disableFilters: true,
-      //   filterable: false,
-      //   Cell: cellProps => {
+      {
+        Header: "Active",
+        accessor: "active",
+        disableFilters: true,
+        filterable: false,
+      //   Cell: ({ value }) => {
       //     return (
-      //         <Badge              
-      //           className={
-      //            "font-size-11 badge-soft-" +
-      //             (cellProps.row.original.active === 1 ? "success" : "danger")
-      //         }
-      //          >
-      //         {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+      //         <Badge className={`font-size-11 badge-${value.color}`}>
+      //             {value.label}
       //         </Badge>
-           
       //     );
-      //   },
       // },
+        Cell: cellProps => {
+          return (
+              <Badge              
+                className={
+                 "font-size-11 badge-" +
+                  (cellProps.row.original.active === 1 ? "success" : "danger")
+              }
+               >
+              {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+              </Badge>
+           
+          );
+        },
+        
+        
+      },
       {
         Header: "Actions",
         disableFilters: true,

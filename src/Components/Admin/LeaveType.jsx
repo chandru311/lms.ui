@@ -109,10 +109,16 @@ const LeaveType = () => {
         return (
           <>
             <Button
-              type="button"
-              style={{ background: "#5e2ced", borderColor: "#5e2ced" }}
-              aria-label="view"
-              className="btn-sm btn-rounded mr-1 mb-1"
+            type="button"
+            color="primary"
+            className="btn-sm btn-rounded"
+            title="View"
+            style={{ marginRight: "5px" }}
+            aria-label="view"
+              // type="button"
+              // style={{ background: "#5e2ced", borderColor: "#5e2ced" }}
+              // aria-label="view"
+              // className="btn-sm btn-rounded mr-1 mb-1"
               onClick={() => {
                 openModal(leaveType.leaveTypeId, "view");
               }}
@@ -120,17 +126,23 @@ const LeaveType = () => {
               {view()}
             </Button>
             <Button
-              type="button"
-              color="success"
-              className="btn-sm btn-rounded mr-1 mb-1"
+             type="button"
+             color="success"
+             className="btn-sm btn-rounded"
+             title="Edit"
+             style={{ marginRight: "5px" }}
+              // type="button"
+              // color="success"
+              // className="btn-sm btn-rounded mr-1 mb-1"
               onClick={() => openModal(leaveType.leaveTypeId, "edit")}
             >
               {edit()}
             </Button>
             <Button
-              type="button"
-              color="danger"
-              className="btn-sm btn-rounded mr-1 mb-1"
+             type="button"
+             color="danger"
+             className="btn-sm btn-rounded"
+              
               onClick={() => changeDeactivate(leaveType.leaveTypeId)}
             >
               {trash()}
