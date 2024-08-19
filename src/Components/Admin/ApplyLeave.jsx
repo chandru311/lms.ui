@@ -32,6 +32,7 @@ const ApplyLeaveModal = (props) => {
   const [docIsValid, setDocIsValid] = useState(true);
   const [docFormat, setDocFormat] = useState("");
   const [fileData, setFileData] = useState(null);
+  const [supportingDocs, setSupportingDocs] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isEmp, setIsEmp] = useState(false);
@@ -184,8 +185,28 @@ const ApplyLeaveModal = (props) => {
         console.log(newList);
         setuNameOptions(newList);
       } else if (bAdmin) {
-        const empResponse = await getApiData("api/Employee/GetAllEmployees");
-        const mappedEmpResponse = empResponse.data.map((item, key) => ({
+        const data = {
+          pageNumber: 1,
+          pageCount: 50,
+          filterColumns: [
+            {
+              columnName: "firstName",
+              filterValue: "",
+              filterType: 6,
+            },
+            {
+              columnName: "lastName",
+              filterValue: "",
+              filterType: 6,
+            },
+          ],
+        };
+        const empResponse = await postApiData(
+          "api/Employee/GetEmployeeByPagination",
+          data
+        );
+        // const empResponse = await getApiData("api/Employee/GetAllEmployees");
+        const mappedEmpResponse = empResponse.model.map((item, key) => ({
           value: item.uId,
           label:
             item.firstName + " " + item.lastName + "(" + item.userName + ")",
@@ -242,6 +263,16 @@ const ApplyLeaveModal = (props) => {
   }, []);
 
   function handleFileChange(e) {
+    // const supportingDocs = e.target.files;
+    if (supportingDocs.length > 3) {
+      alert("You can only select up to 3 files.");
+      // toast.error("Only Maximum 3 supporting docs allowed", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      // });
+      e.target.value = "";
+      return;
+    }
     setDocIsValid(true);
     const file = e.target.files[0];
     if (!file) return;
@@ -256,6 +287,7 @@ const ApplyLeaveModal = (props) => {
     }
     const reader = new FileReader();
     reader.onloadend = () => {
+      const result = reader.result;
       const type = reader.result.split(";")[0];
       const docType = type.split("/")[1];
       let base64String = "";
@@ -264,6 +296,14 @@ const ApplyLeaveModal = (props) => {
         base64String = reader.result.substring(indexOfComma + 1);
       }
       setDocFormat(docType);
+      let doc = {
+        document: base64String,
+        contentType: docType,
+        documentName: file.name,
+      };
+      let docs = supportingDocs.concat(doc);
+      setSupportingDocs(docs);
+      // setSupportingDocs(supportingDocs);
       setFileData(base64String);
     };
     reader.readAsDataURL(file);
@@ -469,6 +509,7 @@ const ApplyLeaveModal = (props) => {
                               aria-label="Upload"
                               accept=".png, .jpg, .jpeg, .pdf"
                               aria-describedby="inputGroupFileAddon04"
+                              multiple
                               onChange={(e) => {
                                 handleFileChange(e);
                                 leaveValidation.handleChange(e);
@@ -487,6 +528,28 @@ const ApplyLeaveModal = (props) => {
                                 {leaveValidation.errors.proof}
                               </FormFeedback>
                             ) : null}
+                          </div>
+                          <div className="col-md-12">
+                            {supportingDocs.map((doc, index) => (
+                              <Row key={index}>
+                                <div>
+                                  {/* <a
+                                      href=""
+                                      onClick={() => viewDoc(index, false)}
+                                    > */}
+                                  {index + 1} Document - {doc.documentName}
+                                  {/* </a> */}
+                                  {/* <Button
+                                        type="button"
+                                        color="primary"
+                                        className="btn-sm btn-rounded mx-2 ml-2"
+                                        onClick={() => viewDoc(fileData, true)}
+                                      >
+                                        {download()}
+                                      </Button> */}
+                                </div>
+                              </Row>
+                            ))}
                           </div>
                         </div>
                       </Col>

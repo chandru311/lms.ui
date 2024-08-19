@@ -13,6 +13,7 @@ import {
   Input,
   Label,
   Modal,
+  ModalHeader,
   Row,
   Table,
 } from "reactstrap";
@@ -29,17 +30,16 @@ import {
   trash,
 } from "../../Common/common/icons.js";
 import { useLeaveTypes } from "../../Common/common/commonFunctions.js";
+import LeaveRequestModal from "./LeaveRequestModal.jsx";
 
 const LeaveRequestsDashboard = () => {
-  const [allLeaveRequests, setAllLeaveRequests] = useState(null);
   const [pendingLeaveRequests, setPendingLeaveRequests] = useState([]);
-  const [leaveRequest, setLeaveRequest] = useState([]);
+  const [isLeaveReqModalOpen, setIsLeaveReqModalOpen] = useState(false);
+  const [leaveRequest, setLeaveRequest] = useState(null);
   const [docIsValid, setDocIsValid] = useState(false);
   const [docFormat, setDocFormat] = useState("");
   const [fileData, setFileData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [modal_viewLeaveRequest, setModal_viewLeaveRequest] = useState(false);
-  const [currentLeaveReqId, setCurrentLeaveReqId] = useState("");
   const [viewMode, setViewMode] = useState(false);
   const [proofDoc, setproofDoc] = useState(null);
   const [docDetails, setDocDetails] = useState([]);
@@ -71,24 +71,30 @@ const LeaveRequestsDashboard = () => {
     // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
     setPendingLeaveRequests(mappedResponse);
   };
-  function tog_leaveReq() {
-    setModal_viewLeaveRequest(!modal_viewLeaveRequest);
-  }
 
-  const handleClose = (event) => {
-    event.stopPropagation(); // Prevent event bubbling if needed
-    tog_leaveReq();
-  };
+  const tog_leaveReq = () => setIsLeaveReqModalOpen(!isLeaveReqModalOpen);
 
   const viewLeaveRequestDetails = async (leaveReqId) => {
     try {
-      if (leaveReqId != null) {
+      if (leaveReqId !== null) {
         const response = await getApiData(
           `api/Leave/GetLeaveById/${leaveReqId}`
         );
-        setLeaveRequest(response.data);
+        let mappedResponse = {
+          leaveId: response.data?.leaveId || "",
+          uId: response.data?.uId || "",
+          uName: response.data?.userName || "",
+          leaveTypeId: response.data?.leaveTypeId || "",
+          fromDate: response.data?.fromDate || "",
+          toDate: response.data?.toDate || "",
+          reason: response.data?.reason || "",
+          comments: "",
+          proof: response.data?.proof || "",
+        };
+        console.log("Mapped response " + JSON.stringify(mappedResponse));
+        setLeaveRequest(mappedResponse);
+        getDocDetails(leaveReqId);
       }
-      tog_leaveReq();
     } catch (error) {
       alert(error);
     }
@@ -100,10 +106,6 @@ const LeaveRequestsDashboard = () => {
       leaveId: leaveRequest?.leaveId || null,
       uId: leaveRequest?.uId || null,
       uName: leaveRequest?.userName || null,
-      // leaveTypeName: leaveRequest?.leaveTypeName || null,
-      // leaveTypeName: leaveTypes.find(
-      //   (option) => option.value === leaveRequest?.leaveTypeId
-      // ),
       leaveTypeId:
         leaveTypes.find(
           (option) => option.value === leaveRequest?.leaveTypeId
@@ -182,13 +184,19 @@ const LeaveRequestsDashboard = () => {
         if (response.data !== null) {
           setDocDetails(response.data);
           setDocFormat(response.data.contentType);
-          if (proof !== null && docDetails !== null) {
-            setproofDoc(true);
-            setFileData(proof);
-          } else {
+          if (response.data.length === 0) {
             setproofDoc(false);
+          } else {
+            setproofDoc(true);
           }
+          // if (proof !== null && docDetails !== null) {
+
+          //   setFileData(proof);
+          // } else {
+          //   setproofDoc(false);
+          // }
         } else {
+          setproofDoc(false);
           setDocDetails([]);
         }
       }
@@ -225,14 +233,15 @@ const LeaveRequestsDashboard = () => {
     reader.readAsDataURL(file);
   }
 
-  const viewDoc = (base64String, contentType = "png") => {
-    //  const data = viewResponse[index];
-    const docData = {
-      contentType: contentType,
-      document: base64String,
-      documentName: "test",
-    };
-    handleDownloadFile(docData, false);
+  const delDoc = async (index) => {
+    const data = docDetails[index];
+    const response = await putApiData(
+      `api/LeaveDocuments/ActivateDeactivate/${data.docId}?isActive=false`
+    );
+  };
+  const viewDoc = (index, bDownbload) => {
+    const data = docDetails[index];
+    handleDownloadFile(data, bDownbload);
   };
 
   const handleDownloadFile = (data, bDownload) => {
@@ -249,7 +258,7 @@ const LeaveRequestsDashboard = () => {
     if (bDownload) {
       const link = document.createElement("a");
       link.href = imageUrl;
-      link.download = `${data.documentName}.${
+      link.download = `${data.documentName || "document"}.${
         data.contentType !== null ? data.contentType : "png"
       }`;
       link.click();
@@ -264,6 +273,11 @@ const LeaveRequestsDashboard = () => {
     getLeaveTypes();
     getPendingLeaveDetails();
   }, []);
+
+  useEffect(() => {
+    console.log("leave Request: ", leaveRequest); //[Avengers, Fast X, Batman]
+    if (leaveRequest) tog_leaveReq();
+  }, [leaveRequest]);
 
   const columns = useMemo(
     () => [
@@ -312,24 +326,6 @@ const LeaveRequestsDashboard = () => {
           return cellProps.value ? cellProps.value : "";
         },
       },
-      //   {
-      //     Header: "Reason",
-      //     accessor: "reason",
-      //     disableFilters: true,
-      //     filterable: false,
-      //     Cell: (cellProps) => {
-      //       return cellProps.value ? cellProps.value : "";
-      //     },
-      //   },
-      //   {
-      //     Header: "Supporting Docs",
-      //     accessor: "proof",
-      //     disableFilters: true,
-      //     filterable: false,
-      //     Cell: (cellProps) => {
-      //       return cellProps.value ? cellProps.value : "";
-      //     },
-      //   },
       {
         Header: "Action",
         accessor: "status",
@@ -346,13 +342,13 @@ const LeaveRequestsDashboard = () => {
                 onClick={() => {
                   setViewMode(true);
                   console.log("View Mode " + viewMode);
-                  setLeaveRequest(cellProps.row.original);
+                  viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  // setLeaveRequest(cellProps.row.original);
                   getDocDetails(
                     cellProps.row.original.leaveId,
                     cellProps.row.original.proof
                   );
 
-                  tog_leaveReq();
                   // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
@@ -367,8 +363,13 @@ const LeaveRequestsDashboard = () => {
                   console.log("View Mode before edit " + viewMode);
                   setViewMode(false);
                   console.log("View Mode " + viewMode);
-                  setLeaveRequest(cellProps.row.original);
-                  tog_leaveReq();
+                  viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  getDocDetails(
+                    cellProps.row.original.leaveId,
+                    cellProps.row.original.proof
+                  );
+                  // setLeaveRequest(cellProps.row.original);
+                  // tog_leaveReq();
                   // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
@@ -382,42 +383,6 @@ const LeaveRequestsDashboard = () => {
     []
   );
 
-  const approveOrRejectLeave = async (flag, currentLeaveReqId) => {
-    try {
-      const data = { status: flag };
-      // console.log("Agent ID to approve " + approveAgentUid);
-      const response = await putApiData(
-        `api/Leave/Approve_Reject/${currentLeaveReqId}`,
-        JSON.stringify(data)
-      );
-      if (response.success === true) {
-        if (flag === "2") {
-          toast.success("Leave Request approved", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-          tog_leaveReq();
-          getPendingLeaveDetails();
-          const timer = setTimeout(() => {
-            window.location.reload();
-          }, 3000);
-        }
-      } else {
-        toast.success("Leave Request Rejected", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-        tog_leaveReq();
-        getPendingLeaveDetails();
-        const timer = setTimeout(() => {
-          window.location.reload();
-        }, 3000);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -426,316 +391,6 @@ const LeaveRequestsDashboard = () => {
           <div className="page-title-box p-4">
             <h4 className="mb-sm-0 font-size-18">Leave Requests</h4>
           </div>
-          <Modal
-            isOpen={modal_viewLeaveRequest}
-            toggle={() => {
-              tog_leaveReq();
-            }}
-            name="Apply Leave"
-            size="lg"
-          >
-            <div className="modal-header d-flex justify-content-between">
-              <h5 className="modal-title mt-0" id="myModalLabel">
-                View the leave Requests
-              </h5>
-            </div>
-            <Card className="overflow-hidden">
-              <div className="modal-body">
-                <Form
-                  className="needs-validation"
-                  onSubmit={leaveValidation.handleSubmit}
-                >
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="uName">UserName</Label>
-                        <Input
-                          type="input"
-                          name="userName"
-                          id="userName"
-                          value={leaveValidation.values.uName}
-                          disabled={true}
-                          onBlur={leaveValidation.handleBlur}
-                          onChange={leaveValidation.handleChange}
-                          invalid={!!leaveValidation.errors.uName}
-                        >
-                          {leaveValidation.errors.uName && (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.uName}
-                            </FormFeedback>
-                          )}
-                        </Input>
-                      </div>
-                    </Col>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="leaveTypeId">Leave Type</Label>
-                        <Select
-                          name="leaveTypeId"
-                          id="leaveTypeId"
-                          value={leaveValidation.values.leaveTypeId}
-                          onChange={(selectedOption) => {
-                            leaveValidation.setFieldValue(
-                              "leaveTypeId",
-                              selectedOption
-                            );
-                          }}
-                          options={leaveTypes}
-                          isDisabled={viewMode}
-                        ></Select>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3"></div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="fromDate" className="text-left">
-                          Leave start Date
-                        </Label>
-                        <Input
-                          type="date"
-                          name="fromDate"
-                          id="fromDate"
-                          value={leaveValidation.values.fromDate}
-                          disabled={viewMode}
-                          onBlur={leaveValidation.handleBlur}
-                          onChange={leaveValidation.handleChange}
-                          invalid={!!leaveValidation.errors.fromDate}
-                        >
-                          {leaveValidation.errors.fromDate && (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.fromDate}
-                            </FormFeedback>
-                          )}
-                        </Input>
-                      </div>
-                    </Col>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="toDate" className="text-left">
-                          Leave End Date
-                        </Label>
-                        <Input
-                          type="date"
-                          name="toDate"
-                          id="toDate"
-                          value={leaveValidation.values.toDate}
-                          disabled={viewMode}
-                          onBlur={leaveValidation.handleBlur}
-                          onChange={leaveValidation.handleChange}
-                          invalid={!!leaveValidation.errors.toDate}
-                        >
-                          {leaveValidation.errors.toDate && (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.toDate}
-                            </FormFeedback>
-                          )}
-                        </Input>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="reason">Reason for Leave</Label>
-                        <Input
-                          type="textarea"
-                          name="reason"
-                          id="reason"
-                          rows={5}
-                          placeholder="Provide the reason for leave"
-                          value={leaveValidation.values.reason}
-                          disabled={viewMode}
-                          onBlur={leaveValidation.handleBlur}
-                          onChange={leaveValidation.handleChange}
-                          invalid={!!leaveValidation.errors.reason}
-                        >
-                          {leaveValidation.errors.reason && (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.reason}
-                            </FormFeedback>
-                          )}
-                        </Input>
-                      </div>
-                    </Col>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="leaveDocs" hidden={viewMode}>
-                          Upload Supporting Docs
-                        </Label>
-                        <div className="col-md-12">
-                          <Input
-                            hidden={viewMode}
-                            type="file"
-                            id="document"
-                            aria-label="Upload"
-                            accept=".png, .jpg, .jpeg, .pdf"
-                            aria-describedby="inputGroupFileAddon04"
-                            onChange={(e) => {
-                              handleFileChange(e);
-                              leaveValidation.handleChange(e);
-                            }}
-                            onBlur={leaveValidation.handleBlur}
-                            invalid={
-                              leaveValidation.touched.proof &&
-                              leaveValidation.errors.proof
-                                ? true
-                                : false
-                            }
-                          />
-                          {leaveValidation.touched.proof &&
-                          leaveValidation.errors.proof ? (
-                            <FormFeedback type="invalid">
-                              {leaveValidation.errors.proof}
-                            </FormFeedback>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div className="mb-3">
-                        {proofDoc && (
-                          <Label for="viewleaveDocs" hidden={!viewMode}>
-                            Supporting Docs:
-                            <div className="mt-3">
-                              <p>
-                                <small>
-                                  Click to view/download the document(s)
-                                </small>
-                              </p>
-                              <Row>
-                                <div>
-                                  <a
-                                    href=""
-                                    onClick={() => viewDoc(fileData, false)}
-                                  >
-                                    Document 1
-                                  </a>
-                                  <i
-                                    class="icon"
-                                    className="m-2"
-                                    style={{ color: "green" }}
-                                    onClick={() => viewDoc(fileData, true)}
-                                  >
-                                    {download()}
-                                  </i>
-                                  <i
-                                    class="icon"
-                                    className="m-2"
-                                    style={{ color: "red" }}
-                                  >
-                                    {trash()}
-                                  </i>
-                                  {/* <Button
-                                    type="button"
-                                    color="primary"
-                                    className="btn-sm btn-rounded mx-2 ml-2"
-                                    onClick={() => viewDoc(fileData, true)}
-                                  >
-                                    {download()}
-                                  </Button> */}
-                                </div>
-                              </Row>
-                            </div>
-                          </Label>
-                        )}
-                      </div>
-                    </Col>
-                    <div className="mb-3">
-                      <Label for="comments" hidden={!viewMode}>
-                        {" "}
-                        Approver Comments
-                      </Label>
-                      <Input
-                        type="textarea"
-                        name="comments"
-                        id="comments"
-                        rows={2}
-                        placeholder="Please provide comments if any!"
-                        value={leaveValidation.values.comments || null}
-                        hidden={!viewMode}
-                        // value={formData.reason}
-                        // onChange={handleChange}
-                      />
-                    </div>
-                  </Row>
-                </Form>
-                <Row>
-                  <div className="d-flex justify-content-center">
-                    <Button
-                      type="button"
-                      className="btn m-3"
-                      style={{
-                        backgroundColor: "#5e2ced",
-                        color: "white",
-                        border: "none",
-                      }}
-                      hidden={!viewMode}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        console.log("Approve button clicked");
-                        approveOrRejectLeave("2", leaveRequest.leaveId);
-                      }}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      type="button"
-                      className="btn m-3"
-                      style={{
-                        backgroundColor: "#5e2ced",
-                        color: "white",
-                        border: "none",
-                      }}
-                      hidden={!viewMode}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        console.log("Reject button clicked");
-                        approveOrRejectLeave("3", leaveRequest.leaveId);
-                      }}
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      // type="submit"
-                      className="btn m-3"
-                      style={{
-                        backgroundColor: "#5e2ced",
-                        color: "white",
-                        border: "none",
-                      }}
-                      hidden={viewMode}
-                      onClick={() => {
-                        // event.stopPropagation();
-                        console.log("Save Changes clicked");
-                        leaveValidation.handleSubmit();
-                      }}
-                    >
-                      Save Changes
-                    </Button>
-                    <Button
-                      type="button"
-                      className="btn m-3"
-                      style={{
-                        backgroundColor: "#5e2ced",
-                        color: "white",
-                        border: "none",
-                      }}
-                      onClick={handleClose}
-                      // hidden={viewMode}
-                      // disabled={staffValidation.isSubmitting}
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </Row>
-              </div>
-            </Card>
-          </Modal>
 
           <Card>
             <CardBody>
@@ -747,6 +402,15 @@ const LeaveRequestsDashboard = () => {
               />
             </CardBody>
           </Card>
+
+          <LeaveRequestModal
+            isOpen={isLeaveReqModalOpen}
+            toggle={tog_leaveReq}
+            viewMode={viewMode}
+            leaveRequest={leaveRequest}
+            proofDoc={proofDoc}
+            docDetails={docDetails}
+          />
         </Container>
       </div>
     </React.Fragment>
