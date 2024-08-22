@@ -57,25 +57,27 @@ const HolidayList = () => {
 
   return (
     // <Card style={{ marginTop: "30px" }}>
-    <CardBody>
-      <CardTitle>
-        <h4 className="mt-2">Holiday List</h4>
-      </CardTitle>
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <p>Error: {error.message}</p>
-      ) : (
-        <TableContainer
-          columns={columns}
-          data={holiday}
-          isGlobalFilter={true}
-          isAddOptions={false}
-          customPageSize={10}
-          isPageSelect={false}
-        />
-      )}
-    </CardBody>
+    <div style={{ marginLeft: "15px" }}>
+      <CardBody>
+        <CardTitle>
+          <h4 className="mt-2">Holiday List</h4>
+        </CardTitle>
+        {isLoading ? (
+          <Loader />
+        ) : error ? (
+          <p>Error: {error.message}</p>
+        ) : (
+          <TableContainer
+            columns={columns}
+            data={holiday}
+            isGlobalFilter={true}
+            isAddOptions={false}
+            customPageSize={10}
+            isPageSelect={false}
+          />
+        )}
+      </CardBody>
+    </div>
     //</Card>
   );
 };

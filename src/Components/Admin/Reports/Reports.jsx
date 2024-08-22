@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form, Field, useFormik } from "formik";
 import {
   Button,
   Container,
@@ -14,6 +14,7 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
+  Badge,
 } from "reactstrap";
 import * as Yup from "yup";
 import { utils, writeFile } from "xlsx";
@@ -21,57 +22,109 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { FaFileExcel, FaFilePdf, FaDownload } from "react-icons/fa";
 import ReactSelect from "react-select";
-import SelectStyle from "../../../Common/common/SelectStyle";
 import Loader from "../../../Common/components/Loader";
 import TableContainer from "../../../Common/components/TableContainer";
-import { getApiData, postApiData } from "../../../Common/helpers/axiosHelper";
-
-const validationSchema = Yup.object().shape({
-  employee: Yup.string().required("Employee name is required"),
-  department: Yup.string().required("Department is required"),
-  fromDate: Yup.date().required("From Date is required"),
-  toDate: Yup.date()
-    .required("To Date is required")
-    .min(Yup.ref("fromDate"), "To Date must be later than From Date"),
-});
+import axios, {
+  getApiData,
+  postApiData,
+} from "../../../Common/helpers/axiosHelper";
+import logo from "../../../assets/ai4soln-logo.png";
+import SelectStyle from "../../../Common/common/SelectStyle";
 
 const Reports = () => {
   const [state, setState] = useState({
     employee: "",
+    // startDate: "",
+    //endDate: "",
     reports: [],
     isLoading: false,
-    dropdownOpen: false,
     employeeOptions: [],
   });
+
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployeeDetails, setSelectedEmployeeDetails] = useState(null);
 
   const toggleDropdown = () =>
     setState((prev) => ({ ...prev, dropdownOpen: !state.dropdownOpen }));
 
-  const handleSubmit = (values, { resetForm }) => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, reports: [...state.reports, values] }));
-      setState((prev) => ({ ...prev, isLoading: false }));
+  const formik = useFormik({
+    initialValues: {
+      employeeName: "",
+      startDate: "",
+      endDate: "",
+    },
+    onSubmit: async (values) => {
+      setSelectedEmployee(values.employeeName);
 
-      resetForm();
-    }, 1000);
-  };
+      try {
+        //setState((prev) => ({ ...prev, isLoading: true }));
+        const response = await axios.get(
+          `api/LeaveReport/GetReports?uId=${values.employeeName}&startDate=${values.startDate}&endDate=${values.endDate}`
+        );
+
+        const reports = response.data;
+        if (Array.isArray(reports)) {
+          setState((prev) => ({ ...prev, reports, isLoading: false }));
+        }
+      } catch (error) {
+        console.error(error);
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+  });
 
   const fetchReports = async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
       const response = await getApiData("api/LeaveReport/GetReports");
-      setState((prev) => ({ ...prev, isLoading: false }));
+      const reports = Array.isArray(response.data) ? response.data : [];
+      const mappedResponse = reports.map((data) => {
+        const firstName = data.firstName || "";
+        const middleName = data.middleName || "";
+        const lastName = data.lastName || "";
 
-      const mappedResponse = response.data.map((data) => ({
-        fromDate: data.fromDate,
-        toDate: data.toDate,
-        active: data.active,
+        const employeeName = [firstName, middleName, lastName]
+          .filter((name) => name)
+          .join(" ");
+
+        return {
+          employee: employeeName,
+          employeeId: data.uId,
+          departmentName: data.departmentName || "N/A",
+          email: data.email || "N/A",
+          startDate: data.startDate,
+          endDate: data.endDate,
+          leaveTypeName: data.leaveTypeName,
+          reviewedBy: data.reviewedBy,
+          status: {
+            label:
+              data.status === 1
+                ? "Pending"
+                : data.status === 2
+                ? "Approved"
+                : data.status === 3
+                ? "Rejected"
+                : "Unknown",
+            color:
+              data.status === 1
+                ? "warning"
+                : data.status === 2
+                ? "success"
+                : data.status === 3
+                ? "danger"
+                : "secondary",
+          },
+        };
+      });
+
+      setState((prev) => ({
+        ...prev,
+        reports: mappedResponse,
+        isLoading: false,
       }));
-
-      setState((prev) => ({ ...prev, reports: mappedResponse }));
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching reports:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -79,7 +132,6 @@ const Reports = () => {
     const Employees = {
       pageNumber: 1,
       pageCount: 50,
-
       filterColumns: [
         {
           columnName: "firstName",
@@ -98,8 +150,9 @@ const Reports = () => {
       const mappedResponse = response.model.map((data) => ({
         label: data.firstName + data.middleName + data.lastName,
         value: data.employeeId,
+        departmentName: data.departmentName || "N/A",
+        email: data.email || "N/A",
       }));
-
       setState((prev) => ({ ...prev, employeeOptions: mappedResponse }));
     } catch (error) {
       console.error(error);
@@ -112,26 +165,48 @@ const Reports = () => {
 
   const columns = [
     {
-      Header: "Employee",
+      Header: "Employee Name",
       accessor: "employee",
     },
     {
+      Header: "Leave Type",
+      accessor: "leaveTypeName",
+    },
+    {
       Header: "From Date",
-      accessor: "fromDate",
+      accessor: "startDate",
     },
     {
       Header: "To Date",
-      accessor: "toDate",
+      accessor: "endDate",
+    },
+    {
+      Header: "Approved By",
+      accessor: "reviewedBy",
+    },
+    {
+      Header: "Status",
+      accessor: "status",
+      Cell: ({ value }) => (
+        <Badge color={value.color} className="font-size-11">
+          {value.label}
+        </Badge>
+      ),
     },
   ];
 
-  const data = state.reports.map((report) => ({
-    employee: report.employee,
-    fromDate: new Date(report.fromDate).toLocaleDateString(),
-    toDate: new Date(report.toDate).toLocaleDateString(),
-  }));
+  const filteredReports = selectedEmployee
+    ? state.reports.filter((report) => report.employeeId === selectedEmployee)
+    : state.reports;
 
   const downloadExcel = () => {
+    const data = state.reports.map((report) => ({
+      EmployeeName: report.employee,
+      FromDate: new Date(report.startDate).toLocaleDateString(),
+      ToDate: new Date(report.endDate).toLocaleDateString(),
+      Status: report.status.label,
+    }));
+
     const ws = utils.json_to_sheet(data);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Reports");
@@ -140,27 +215,127 @@ const Reports = () => {
 
   const downloadPDF = () => {
     const doc = new jsPDF();
-    doc.autoTable({
-      head: [["Employee", "From Date", "To Date"]],
-      body: data.map((item) => [item.employee, item.fromDate, item.toDate]),
+
+    // Add logo to the PDF
+    const imgWidth = 20;
+    const imgHeight = 10;
+    doc.addImage(logo, "PNG", 10, 10, imgWidth, imgHeight);
+
+    // Title in center of the page
+    doc.setFontSize(18);
+    doc.text("Leave Report", doc.internal.pageSize.getWidth() / 2, 20, {
+      align: "center",
     });
-    doc.save("reports.pdf");
+
+    // Add an overall page border
+    doc.setLineWidth(0.4);
+    doc.rect(
+      5,
+      5,
+      doc.internal.pageSize.getWidth() - 10,
+      doc.internal.pageSize.getHeight() - 10
+    );
+
+    // Line between logo and employee details
+    doc.setLineWidth(0.3);
+    doc.line(5, 30, doc.internal.pageSize.getWidth() - 5, 30);
+
+    const { startDate, endDate } = formik.values;
+    const employeeDetails = selectedEmployeeDetails;
+
+    doc.setFontSize(11);
+
+    // Define positions and dimensions for the employee details
+    const margin = 5;
+    const empBorderX = 10 + margin;
+    const empBorderY = 30 + margin;
+    const empBorderWidth = doc.internal.pageSize.getWidth() - (20 + margin * 2);
+    const empBorderHeight = 35;
+
+    // Draw each detail text
+    doc.text(
+      `Employee Name: ${employeeDetails.label}`,
+      20 + margin,
+      40 + margin
+    );
+
+    doc.text(
+      `Department: ${employeeDetails.departmentName}`,
+      100 + margin,
+      40 + margin
+    );
+    doc.text(
+      `From Date: ${new Date(startDate).toLocaleDateString()}`,
+      20 + margin,
+      50 + margin
+    );
+    doc.text(
+      `To Date: ${new Date(endDate).toLocaleDateString()}`,
+      100 + margin,
+      50 + margin
+    );
+    doc.text(`Email: ${employeeDetails.email}`, 20 + margin, 60 + margin);
+
+    // Draw border around employee details
+    doc.setLineWidth(0.3);
+    doc.rect(empBorderX, empBorderY, empBorderWidth, empBorderHeight);
+
+    // Adjust starting Y position for the table to ensure alignment
+    const tableStartY = empBorderY + empBorderHeight + 10;
+
+    // Table for filtered reports
+    doc.autoTable({
+      head: [
+        [
+          "Employee Name",
+          "Leave Type",
+          "From Date",
+          "To Date",
+          "Approved By",
+          "Status",
+        ],
+      ],
+      body: filteredReports.map((report) => [
+        report.employee,
+        report.leaveTypeName,
+        new Date(report.startDate).toLocaleDateString(),
+        new Date(report.endDate).toLocaleDateString(),
+        report.reviewedBy,
+        {
+          content: report.status.label,
+          styles: {
+            textColor:
+              report.status.color === "success"
+                ? "green"
+                : report.status.color === "warning"
+                ? "orange"
+                : report.status.color === "danger"
+                ? "red"
+                : "black",
+          },
+        },
+      ]),
+      startY: tableStartY,
+      theme: "grid",
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [10, 10, 10],
+      },
+      styles: { lineColor: [0, 0, 0], lineWidth: 0.1 },
+      margin: { top: 10 },
+    });
+
+    // Save the PDF with the selected employee's name
+    doc.save(`${employeeDetails.label}.pdf`);
   };
 
   return (
     <Container>
       <Row className="justify-content-center mt-4">
         <Col md={12}>
-          <h2 className="mb-4">Leave Reports</h2>
           <Formik
-            initialValues={{
-              employee: "",
-              department: "",
-              fromDate: "",
-              toDate: "",
-            }}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
+            initialValues={formik.initialValues}
+            onSubmit={formik.handleSubmit}
           >
             {({ errors, touched, setFieldValue, values }) => (
               <Form>
@@ -170,38 +345,31 @@ const Reports = () => {
                       <Label for="employee">Employee</Label>
                       <Field name="employee">
                         {({ field, form }) => {
-                          const hasError =
-                            form.errors.employee && form.touched.employee;
                           return (
                             <ReactSelect
                               {...field}
                               options={state.employeeOptions}
                               styles={SelectStyle}
-                              value={state.employeeOptions.find(
-                                (option) => option.value === values.employee
-                              )}
-                              onChange={(option) =>
-                                setFieldValue(
-                                  "employee",
-                                  option ? option.value : ""
-                                )
-                              }
+                              value={selectedEmployeeDetails}
+                              onChange={(selectedOption) => {
+                                formik.setFieldValue(
+                                  "employeeName",
+                                  selectedOption ? selectedOption.value : ""
+                                );
+                                setSelectedEmployeeDetails(selectedOption);
+                              }}
                               onBlur={() =>
-                                form.setFieldTouched("employee", true)
+                                form.setFieldTouched("employeeName", true)
                               }
                               onInputChange={(inputValue) => {
                                 if (inputValue.length >= 3) {
                                   fetchEmployees(inputValue);
                                 }
                               }}
-                              invalid={hasError}
                             />
                           );
                         }}
                       </Field>
-                      {touched.employee && errors.employee ? (
-                        <div className="text-danger">{errors.employee}</div>
-                      ) : null}
                     </FormGroup>
                   </Col>
 
@@ -211,13 +379,11 @@ const Reports = () => {
                       <Field
                         as={Input}
                         type="date"
-                        name="fromDate"
+                        name="startDate"
                         id="fromDate"
-                        invalid={touched.fromDate && !!errors.fromDate}
+                        onChange={formik.handleChange}
+                        value={formik.values.startDate}
                       />
-                      {touched.fromDate && errors.fromDate ? (
-                        <div className="text-danger">{errors.fromDate}</div>
-                      ) : null}
                     </FormGroup>
                   </Col>
                   <Col md={3}>
@@ -226,13 +392,11 @@ const Reports = () => {
                       <Field
                         as={Input}
                         type="date"
-                        name="toDate"
+                        name="endDate"
                         id="toDate"
-                        invalid={touched.toDate && !!errors.toDate}
+                        onChange={formik.handleChange}
+                        value={formik.values.endDate}
                       />
-                      {touched.toDate && errors.toDate ? (
-                        <div className="text-danger">{errors.toDate}</div>
-                      ) : null}
                     </FormGroup>
                   </Col>
                   <Col md={2}>
@@ -290,7 +454,7 @@ const Reports = () => {
           </Formik>
           <CardBody>
             <CardTitle>
-              <h4 className="mt-4">Report List</h4>
+              <h4 className="mt-4">Leave Reports</h4>
             </CardTitle>
             {state.isLoading ? (
               <Loader />
@@ -298,7 +462,7 @@ const Reports = () => {
               <div>
                 <TableContainer
                   columns={columns}
-                  data={data}
+                  data={filteredReports}
                   isGlobalFilter={true}
                   isAddOptions={false}
                   customPageSize={10}
@@ -314,37 +478,3 @@ const Reports = () => {
 };
 
 export default Reports;
-
-// <Col md={3}>
-//                     <FormGroup>
-//                       <Label for="department">Department</Label>
-//                       <Field name="department">
-//                         {({ field, form }) => (
-//                           <ReactSelect
-//                             {...field}
-//                             options={[
-//                               { value: "", label: "Select department" },
-//                               { value: "sales", label: "Sales" },
-//                               { value: "hr", label: "HR" },
-//                               { value: "finance", label: "Finance" },
-//                               { value: "marketing", label: "Marketing" },
-//                             ]}
-//                             styles={SelectStyle}
-//                             onChange={(option) =>
-//                               form.setFieldValue(field.name, option.value)
-//                             }
-//                             onBlur={() =>
-//                               form.setFieldTouched(field.name, true)
-//                             }
-//                             isInvalid={
-//                               form.touched.department &&
-//                               !!form.errors.department
-//                             }
-//                           />
-//                         )}
-//                       </Field>
-//                       {touched.department && errors.department ? (
-//                         <div className="text-danger">{errors.department}</div>
-//                       ) : null}
-//                     </FormGroup>
-//                   </Col>
