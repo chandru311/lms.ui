@@ -19,8 +19,8 @@ function AdminDashboard() {
         { title: 'Leave Requests', icon: <BsFillGrid3X3GapFill className="card_icon" />, count: '0' },
         { title: 'Leave History', icon: <BsList className="card_icon" /> },
         { title: 'Department', icon: <BsFillArchiveFill className="card_icon" />, count: '0' },
-        { title: 'Manager', icon: <BsBuilding className="card_icon" />, count: '0/0' },
-        { title: 'All Employees', icon: <BsPeopleFill className="card_icon" />, count: '0/0' },
+        { title: 'Manager', icon: <BsBuilding className="card_icon" />, count: '0' },
+        { title: 'All Employees', icon: <BsPeopleFill className="card_icon" />, count: '0' },
     ]);
     const [loading, setLoading] = useState(true);
 
@@ -38,19 +38,17 @@ function AdminDashboard() {
             for (const [key, endpoint] of Object.entries(endpoints)) {
                 const response = await getApiData(endpoint);
                 if (response?.success) {
+                    let activeCount = 0;
+
                     if (key === 'Leave Requests') {
-                        const pendingLeaves = response.data.filter(leave => leave.status === 1).length;
-                        updateCardCount('Leave Requests', pendingLeaves);
+                        activeCount = response.data.filter(leave => leave.status === 1).length;
+                    } else if (key === 'Manager' || key === 'All Employees') {
+                        activeCount = response.data.filter(item => item.active).length;
                     } else {
-                        const totalCount = response.data.length;
-                        const activeCount = (key === 'Manager' || key === 'All Employees')
-                            ? response.data.filter(item => item.active).length
-                            : totalCount;
-                        const countText = (key === 'Manager' || key === 'All Employees')
-                            ? `${activeCount}/${totalCount}`
-                            : totalCount;
-                        updateCardCount(key, countText);
+                        activeCount = response.data.length;
                     }
+
+                    updateCardCount(key, activeCount);
                 } else {
                     console.error(`Failed to fetch data for: ${key}. Response was not successful.`, response);
                 }
@@ -106,7 +104,7 @@ function AdminDashboard() {
                     >
                         {(card.title === 'Manager' || card.title === 'All Employees') && (
                             <div
-                                className={`status-indicator ${parseInt(card.count.split('/')[0]) === 0
+                                className={`status-indicator ${parseInt(card.count) === 0
                                     ? 'offline'
                                     : 'online'
                                     }`}
