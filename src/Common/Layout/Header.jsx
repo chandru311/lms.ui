@@ -15,15 +15,14 @@ import {
 } from "react-icons/bs";
 import { withTranslation } from "react-i18next";
 import withRouter from "../components/withRouter";
-import logo from "../../assets/ai4soln-logo.png";
 import { roleList } from "../common/roles";
 import "../../index.css";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import Profile from "./Profile";
-import logo from "../../assets/ai4soln-logo.png";
-import { roleList } from "../common/roles";
+
+
 
 const Header = ({ OpenSidebar, t, userRole }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -48,7 +47,7 @@ const Header = ({ OpenSidebar, t, userRole }) => {
         <button onClick={OpenSidebar}>
           <FontAwesomeIcon icon={faBars} size="xl" />
         </button>
-        <img src={logo} alt="AI4Soln Logo" />
+    
       </div>
 
             <div className="header-right">

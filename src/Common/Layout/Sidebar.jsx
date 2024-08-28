@@ -13,6 +13,7 @@ import {
     BsSearch,
     BsCalendar,
 } from "react-icons/bs";
+import logo from "../../assets/ai4soln-logo.png";
 import "../../index.css";
 
 const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
@@ -30,9 +31,8 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
     return (
         <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive" : ""}>
             <div className="sidebar-title">
-                <div className="sidebar-brand">
-                    <img src="" alt="" />
-                </div>
+                <img src={logo} alt="AI4Soln Logo" style={{ width: "80px" }} />
+             
                 <span className="icon close_icon" onClick={OpenSidebar}>
                     X
                 </span>
@@ -85,7 +85,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                 </li>
                             </>
                         )}
-                        <li className="sidebar-list-item">
+                        {/*<li className="sidebar-list-item">
                             <div className="submenu">
                                 <div className="submenu-title" onClick={toggleReports}>
                                     <BsFileText className="icon" /> Reports <BsChevronDown />
@@ -105,6 +105,14 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                     </ul>
                                 )}
                             </div>
+                        </li>*/}
+                        <li className="sidebar-list-item">
+                            <Link
+                                to="/reports"
+                                style={{ color: "black", textDecoration: "none" }}
+                            >
+                                <BsFileText className="icon" /> Reports
+                            </Link>
                         </li>
                     </>
                 )}

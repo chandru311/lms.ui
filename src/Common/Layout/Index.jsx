@@ -18,17 +18,23 @@ const Layout = (props) => {
     };
 
     return (
-        <div>
-            <Header OpenSidebar={OpenSidebar} userRole={userRole} />
+        <React.Fragment>
+            <div className="layout-container">
+                <Header OpenSidebar={OpenSidebar} userRole={userRole} />
+                <div className="main-content-container">
             <Sidebar
                 openSidebarToggle={openSidebarToggle}
                 OpenSidebar={OpenSidebar}
                 userRole={userRole}
             />
-            <div className="main-content">{props.children}</div>
-            <Footer />
-        </div>
+                    <div className="main-content">{props.children}</div>
+                </div>
+                <Footer />
+
+            </div>
+        </React.Fragment>
     );
 };
 
 export default Layout;
+

@@ -5,12 +5,15 @@ import {
     BsPeopleFill,
     BsClipboardCheck,
 } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import { getApiData } from '../../Common/helpers/axiosHelper';
 import Loader from '../../Common/components/Loader';
 import "../../index.css";
 
 function ManagerDashboard({ OpenSidebar }) {
+
     document.title = "Manager Dashboard";
+    const navigate = useNavigate();
     const [cardData, setCardData] = useState([
         { title: "Colleagues on Leave", icon: <BsPeopleFill className="card_icon" />, count: 0 },
         { title: "Holiday List", icon: <BsFillBellFill className="card_icon" />, count: null },
@@ -55,11 +58,26 @@ function ManagerDashboard({ OpenSidebar }) {
         fetchData();
     }, []);
 
+    //const handleCardClick = (title) => {
+    //    if (title === "Holiday List") {
+    //        setCurrentView("HolidayList");
+    //    } else if (title === "My Leave Balance") {
+    //        setCurrentView("LeaveBalance");
+    //    }
+    //};
+
     const handleCardClick = (title) => {
-        if (title === "Holiday List") {
-            setCurrentView("HolidayList");
-        } else if (title === "My Leave Balance") {
-            setCurrentView("LeaveBalance");
+        switch (title) {
+            case "Holiday List":
+                navigate("/holiday-list");
+                break;
+            case "Leave Requests":
+                break;
+            case "My Leave Balance":
+                navigate("/leave-balance");
+                break;
+            default:
+                break;
         }
     };
 
@@ -101,3 +119,6 @@ function ManagerDashboard({ OpenSidebar }) {
 }
 
 export default ManagerDashboard;
+
+
+
