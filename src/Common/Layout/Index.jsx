@@ -12,14 +12,16 @@ const Layout = (props) => {
   };
   return (
     <React.Fragment>
-      <div>
+      <div className="layout-container">
         <Header OpenSidebar={OpenSidebar} userRole="1" />
-        <Sidebar
-          openSidebarToggle={openSidebarToggle}
-          OpenSidebar={OpenSidebar}
-          userRole={userRole}
-        />
-        <div className="main-content">{props.children}</div>
+        <div className="main-content-container">
+          <Sidebar
+            openSidebarToggle={openSidebarToggle}
+            OpenSidebar={OpenSidebar}
+            userRole={userRole}
+          />
+          <div className="main-content">{props.children}</div>
+        </div>
         <Footer />
       </div>
     </React.Fragment>

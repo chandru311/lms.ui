@@ -42,13 +42,11 @@ const Header = ({ OpenSidebar, t, userRole }) => {
 
   return (
     <header className="header">
-      <div className="flex items-center justify-center gap-3">
-        <button onClick={OpenSidebar}>
-          <FontAwesomeIcon icon={faBars} size="xl" />
-        </button>
-        <img src={logo} alt="AI4Soln Logo" />
-      </div>
-
+      <button onClick={OpenSidebar} className="mobile-sidebar-toggle">
+        <FontAwesomeIcon icon={faBars} size="xl" />
+      </button>
+      {/* Sidebar toggle button visible only on mobile view */}
+      {/* <img src={logo} alt="AI4Soln Logo" /> */}
       <div className="header-right">
         {/* <PersonIcon className='person-icon' /> */}
         <p>{roleLabel}</p>
@@ -73,7 +71,7 @@ const Header = ({ OpenSidebar, t, userRole }) => {
             <Link to="/change-password" style={{ textDecoration: "none" }}>
               <DropdownItem>
                 <BsKey className="font-size-16 align-middle me-1" />
-                {t("ChangePassword")}
+                {t("Change Password")}
               </DropdownItem>
             </Link>
             <DropdownItem />

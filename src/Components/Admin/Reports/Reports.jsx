@@ -223,7 +223,7 @@ const Reports = () => {
 
     // Title in center of the page
     doc.setFontSize(18);
-    doc.text("Leave Report", doc.internal.pageSize.getWidth() / 2, 20, {
+    doc.text("Leave Report-2024", doc.internal.pageSize.getWidth() / 2, 20, {
       align: "center",
     });
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BsFillBellFill,
   BsFillGrid3X3GapFill,
@@ -11,6 +12,7 @@ import LeaveBalance from "../Leave/LeaveBalance";
 
 function ManagerDashboard({ OpenSidebar }) {
   const [currentView, setCurrentView] = useState("Dashboard");
+  const navigate = useNavigate();
 
   const cardData = [
     {
@@ -35,44 +37,61 @@ function ManagerDashboard({ OpenSidebar }) {
     },
   ];
 
+  // const handleCardClick = (title) => {
+  //   if (title === "Holiday List") {
+  //     setCurrentView("HolidayList");
+  //   } else if (title === "My Leave Balance") {
+  //     setCurrentView("LeaveBalance");
+  //   }
+  // };
+
   const handleCardClick = (title) => {
-    if (title === "Holiday List") {
-      setCurrentView("HolidayList");
-    } else if (title === "My Leave Balance") {
-      setCurrentView("LeaveBalance");
+    switch (title) {
+      case "Holiday List":
+        navigate("/holiday-list");
+        break;
+      case "Leave Requests":
+        break;
+      case "My Leave Balance":
+        navigate("/leave-balance");
+        break;
+      default:
+        break;
     }
   };
 
   return (
     <main className="main-container">
-      {currentView === "Dashboard" && (
-        <>
-          <div className="main-title">
-            <div className="menu-icon">
+      {/* {currentView === "Dashboard" && ( */}
+      <>
+        <div className="main-title">
+          {/* <div className="menu-icon">
               {/* <MenuIcon className="icon" onClick={OpenSidebar} /> */}
-            </div>
-            <h3>Welcome Back! Your Daily Summary</h3>
-          </div>
+          {/* </div>  */}
+          <h3>Welcome Back! Your Daily Summary</h3>
+        </div>
 
-          <div className="main-cards">
-            {cardData.map((card, index) => (
-              <div
-                className="card1"
-                key={index}
-                onClick={() => handleCardClick(card.title)}
-              >
-                <div className="card-inner">
-                  <h3>{card.title}</h3>
-                  {card.icon}
-                </div>
-                <h1>{card.count}</h1>
+        <div className="main-cards">
+          {cardData.map((card, index) => (
+            <div
+              className="card1"
+              key={index}
+              onClick={() => handleCardClick(card.title)}
+            >
+              <div className="card-inner">
+                <h3>{card.title}</h3>
+                {card.icon}
               </div>
-            ))}
-          </div>
-        </>
+              <h1>{card.count}</h1>
+            </div>
+          ))}
+        </div>
+      </>
+
+      {/*       
       )}
       {currentView === "HolidayList" && <HolidayList />}
-      {currentView === "LeaveBalance" && <LeaveBalance />}
+       {currentView === "LeaveBalance" && <LeaveBalance />} */}
     </main>
   );
 }
