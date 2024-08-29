@@ -32,7 +32,6 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
         <aside id="sidebar" className={openSidebarToggle ? "sidebar-responsive" : ""}>
             <div className="sidebar-title">
                 <img src={logo} alt="AI4Soln Logo" style={{ width: "80px" }} />
-             
                 <span className="icon close_icon" onClick={OpenSidebar}>
                     X
                 </span>
@@ -85,16 +84,21 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                 </li>
                             </>
                         )}
-                        {/*<li className="sidebar-list-item">
+                        <li className="sidebar-list-item">
                             <div className="submenu">
                                 <div className="submenu-title" onClick={toggleReports}>
-                                    <BsFileText className="icon" /> Reports <BsChevronDown />
+                                    <Link
+                                        to="/reports"
+                                        style={{ color: "black", textDecoration: "none" }}
+                                    >
+                                        <BsFileText className="icon" /> Reports  <BsChevronDown />
+                                    </Link>
                                 </div>
                                 {isReportsOpen && (
                                     <ul className="submenu-list">
                                         <li>
                                             <Link to="/overall-employee-report" className="submenu-item">
-                                                <BsSearch className="icon" />   Emp Report 
+                                                <BsSearch className="icon" /> Emp Report
                                             </Link>
                                         </li>
                                         <li>
@@ -105,14 +109,6 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                                     </ul>
                                 )}
                             </div>
-                        </li>*/}
-                        <li className="sidebar-list-item">
-                            <Link
-                                to="/reports"
-                                style={{ color: "black", textDecoration: "none" }}
-                            >
-                                <BsFileText className="icon" /> Reports
-                            </Link>
                         </li>
                     </>
                 )}
