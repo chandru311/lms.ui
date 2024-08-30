@@ -35,7 +35,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
         >
             <div className="sidebar-title">
                 {/* <div className="sidebar-brand"> */}
-                <img src={logo} alt="AI4Soln Logo" style={{ width: "80px" }} />
+                <img src={logo} alt="AI4Soln Logo" style={{ width: "80px",  }} />
                 {/* <img src="" alt="" /> */}
                 {/* </div> */}
                 <span className="icon close_icon" onClick={OpenSidebar}>
@@ -99,12 +99,30 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                             </Link>
                         </li>
                         <li className="sidebar-list-item">
-                            <Link
-                                to="/reports"
-                            // style={{ color: "black", textDecoration: "none" }}
-                            >
-                                <BsFileText className="icon" /> Reports
-                            </Link>
+                            <div className="submenu">
+                                <div className="submenu-title" onClick={toggleReports}>
+                                    <Link
+                                        to="/reports"
+                                        style={{ color: "black", textDecoration: "none" }}
+                                    >
+                                        <BsFileText className="icon" /> Reports  <BsChevronDown />
+                                    </Link>
+                                </div>
+                                {isReportsOpen && (
+                                    <ul className="submenu-list">
+                                        <li>
+                                            <Link to="/overall-employee-report" className="submenu-item">
+                                                <BsSearch className="icon" /> Emp Report
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link to="/annual-report" className="submenu-item">
+                                                <BsCalendar className="icon" /> Annual Report
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
                         </li>
                     </>
                 )}

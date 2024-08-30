@@ -20,6 +20,19 @@ a {
 body {
     font-family: "Poppins", sans-serif;
 }
+.gradient-button {
+    background: linear-gradient(100deg, #9152f5, #7950eb,#8f6cf0);
+    border:none;
+    color:white;
+}
+.red-button {
+    background-color:#ff5546;
+    border: none;
+    color: white;
+}
+.numbers::after {
+    background: linear-gradient(100deg, #9152f5, #7950eb,#8f6cf0);
+}
 
 @keyframes fadeIn {
     0% {
