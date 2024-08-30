@@ -41,7 +41,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             <li className="sidebar-list-item">
               <Link
                 to="/admin-dashboard"
-                style={{ color: "black", textDecoration: "none" }}
+                // style={{ color: "black", textDecoration: "none" }}
               >
                 <BsBarChartFill className="icon" /> Dashboard
               </Link>
@@ -49,7 +49,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             <li className="sidebar-list-item">
               <Link
                 to="/employee-administration"
-                style={{ color: "black", textDecoration: "none" }}
+                // style={{ color: "black", textDecoration: "none" }}
               >
                 <BsPeopleFill className="icon" /> Emp Management
               </Link>
@@ -57,7 +57,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             <li className="sidebar-list-item">
               <div className="submenu">
                 <div className="submenu-title" onClick={toggleLeaveManagement}>
-                  <BsMenuButtonWideFill className="icon" /> Leave Management{" "}
+                  <BsMenuButtonWideFill className="icon" /> Leave Management
                   <BsChevronDown />
                 </div>
                 {isLeaveManagementOpen && (
@@ -86,7 +86,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             <li className="sidebar-list-item">
               <Link
                 to="/department-administration"
-                style={{ color: "black", textDecoration: "none" }}
+                // style={{ color: "black", textDecoration: "none" }}
               >
                 <BsBuilding className="icon" /> Depart Management
               </Link>
@@ -94,7 +94,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             <li className="sidebar-list-item">
               <Link
                 to="/reports"
-                style={{ color: "black", textDecoration: "none" }}
+                // style={{ color: "black", textDecoration: "none" }}
               >
                 <BsFileText className="icon" /> Reports
               </Link>
