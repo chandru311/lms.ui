@@ -482,14 +482,10 @@ const AddEmployee = ({ isOpen, toggle }) => {
             >
                 <div className="modal-content">
                     <ModalHeader
-                    //  {/* toggle={toggle}*/}
-                    //changes on 1208 toggle
-                    // toggle={() => {
-                    //   toggle();
-
-          // EmpAddressRegValidation.resetForm();
-          //  }}
-          >
+                      toggle={toggle}
+                   
+                    
+                      >
             Employee Registration
             <span
               className="icon close_icon"
