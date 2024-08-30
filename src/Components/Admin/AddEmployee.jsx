@@ -487,52 +487,52 @@ const AddEmployee = ({ isOpen, toggle }) => {
                     // toggle={() => {
                     //   toggle();
 
-                    // EmpAddressRegValidation.resetForm();
-                    //  }}
+          // EmpAddressRegValidation.resetForm();
+          //  }}
+          >
+            Employee Registration
+            <span
+              className="icon close_icon"
+              style={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => toggle()}
+            >
+              X
+            </span>
+          </ModalHeader>
+          <ModalBody>
+            <div>
+              <div className="d-flex justify-content-between">
+                <Nav tabs>
+                  <NavItem
+                    className={classnames({ current: activeTab === 1 })}
+                    mx-20
+                  >
+                    <NavLink
+                      // className={activeTab === "1" ? "active" : ""}
+                      className={classnames({ current: activeTab === 1 })}
+                      color={activeTab === 1 ? "primary" : "secondary"}
+                      style={{
+                        backgroundColor: activeTab === 1 ? "#5e2ced" : "",
+                        // backgroundColor: activeTab === 1 ? "#007bff" : "",
+                        color: activeTab === 1 ? "#fff" : "",
+                      }}
+                      onClick={() => setActiveTab(1)}
+                      // style={{ backgroundColor: "#9060ff" }}
+                      // #5e2ced
                     >
-                        Employee Registration
-                        <span
-                            className="icon close_icon"
-                            style={{ position: "absolute", top: 10, right: 10 }}
-                            onClick={() => toggle()}
-                        >
-                            X
-                        </span>
-                    </ModalHeader>
-                    <ModalBody>
-                        <div>
-                            <div className="d-flex justify-content-between">
-                                <Nav tabs>
-                                    <NavItem
-                                        className={classnames({ current: activeTab === 1 })}
-                                        mx-20
-                                    >
-                                        <NavLink
-                                            // className={activeTab === "1" ? "active" : ""}
-                                            className={classnames({ current: activeTab === 1 })}
-                                            color={activeTab === 1 ? "primary" : "secondary"}
-                                            style={{
-                                                backgroundColor: activeTab === 1 ? "#5e2ced" : "",
-                                                // backgroundColor: activeTab === 1 ? "#007bff" : "",
-                                                color: activeTab === 1 ? "#fff" : "",
-                                            }}
-                                            onClick={() => setActiveTab(1)}
-                                        // style={{ backgroundColor: "#9060ff" }}
-                                        // #5e2ced
-                                        >
-                                            EmpDetails
-                                        </NavLink>
-                                    </NavItem>
-                                    <NavItem
-                                        className={classnames({ current: activeTab === 2 })}
-                                        mx-20
-                                    >
-                                        <NavLink
-                                            // className={activeTab === "2" ? "active" : ""}
-                                            className={classnames({ current: activeTab === 2 })}
-                                            color={activeTab === 2 ? "primary" : "secondary"}
-                                            style={{
-                                                backgroundColor: activeTab === 2 ? "#5e2ced" : "",
+                      EmpDetails
+                    </NavLink>
+                  </NavItem>
+                  <NavItem
+                    className={classnames({ current: activeTab === 2 })}
+                    mx-20
+                  >
+                    <NavLink
+                      // className={activeTab === "2" ? "active" : ""}
+                      className={classnames({ current: activeTab === 2 })}
+                      color={activeTab === 2 ? "primary" : "secondary"}
+                      style={{
+                        backgroundColor: activeTab === 2 ? "#5e2ced" : "",
 
                                                 // backgroundColor: activeTab === 2 ? "#007bff" : "",
                                                 color: activeTab === 2 ? "#fff" : "",
