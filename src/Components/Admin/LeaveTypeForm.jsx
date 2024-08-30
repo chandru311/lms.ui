@@ -56,8 +56,8 @@ const LeaveTypeForm = (props) => {
     validationSchema: Yup.object({
         name: Yup.string().required("Leave type is required"),
         fromDate: Yup.date()
-            .required('From date is required')
-            .min(new Date(), 'From date cannot be in the past'),
+            .required('From date is required'),
+          //  .min(new Date(), 'From date cannot be in the past'),
           toDate: Yup.date()
             .required('To date is required')
             .min(Yup.ref('fromDate'), 'To date must be after from date'),
@@ -122,51 +122,29 @@ const LeaveTypeForm = (props) => {
       formik.resetForm();
     }
   }, [leaveState]);
-  useEffect(() => {
-    calculateNoOfDays();
-  }, [formik.values.fromDate, formik.values.toDate]);
+  // useEffect(() => {
+  //   calculateNoOfDays();
+  // }, [formik.values.fromDate, formik.values.toDate]);
 
 
-  const calculateNoOfDays = () => {
-    const { fromDate, toDate } = formik.values;
-    if (fromDate && toDate) {
-      const diffInDays = differenceInCalendarDays(new Date(toDate), new Date(fromDate)) + 1; // Add 1 to include both start and end dates
-      formik.setFieldValue('noOfDays', diffInDays);
-    } else {
-      formik.setFieldValue('noOfDays', '');
-    }
-  };
+  // const calculateNoOfDays = () => {
+  //   const { fromDate, toDate } = formik.values;
+  //   if (fromDate && toDate) {
+  //     const diffInDays = differenceInCalendarDays(new Date(toDate), new Date(fromDate)) + 1; // Add 1 to include both start and end dates
+  //     formik.setFieldValue('noOfDays', diffInDays);
+  //   } else {
+  //     formik.setFieldValue('noOfDays', '');
+  //   }
+  // };
   const handleCarryForwardChange = (e) => {
     e.stopPropagation();
     formik.setFieldValue('isCarry', e.target.checked ? 1 : 0);
-    // formik.setFieldValue('isCarry', e.target.checked ? 1 : 0);
-    // e.target.checked = formik.values.isCarry === 1;
-    // if(e.currentTarget.checked=== true)
-    // {
-    //   formik.values.isCarry = 1}
-    // else{
-    //     formik.values.isCarry = 0 
-    // }
-  
     
-    //formik.values.isCarry = 1
-    //const t = 1
-    //const testVar = e.currentTarget.values.checked ? 1 : 0
-    //setIsChecked(!isChecked);
-    // if(isChecked=== true)
-    // {
-    //     isCarry=1
-        
-    // }
   };
   const handleAdvanceLeaveChange = (e) => {
     e.stopPropagation();
     formik.setFieldValue('isAdvance', e.target.checked ? 1 : 0);
-  //   if(e.currentTarget.checked=== true)
-  //       {formik.values.isAdvance = 1}
-  //       else{
-  //           formik.values.isAdvance = 0 
-  // }
+  
   };
 
   const renderSubmitButton = () => {
@@ -207,7 +185,7 @@ const LeaveTypeForm = (props) => {
               name="name"
               type="text"
               onChange={formik.handleChange}
-              value={formik.values.name}
+              value={formik.values.name || ""} 
               disabled={isViewMode}
               aria-disabled={isViewMode}
             />

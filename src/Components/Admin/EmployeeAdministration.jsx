@@ -102,17 +102,18 @@ const ManageCompany = (props) => {
           position:"top-right",
           autoClose:2000,
         })
-        getEmployeeDetails();
+       // getEmployeeDetails();
       }
       else
       {
-        {
+        
           toast.success("Employee activated successfully!", {
             position:"top-right",
             autoClose:2000,
           })
-          getEmployeeDetails();
-        }}
+       // 
+        }
+        getEmployeeDetails();
       }
     }
     else
@@ -620,7 +621,9 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
         <Loader />
       ) : (
         <>
+        <div className="page-content">
           <Container fluid>
+            
             <div className="page-title-box p-4">
               <h4 className="mb-sm-0 font-size-18">Manage Company</h4>
             </div>
@@ -660,6 +663,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
                       onClick={() => toggleTab("1")}
                     >
                       Manager
+                      <i className="fa fa-check text-success ms-2" />
                     </NavLink>
                   </NavItem>
                   )}
@@ -669,6 +673,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
                       onClick={() => toggleTab("2")}
                     >
                       Employee
+                      <i className="fa fa-check text-success ms-2" />
                     </NavLink>
                   </NavItem>
                 </Nav>
@@ -710,7 +715,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
              <AddEmployee */}
              <AddEmployee
         isOpen={isAddEmployeeModalOpen}
-        toggle={toggleAddEmployeeModal}
+       toggle={toggleAddEmployeeModal}
       />
        <ViewEmployeeDetails
       // data={selectedEmployee} 
@@ -742,6 +747,7 @@ changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
             /> */}
             {/*newly added end*/}
           </Container>
+          </div>
           {/*newly added starts*/}
         </>
       )}

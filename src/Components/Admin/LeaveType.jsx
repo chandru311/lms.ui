@@ -125,7 +125,7 @@ const LeaveType = () => {
             >
               {view()}
             </Button>
-            <Button
+            {/* <Button
              type="button"
              color="success"
              className="btn-sm btn-rounded"
@@ -146,7 +146,7 @@ const LeaveType = () => {
               onClick={() => changeDeactivate(leaveType.leaveTypeId)}
             >
               {trash()}
-            </Button>
+            </Button> */}
           </>
         );
       },

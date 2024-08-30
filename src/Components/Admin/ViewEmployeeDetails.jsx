@@ -42,6 +42,8 @@ const ViewEmployeeDetails = (props) => {
   //const [employeeData,setEmployeeData]=useState([]);
   //const [Subdetails, setSubdetails] = useState();
   const [subdetails, setSubdetails] = useState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [departDetails, setDepartDetails] = useState([]);
   useEffect(() => {
     getDepartmenDetails();
@@ -135,8 +137,8 @@ const ViewEmployeeDetails = (props) => {
          .matches(/^[A-Za-z\s]+$/, "First Name should contain only letters")
         .required("Please Enter the First name"),
        middleName: Yup.string()
-        .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters")
-       .required("Please Enter the Middle name"),
+        .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters"),
+      //  .required("Please Enter the Middle name"),
 
        lastName: Yup.string()
          .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
@@ -209,7 +211,7 @@ const ViewEmployeeDetails = (props) => {
               setActiveTab(2);
             }
           } else {
-            toast.error("Error saving Details.", {
+            toast.error("No changes to update", {
               position: "top-right",
               autoClose: 3000,
               onClose: () => {
@@ -219,12 +221,12 @@ const ViewEmployeeDetails = (props) => {
             newEmpRegValidation.setValues(newEmpRegValidation.initialValues);
           }
         } else {
-          const combinedValues = { ...values };
+          const combinedValues = { ...values ,departmentId:deptId,maritalStatus:status,gender:genderI};
           const hasChanges = Object.keys(values).some(key => values[key] !== newEmpRegValidation.initialValues[key]);
           if (hasChanges) {
             const response = await putApiData(`api/Manager/UpdateManager/${employeeData.managerId}`, combinedValues);
             if (response.success === true) {
-              toast.success("Employee Details info Updated Successfully", {
+              toast.success("Employee Details contact  info Updated Successfully", {
                 position: "top-right",
                 autoClose: 3000,
                 onClose: () => {
@@ -254,7 +256,7 @@ const ViewEmployeeDetails = (props) => {
           },
         });
       }
-      //toggle()
+    
     }
     // if (newEmpRegValidation.isValid) {
     //   console.log("save validation true");
@@ -327,7 +329,7 @@ const ViewEmployeeDetails = (props) => {
         .required("Please Enter City name"),
       landMark: Yup.string()
         .matches(/^[a-zA-Z0-9\s\-,\.]+$/, "Invalid ")
-        .required("Please Enter the landMark")
+        // .required("Please Enter the landMark")
         .trim(),
       // .matches(
       //   /^[a-zA-Z0-9-]+$/,
@@ -335,33 +337,33 @@ const ViewEmployeeDetails = (props) => {
       // ),
     }),
     onSubmit: async (values) => {
-      if (employeeAddressData !== null) {
+      try{
+        if (employeeAddressData !== null) {
         const combinedValues = { ...values };
         const hasChanges = Object.keys(values).some(key => values[key] !== empAddressRegValidation.initialValues[key]);
         if (hasChanges) {
           const response = await putApiData(`api/Address/UpdateAddress/${employeeData.addressId}`, combinedValues);
           if (response.success === true) {
-            toast.success("Employee Address info Updated Successfully", {
+            console.log("address")
+            toast.success("Employee Address details info Updated Successfully", {
               position: "top-right",
               autoClose: 3000,
-              onClose: () => {
-                //  setSaving(false);
-              }
+             
             });
-            // setActiveTab(2);
+            toggle()
+            return;
+            
           }
         }
         else {
-          toast.error("Error saving Details.", {
+          toast.info("No changes to update", {
             position: "top-right",
-            autoClose: 3000,
-            onClose: () => {
-              // setSaving(false);
-            }
+            autoClose: 2000,
+           
           });
           empAddressRegValidation.setValues(empAddressRegValidation.initialValues);
         }
-
+        
       }
       else {
         toast.info("No Changes to Update", {
@@ -371,9 +373,16 @@ const ViewEmployeeDetails = (props) => {
             //  setSaving(false);
           },
         });
-      }
-      toggle()
-
+      }}catch (error) {
+        console.error("Error updating :", error);
+        toast.error("Failed to update  details", {
+            position: "top-right",
+            autoClose: 2000,
+        });
+    } 
+      
+   //  toggle()
+    
     }
 
 
@@ -400,18 +409,17 @@ const ViewEmployeeDetails = (props) => {
       <Modal
         size="lg"
         isOpen={isOpen}
-        // role="dialog"
+        toggle={toggle}
+        role="dialog"
         autoFocus={true}
         centered={true}
         className="exampleModal"
         tabIndex="-1"
-        toggle={toggle}
+      
       >
         <div className="modal-content">
-          <ModalHeader
-            toggle={() => {
-              toggle();
-            }}
+       
+        <ModalHeader toggle={toggle}
           >
             Employee Details
           </ModalHeader>
@@ -621,7 +629,7 @@ const ViewEmployeeDetails = (props) => {
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label for="maritalStatus"> MaritalStatus:</Label>
-                            <RequiredAsterisk />
+                            
 
                             <ReactSelect
                               name="maritalStatus"
