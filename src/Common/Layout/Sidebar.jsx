@@ -9,6 +9,8 @@ import {
     BsClipboardCheck,
     BsEye,
     BsPlusLg,
+    BsSearch,
+    BsCalendar,
     BsBarChartFill,
 } from "react-icons/bs";
 import "../../index.css";
@@ -16,10 +18,15 @@ import logo from "../../assets/ai4soln-logo.png";
 
 const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
     const [isLeaveManagementOpen, setIsLeaveManagementOpen] = useState(false);
+    const [isReportsOpen, setIsReportsOpen] = useState(false);
 
     const toggleLeaveManagement = () => {
         setIsLeaveManagementOpen(!isLeaveManagementOpen);
     };
+    const toggleReports = () => {
+        setIsReportsOpen(!isReportsOpen);
+    };
+
 
     return (
         <aside
@@ -128,12 +135,30 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                             </Link>
                         </li>
                         <li className="sidebar-list-item">
-                            <Link
-                                to="/reports"
-                                style={{ color: "black", textDecoration: "none" }}
-                            >
-                                <BsFileText className="icon" /> Reports
-                            </Link>
+                            <div className="submenu">
+                                <div className="submenu-title" onClick={toggleReports}>
+                                    <Link
+                                        to="/reports"
+                                        style={{ color: "black", textDecoration: "none" }}
+                                    >
+                                        <BsFileText className="icon" /> Reports  <BsChevronDown />
+                                    </Link>
+                                </div>
+                                {isReportsOpen && (
+                                    <ul className="submenu-list">
+                                        <li>
+                                            <Link to="/overall-employee-report" className="submenu-item">
+                                                <BsSearch className="icon" /> Emp Report
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link to="/annual-report" className="submenu-item">
+                                                <BsCalendar className="icon" /> Annual Report
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
                         </li>
                     </>
                 )}

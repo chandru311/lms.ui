@@ -47,7 +47,8 @@ const Profile = ({ isOpen, toggle, userId }) => {
             lastName: profileData?.lastName || "",
      
             dob: profileData?.dob || "",
-            userName: profileData?.userName || "",
+            departmentId: profileData?.departmentId || "",
+            /*    userName: profileData?.userName || "",*/
             email: profileData?.email || "",
             mobileNumber: profileData?.mobileNumber || "",
             gender: profileData?.gender || "",
