@@ -597,7 +597,8 @@ submenu-list {
 
     .main-title h3 {
         font-size: 45px;
-        color: #5e2ced;
+     /*   color: #5e2ced;*/
+     
         font-family: "Poppins", sans-serif;
     }
 
@@ -615,12 +616,12 @@ submenu-list {
     justify-content: space-around;
     padding: 1rem;
     border-radius: 5px;
-    /* color: #eeebeb; */
+    color: #eeebeb; 
     font-size: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
-    /* background: linear-gradient(100deg,  #9152f5, #7950eb,#8f6cf0); */
-    background-color: #f0f8ff;
+     background: linear-gradient(100deg,  #9152f5, #7950eb,#8f6cf0);
+ /*   background-color: #f0f8ff;*/
 }
 
     .card1:hover {
