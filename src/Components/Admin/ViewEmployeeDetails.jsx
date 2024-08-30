@@ -17,7 +17,7 @@ import {
   NavItem,
   NavLink,
   Nav,
-  FormFeedback,
+  FormFeedback
 } from "reactstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -35,34 +35,36 @@ import { getApiData, postApiData } from "../../Common/helpers/axiosHelper.js";
 // import { roleList } from "../../../../common/data/roles";
 
 const ViewEmployeeDetails = (props) => {
-  const { isOpen, toggle, viewStatus, employeeAddressData, employeeData } =
-    props;
+  const { isOpen, toggle, viewStatus, employeeAddressData, employeeData } = props
   console.log(employeeData);
-  console.log(employeeAddressData);
+  console.log(employeeAddressData)
   //const [employeeData,setEmployeeData]=useState([]);
   //const [Subdetails, setSubdetails] = useState();
   const [subdetails, setSubdetails] = useState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [departDetails, setDepartDetails] = useState([]);
   useEffect(() => {
     getDepartmenDetails();
   }, []);
   const getDepartmenDetails = async () => {
     try {
-      // setIsLoading(true);
+     // setIsLoading(true);
       console.log("entered");
       const response = await getApiData(`api/Departments/GetAllDepartments`);
       // const deptoptions = response.data.departmentName || [];
-      //  setIsLoading(false);
+    //  setIsLoading(false);
       console.log("****************");
 
       // console.log("Department" + deptoptions);
       const mappedResponse = response.data.map((item) => ({
+   
         label: item.departmentName,
         value: item.departmentId,
       }));
       setDepartDetails(mappedResponse);
       console.log("DepartDetails" + departDetails);
-      // setIsLoading(false);
+     // setIsLoading(false);
     } catch (error) {
       // Error handling scenario
       console.error("Error fetching department data:", error);
@@ -92,86 +94,79 @@ const ViewEmployeeDetails = (props) => {
 
   // };
 
+
   // useEffect(() => {
   //   // Check if data is received and populate form fields
   //   if (data) {
   //     newEmpRegValidation.setValues(data);
   //     //console.logout("details",{newEmpRegValidation});
   //   }
-  // }, [data]);
+  // }, [data]); 
 
   const newEmpRegValidation = useFormik({
     enableReinitialize: true,
 
     initialValues: {
       // empId: "",
-      employeeId: employeeData?.employeeId || "",
-      managerId: employeeData?.managerId || "",
-      userName: employeeData?.userName || "",
-      firstName: employeeData?.firstName || "",
-      middleName: employeeData?.middleName || "",
-      lastName: employeeData?.lastName || "",
-      maritalStatus: maritalStatus.find(
-        (status) => status.label === employeeData?.maritalStatus
-      ),
-      gender: gender.find((gender) => gender.label === employeeData?.gender),
-      //  departmentId: employeeData?.departmentId || '',
-      departmentId: departDetails.find(
-        (dept) => dept.value === employeeData.departmentId
-      ),
-      // departmentName: employeeData?.departmentName || '',
-      email: employeeData?.email || "",
+       employeeId: employeeData?.employeeId || '',
+       managerId: employeeData?.managerId || '',
+       userName: employeeData?.userName || '',
+       firstName: employeeData?.firstName || '',
+       middleName: employeeData?.middleName || '',
+       lastName: employeeData?.lastName || '',
+       maritalStatus:maritalStatus.find(status=>status.label === employeeData?.maritalStatus),
+      gender:gender.find(gender=>gender.label === employeeData?.gender),
+     //  departmentId: employeeData?.departmentId || '',
+     departmentId:departDetails.find(dept => dept.value === employeeData.departmentId),
+       // departmentName: employeeData?.departmentName || '',
+       email: employeeData?.email || '',
       mobileNumber: employeeData?.mobileNumber || "",
-      dob: employeeData?.dob || "",
-      dateOfJoining: employeeData?.dateOfJoining || "",
-      password: null || "",
-      confirmPassword: null || "",
+       dob: employeeData?.dob || "",
+       dateOfJoining: employeeData?.dateOfJoining || "",
+     password: null || '',
+    confirmPassword: null || '',
 
       // personalEmail: "",
     },
 
     validationSchema: Yup.object({
-      userName: Yup.string()
-        .email("Username should be a Email")
-        .required("Please Enter Email"),
-
+       userName: Yup.string().email('Username should be a Email').required("Please Enter Email"),
+   
       firstName: Yup.string()
-        .matches(/^[A-Za-z\s]+$/, "First Name should contain only letters")
+         .matches(/^[A-Za-z\s]+$/, "First Name should contain only letters")
         .required("Please Enter the First name"),
-      middleName: Yup.string().matches(
-        /^[A-Za-z\s]+$/,
-        "Middle Name should contain only letters"
-      ),
-      // .required("Please Enter the Middle name"),
+       middleName: Yup.string()
+        .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters"),
+      //  .required("Please Enter the Middle name"),
 
-      lastName: Yup.string()
-        .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
-        .required("Please Enter the Last name"),
-      maritalStatus: Yup.object().shape({
-        label: Yup.string().required("Please Select a maritalStatus"),
-        value: Yup.string().required("Please Select a maritalStatus"),
-      }),
-      gender: Yup.object().shape({
-        label: Yup.string().required("Please Select a gender"),
-        value: Yup.string().required("Please Select a gender"),
-      }),
-      departmentId: Yup.object().shape({
-        label: Yup.string().required("Please Select a Department"),
-        value: Yup.string().required("Please Select a Department"),
-      }),
-      // departmentId:,
-      email: Yup.string()
-        .email("Enter a Valid Email ID")
-        .required("Please Enter the Email"),
+       lastName: Yup.string()
+         .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
+         .required("Please Enter the Last name"),
+         maritalStatus: Yup.object().shape({
+          label: Yup.string().required("Please Select a maritalStatus"),
+          value: Yup.string().required("Please Select a maritalStatus"),
+        }),
+        gender: Yup.object().shape({
+          label: Yup.string().required("Please Select a gender"),
+          value: Yup.string().required("Please Select a gender"),
+        }),
+         departmentId: Yup.object().shape({
+           label: Yup.string().required("Please Select a Department"),
+          value: Yup.string().required("Please Select a Department"),
+         }),
+       // departmentId:,
+        email: Yup.string()
+       .email("Enter a Valid Email ID")
+       .required("Please Enter the Email"),
       password: Yup.string()
         .required("Please Enter Password")
-        .matches(
+         .matches(
           /^(?=.*\d)(?=.*[A-Z])(?=.*\W).{8,}$/,
           "Password must be at least 8 characters and must contain at least one digit, one uppercase letter, and one special character"
         ),
       confirmPassword: Yup.string()
         .required("Please Enter Password to Confirm")
-        .oneOf([Yup.ref("password"), null], "Passwords must match")
+         .oneOf([Yup.ref("password"), null], "Passwords must match")
         .required("Confirm password is required"),
 
       mobileNumber: Yup.string()
@@ -193,63 +188,24 @@ const ViewEmployeeDetails = (props) => {
     }),
     onSubmit: async (values) => {
       //  if (newEmpRegValidation.isValid) {if()
-      let deptId = values.departmentId && values.departmentId.value;
-      let status = values.maritalStatus && values.maritalStatus.label;
-      let genderI = values.gender && values.gender.label;
+      let deptId = values.departmentId && values.departmentId.value
+     let status= values.maritalStatus && values.maritalStatus.label
+      let genderI = values.gender && values.gender.label
+
 
       if (employeeData !== null) {
         if (employeeData.employeeId !== "") {
-          const combinedValues = {
-            ...values,
-            departmentId: deptId,
-            maritalStatus: status,
-            gender: genderI,
-          };
-          const hasChanges = Object.keys(values).some(
-            (key) => values[key] !== newEmpRegValidation.initialValues[key]
-          );
+          const combinedValues = { ...values ,departmentId:deptId,maritalStatus:status,gender:genderI};
+          const hasChanges = Object.keys(values).some(key => values[key] !== newEmpRegValidation.initialValues[key]);
           if (hasChanges) {
-            const response = await putApiData(
-              `api/Employee/UpdateEmployee/${employeeData.employeeId}`,
-              combinedValues
-            );
+            const response = await putApiData(`api/Employee/UpdateEmployee/${employeeData.employeeId}`, combinedValues);
             if (response.success === true) {
               toast.success("Employee Details info Updated Successfully", {
                 position: "top-right",
                 autoClose: 3000,
                 onClose: () => {
                   //  setSaving(false);
-                },
-              });
-              setActiveTab(2);
-            }
-          } else {
-            toast.error("Error saving Details.", {
-              position: "top-right",
-              autoClose: 3000,
-              onClose: () => {
-                // setSaving(false);
-              },
-            });
-            newEmpRegValidation.setValues(newEmpRegValidation.initialValues);
-          }
-        } else {
-          const combinedValues = { ...values };
-          const hasChanges = Object.keys(values).some(
-            (key) => values[key] !== newEmpRegValidation.initialValues[key]
-          );
-          if (hasChanges) {
-            const response = await putApiData(
-              `api/Manager/UpdateManager/${employeeData.managerId}`,
-              combinedValues
-            );
-            if (response.success === true) {
-              toast.success("Employee Details info Updated Successfully", {
-                position: "top-right",
-                autoClose: 3000,
-                onClose: () => {
-                  //  setSaving(false);
-                },
+                }
               });
               setActiveTab(2);
             }
@@ -259,10 +215,36 @@ const ViewEmployeeDetails = (props) => {
               autoClose: 3000,
               onClose: () => {
                 // setSaving(false);
-              },
+              }
             });
             newEmpRegValidation.setValues(newEmpRegValidation.initialValues);
           }
+        } else {
+          const combinedValues = { ...values ,departmentId:deptId,maritalStatus:status,gender:genderI};
+          const hasChanges = Object.keys(values).some(key => values[key] !== newEmpRegValidation.initialValues[key]);
+          if (hasChanges) {
+            const response = await putApiData(`api/Manager/UpdateManager/${employeeData.managerId}`, combinedValues);
+            if (response.success === true) {
+              toast.success("Employee Details contact  info Updated Successfully", {
+                position: "top-right",
+                autoClose: 3000,
+                onClose: () => {
+                  //  setSaving(false);
+                }
+              });
+              setActiveTab(2);
+            }
+          } else {
+            toast.error("No changes to update", {
+              position: "top-right",
+              autoClose: 3000,
+              onClose: () => {
+                // setSaving(false);
+              }
+            });
+            newEmpRegValidation.setValues(newEmpRegValidation.initialValues);
+          }
+
         }
       } else {
         toast.info("No Changes to Update", {
@@ -273,8 +255,8 @@ const ViewEmployeeDetails = (props) => {
           },
         });
       }
-      //toggle()
-    },
+    
+    }
     // if (newEmpRegValidation.isValid) {
     //   console.log("save validation true");
 
@@ -286,8 +268,11 @@ const ViewEmployeeDetails = (props) => {
     //   // return Subdetails;
     // }
     //},
+
+
+
   });
-  //  const updateEmployeeDetails = async (values) => { }
+//  const updateEmployeeDetails = async (values) => { }
   // const getEmployeeAddressData= async (employeeId) => {
   //   // setIsLoading(true)
   //   const response = await getApiData(`/api/Address/GetAddressById?EmployeeId=${employeeId}`);
@@ -343,7 +328,7 @@ const ViewEmployeeDetails = (props) => {
         .required("Please Enter City name"),
       landMark: Yup.string()
         .matches(/^[a-zA-Z0-9\s\-,\.]+$/, "Invalid ")
-        .required("Please Enter the landMark")
+        // .required("Please Enter the landMark")
         .trim(),
       // .matches(
       //   /^[a-zA-Z0-9-]+$/,
@@ -351,39 +336,35 @@ const ViewEmployeeDetails = (props) => {
       // ),
     }),
     onSubmit: async (values) => {
-      if (employeeAddressData !== null) {
+      try{
+        if (employeeAddressData !== null) {
         const combinedValues = { ...values };
-        const hasChanges = Object.keys(values).some(
-          (key) => values[key] !== empAddressRegValidation.initialValues[key]
-        );
+        const hasChanges = Object.keys(values).some(key => values[key] !== empAddressRegValidation.initialValues[key]);
         if (hasChanges) {
-          const response = await putApiData(
-            `api/Address/UpdateAddress/${employeeData.addressId}`,
-            combinedValues
-          );
+          const response = await putApiData(`api/Address/UpdateAddress/${employeeData.addressId}`, combinedValues);
           if (response.success === true) {
-            toast.success("Employee Address info Updated Successfully", {
+            console.log("address")
+            toast.success("Employee Address details info Updated Successfully", {
               position: "top-right",
               autoClose: 3000,
-              onClose: () => {
-                //  setSaving(false);
-              },
+             
             });
-            // setActiveTab(2);
+            toggle()
+            return;
+            
           }
-        } else {
-          toast.error("Error saving Details.", {
-            position: "top-right",
-            autoClose: 3000,
-            onClose: () => {
-              // setSaving(false);
-            },
-          });
-          empAddressRegValidation.setValues(
-            empAddressRegValidation.initialValues
-          );
         }
-      } else {
+        else {
+          toast.info("No changes to update", {
+            position: "top-right",
+            autoClose: 2000,
+           
+          });
+          empAddressRegValidation.setValues(empAddressRegValidation.initialValues);
+        }
+        
+      }
+      else {
         toast.info("No Changes to Update", {
           position: "top-right",
           autoClose: 3000,
@@ -391,9 +372,19 @@ const ViewEmployeeDetails = (props) => {
             //  setSaving(false);
           },
         });
-      }
-      toggle();
-    },
+      }}catch (error) {
+        console.error("Error updating :", error);
+        toast.error("Failed to update  details", {
+            position: "top-right",
+            autoClose: 2000,
+        });
+    } 
+      
+   //  toggle()
+    
+    }
+
+
   });
 
   //const { isOpen, toggle } = props;
@@ -413,21 +404,21 @@ const ViewEmployeeDetails = (props) => {
     <>
       <ToastContainer closeButton={false} limit={1} />
 
+
       <Modal
         size="lg"
         isOpen={isOpen}
-        // role="dialog"
+        toggle={toggle}
+        role="dialog"
         autoFocus={true}
         centered={true}
         className="exampleModal"
         tabIndex="-1"
-        toggle={toggle}
+      
       >
         <div className="modal-content">
-          <ModalHeader
-            toggle={() => {
-              toggle();
-            }}
+       
+        <ModalHeader toggle={toggle}
           >
             Employee Details
           </ModalHeader>
@@ -542,7 +533,7 @@ const ViewEmployeeDetails = (props) => {
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label htmlFor="middleName">Middle name</Label>
-                            {/* <RequiredAsterisk /> */}
+                            <RequiredAsterisk />
                             <Input
                               name="middleName"
                               placeholder="Enter the Middle name"
@@ -637,7 +628,7 @@ const ViewEmployeeDetails = (props) => {
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label for="maritalStatus"> MaritalStatus:</Label>
-                            <RequiredAsterisk />
+                            
 
                             <ReactSelect
                               name="maritalStatus"
@@ -703,9 +694,7 @@ const ViewEmployeeDetails = (props) => {
                         </Col>
                         <Col md="6">
                           <FormGroup className="mb-3">
-                            <Label for="departmentId">
-                              Select the Department:
-                            </Label>
+                            <Label for="departmentId">Select the Department:</Label>
 
                             <ReactSelect
                               name="departmentId"
@@ -713,7 +702,8 @@ const ViewEmployeeDetails = (props) => {
                               id="departmentId"
                               options={departDetails}
                               value={newEmpRegValidation.values.departmentId}
-                              //  value={newEmpRegValidation.values.departmentName}
+                             
+                            //  value={newEmpRegValidation.values.departmentName}
                               onChange={(selectedOption) => {
                                 newEmpRegValidation.setFieldValue(
                                   "departmentId",
@@ -722,7 +712,7 @@ const ViewEmployeeDetails = (props) => {
                               }}
                               invalid={
                                 newEmpRegValidation.touched.departmentId &&
-                                newEmpRegValidation.errors.departmentId
+                                  newEmpRegValidation.errors.departmentId
                                   ? true
                                   : false
                               }
@@ -812,9 +802,7 @@ const ViewEmployeeDetails = (props) => {
                                   type="password"
                                   id="password"
                                   disabled={viewStatus}
-                                  value={
-                                    newEmpRegValidation.values.password || ""
-                                  }
+                                  value={newEmpRegValidation.values.password || ''}
                                   onChange={newEmpRegValidation.handleChange}
                                   onBlur={newEmpRegValidation.handleBlur}
                                   invalid={
@@ -844,15 +832,11 @@ const ViewEmployeeDetails = (props) => {
                                   type="password"
                                   id="confirmPassword"
                                   disabled={viewStatus}
-                                  value={
-                                    newEmpRegValidation.values
-                                      .confirmPassword || ""
-                                  }
+                                  value={newEmpRegValidation.values.confirmPassword || ''}
                                   onChange={newEmpRegValidation.handleChange}
                                   onBlur={newEmpRegValidation.handleBlur}
                                   invalid={
-                                    newEmpRegValidation.touched
-                                      .confirmPassword &&
+                                    newEmpRegValidation.touched.confirmPassword &&
                                     newEmpRegValidation.errors.confirmPassword
                                       ? true
                                       : false
@@ -927,7 +911,7 @@ const ViewEmployeeDetails = (props) => {
                           color="primary"
                           //disabled={viewStatus}
                           hidden={viewStatus}
-                          // onClick={handleSaveAndContinue}
+                        // onClick={handleSaveAndContinue}
                         >
                           Save & Continue
                         </Button>
@@ -1098,9 +1082,7 @@ const ViewEmployeeDetails = (props) => {
                               value={empAddressRegValidation.values.landMark}
                               onBlur={empAddressRegValidation.handleBlur}
                               onChange={empAddressRegValidation.handleChange}
-                              invalid={
-                                !!empAddressRegValidation.errors.landMark
-                              } // Check if there's an error for empId
+                              invalid={!!empAddressRegValidation.errors.landMark} // Check if there's an error for empId
                             />
                             {empAddressRegValidation.errors.landMark && (
                               <FormFeedback type="invalid">
@@ -1117,6 +1099,7 @@ const ViewEmployeeDetails = (props) => {
                           disabled={activeTab === 1}
                           hidden={viewStatus}
                           onClick={handlePrevious}
+
                           className="mx-1"
                         >
                           Previous
@@ -1140,7 +1123,9 @@ const ViewEmployeeDetails = (props) => {
           <ModalFooter></ModalFooter>
         </div>
       </Modal>
+
     </>
+
   );
 };
 

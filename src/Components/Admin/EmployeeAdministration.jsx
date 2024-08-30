@@ -18,12 +18,12 @@ import { edit, view, deactivate } from "../../Common/common/icons.js";
 import AddManager from "./AddManager";
 import AddDepartment from "./AddDepartment.jsx";
 import AddEmployee from "./AddEmployee";
-import { ToastContainer, toast } from "react-toastify";
-import { getApiData, putApiData } from "../../Common/helpers/axiosHelper.js";
+import { ToastContainer, toast } from 'react-toastify';
+import { getApiData,putApiData } from "../../Common/helpers/axiosHelper.js";
 import ViewEmployeeDetails from "./ViewEmployeeDetails.jsx";
 //import ViewManagerDetails from "./ViewManagerDetails.jsx";
 import Loader from "../../Common/components/Loader.jsx";
-import DeleteModal from "../../Common/components/DeleteModel.jsx";
+import  DeleteModal from '../../Common/components/DeleteModel.jsx'
 import {
   faCheck,
   faEye,
@@ -32,16 +32,16 @@ import {
   faUserCheck,
   faX,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { mapStatus } from "../../Common/common/StatusLabels";
-import "../../Common/common/status.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { mapStatus } from '../../Common/common/StatusLabels';
+import '../../Common/common/status.css';
 
 const ManageCompany = (props) => {
   const [activeTab, setActiveTab] = useState("1"); // To handle active tab
   //newly added  start
   const [isLoading, setIsLoading] = useState(false);
-  const [employeeData, setEmployeeData] = useState([]);
-  const [managerData, setManagerData] = useState([]);
+  const [ employeeData, setEmployeeData ] = useState([]);
+  const [ managerData, setManagerData ] = useState([]);
   const [employeeDetails, setEmployeeDetails] = useState([]);
   const [managerDetails, setManagerDetails] = useState([]);
   //newly added end
@@ -55,17 +55,20 @@ const ManageCompany = (props) => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [viewMode, setViewMode] = useState(false);
   const [currentRole, setCurrentRole] = useState(null);
-  const [employeeAddressData, setEmployeeAddressData] = useState([]);
-  const [managerAddressData, setmanagerAddressData] = useState([]);
+  const [employeeAddressData,setEmployeeAddressData]=useState([]);
+  const [managerAddressData,setmanagerAddressData]=useState([]);
   const [UId, setUId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   //const [UId, setUId] = useState(null);
-  const [deactivateTitle, setDeactivateTitle] = useState(false);
-
+  const [deactivateTitle, setDeactivateTitle] = useState(false)
+ 
   //newly added end
-  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
-  const userType = authUser.userType;
-  console.log("usertype" + userType);
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"))
+  const userType = authUser.userType
+  console.log("usertype"+userType)
+ 
+
+
 
   //newly added  start
   useEffect(() => {
@@ -81,58 +84,71 @@ const ManageCompany = (props) => {
     setDeleteModal(true);
     setDeactivateTitle(true);
   };
-  const changeEmployeeStatus = async (uId, flag, action, target) => {
-    try {
-      // const { employeeId,managerId} = cellProps;
-      if (target === "EMPLOYEE") {
-        // console.log("Agent ID to approve " + approveAgentUid);
-        // const response = await putApiData(`api/AgentProfile/ApproveOrReject?AgentID=${agentUid}&Approved=${flag}`)
-        const response = await putApiData(
-          `api/Employee/Active_Deactive/${uId}?isActive=${flag}`
-        );
-        // api/Employee/Active_Deactive/1?isActive=false
-        if (response.success === true) {
-          if (action === "deactivate") {
-            toast.success("Employee deactivated successfully!", {
-              position: "top-right",
-              autoClose: 2000,
-            });
-            // getEmployeeDetails();
-          } else {
-            toast.success("Employee activated successfully!", {
-              position: "top-right",
-              autoClose: 2000,
-            });
-            //
-          }
-          getEmployeeDetails();
-        }
-      } else {
-        const response = await putApiData(
-          `api/Manager/Active_Deactive/${uId}?isActive=${flag}`
-        );
-        if (response.success === true) {
-          if (action === "deactivate") {
-            toast.success("Employee deactivated successfully!", {
-              position: "top-right",
-              autoClose: 2000,
-            });
-            getManagerDetails();
-          } else {
-            {
-              toast.success("Employee activated successfully!", {
-                position: "top-right",
-                autoClose: 2000,
-              });
-              getManagerDetails();
-            }
-          }
-        }
+  const changeEmployeeStatus = async(uId, flag, action,target) => {
+   
+    try
+    {
+     // const { employeeId,managerId} = cellProps;
+      if(target === "EMPLOYEE"){
+      // console.log("Agent ID to approve " + approveAgentUid);
+     // const response = await putApiData(`api/AgentProfile/ApproveOrReject?AgentID=${agentUid}&Approved=${flag}`)
+     const response = await putApiData(`api/Employee/Active_Deactive/${uId}?isActive=${flag}`)
+    // api/Employee/Active_Deactive/1?isActive=false
+    if(response.success=== true)
+       {
+        if (action==="deactivate")
+      {
+        toast.success("Employee deactivated successfully!", {
+          position:"top-right",
+          autoClose:2000,
+        })
+       // getEmployeeDetails();
       }
-    } catch (error) {
-      console.error(error);
+      else
+      {
+        
+          toast.success("Employee activated successfully!", {
+            position:"top-right",
+            autoClose:2000,
+          })
+       // 
+        }
+        getEmployeeDetails();
+      }
     }
-  };
+    else
+    {
+      const response = await putApiData(`api/Manager/Active_Deactive/${uId}?isActive=${flag}`)
+      if(response.success=== true)
+        {
+         if (action==="deactivate")
+       {
+         toast.success("Employee deactivated successfully!", {
+           position:"top-right",
+           autoClose:2000,
+         })
+         getManagerDetails();
+       }
+       else
+       {
+         {
+           toast.success("Employee activated successfully!", {
+             position:"top-right",
+             autoClose:2000,
+           })
+           getManagerDetails();
+         }}
+       }
+    }
+    
+    
+    
+      
+    } catch(error)
+    {
+      console.error(error)
+    }
+  }
 
   // useEffect(()=>{
   //   getEmployeeDetails()
@@ -141,49 +157,53 @@ const ManageCompany = (props) => {
     try {
       setIsLoading(true);
       console.log("entered");
-      let response;
-      if (userType === 1) {
+      let response
+      if(userType === 1)
+      {
         //getting employee details for admin
-        const response = await getApiData(`api/Employee/GetAllEmployees`);
+         const response = await getApiData(`api/Employee/GetAllEmployees`);
         setIsLoading(false);
-        const mappedResponse = response.data.map((item, index) => ({
-          index: index + 1,
-          uId: item.uId,
-          sno: index + 1,
-          name: item.firstName,
-          email: item.email,
-          departmentId: item.departmentId,
-          department: item.departmentName,
-          employeeId: item.employeeId,
-          addressId: item.addressId,
-          active: item.active,
+         const mappedResponse = response.data.map((item, index) => ({
+           index: index + 1,
+           uId:item.uId,
+           sno: index+ 1,
+           name: item.firstName,
+           email: item.email,
+           departmentId: item.departmentId,
+           department:item.departmentName,
+           employeeId:item.employeeId,
+           addressId:item.addressId,
+          active:item.active,
           //active:mapStatus(item.active),
-
-          //console.log("employee details "+response.data);
-        }));
-        setEmployeeDetails(mappedResponse || []);
-      } else {
+   
+           //console.log("employee details "+response.data);
+         }));
+         setEmployeeDetails(mappedResponse || []);
+      }
+      else{
         //getting employee details based on manager
         const response = await getApiData(`api/Employee/GetEmployeesByManager`);
         setIsLoading(false);
         const mappedResponse = response.data.map((item, index) => ({
           index: index + 1,
-          uId: item.uId,
-          sno: index + 1,
+          uId:item.uId,
+          sno: index+ 1,
           name: item.firstName,
           email: item.email,
           departmentId: item.departmentId,
-          department: item.departmentName,
-          employeeId: item.employeeId,
-          addressId: item.addressId,
-          active: item.active,
-          //   active:mapStatus(item.active),
-
+           department:item.departmentName,
+          employeeId:item.employeeId,
+          addressId:item.addressId,
+           active:item.active,
+      //   active:mapStatus(item.active),
+  
           //console.log("employee details "+response.data);
         }));
         setEmployeeDetails(mappedResponse || []);
       }
-
+     
+     
+     
       setIsLoading(false);
       console.log("employeedeatils" + employeeDetails);
     } catch (error) {
@@ -200,14 +220,14 @@ const ManageCompany = (props) => {
       setIsLoading(false);
       const mappedResponse = response.data.map((item, index) => ({
         index: index + 1,
-        sno: index + 1,
+        sno: index+1,
         name: item.firstName,
-        managerId: item.managerId,
-        addressId: item.addressId,
+        managerId:item.managerId,
+        addressId:item.addressId,
         email: item.email,
         departmentId: item.departmentId,
-        department: item.departmentName,
-        active: item.active,
+        department:item.departmentName,
+        active:item.active,
 
         //console.log("employee details "+response.data);
       }));
@@ -221,87 +241,95 @@ const ManageCompany = (props) => {
     }
   };
   const viewEmployeeData = (cellProps, target) => {
-    const { employeeId, uId, addressId, managerId } = cellProps;
+    const { employeeId,uId,addressId,managerId} = cellProps;
     //console.log(Uid);
-    const getEmployeeData = async () => {
+    const getEmployeeData= async () => {
       // setIsLoading(true)
-      let response;
-      if (target === "EMPLOYEE") {
-        response = await getApiData(
-          `api/Employee/GetEmployeeById/${employeeId}`
-        );
-        const mappedResponse = {
-          // index: key ,
-          employeeId: response.data.employeeId,
-          managerId: response.data.managerId,
-          addressId: response.data.addressId,
-          active: response.data.active,
-          userName: response.data.userName,
-          firstName: response.data.firstName,
-          middleName: response.data.middleName,
-          lastName: response.data.lastName,
-          departmentId: response.data?.departmentId || "",
-          departmentName: response.data?.departmentName || "",
-          maritalStatus: response.data?.maritalStatus || "",
-          gender: response.data?.gender || "",
-          email: response.data.email,
-          mobileNumber: response.data.mobileNumber,
-          dob: response.data.dob,
-          dateOfJoining: response.data.dateOfJoining,
-          password: response.data.password,
-          confirmPassword: response.data.confirmPassword,
+      let response 
+      if(target === "EMPLOYEE")
+      {
+        response = await getApiData(`api/Employee/GetEmployeeById/${employeeId}`);
+        const mappedResponse ={
+        // index: key ,
+          employeeId:response.data.employeeId ,
+          managerId:response.data.managerId ,
+          addressId:response.data.addressId ,
+          active:response.data.active ,
+          userName:response.data.userName ,
+         firstName:response.data.firstName ,
+      middleName:response.data.middleName,
+      lastName: response.data .lastName ,
+      departmentId:response.data ?.departmentId || '',
+      departmentName:response.data?.departmentName || '',
+      maritalStatus:response.data?.maritalStatus || '',
+      gender:response.data?.gender || '',
+      email:response.data.email,
+      mobileNumber:response.data.mobileNumber,
+      dob:response.data.dob,
+      dateOfJoining:response.data.dateOfJoining,
+      password:response.data.password,
+      confirmPassword:response.data.confirmPassword,
         };
-        setEmployeeData(mappedResponse);
-      } else {
+        setEmployeeData(mappedResponse)
+      }
+      else
+      {
         response = await getApiData(`api/Manager/GetManagerById/${managerId}`);
         const mappedResponse = {
-          //   index:key,
-          employeeId: response.data?.employeeId || "",
-          managerId: response.data?.managerId || "",
-          addressId: response.data?.addressId || "",
-          active: response.data?.active || "",
-          userName: response.data?.userName || "",
-          firstName: response.data?.firstName || "",
-          middleName: response.data?.middleName || "",
-          lastName: response.data?.lastName || "",
-          maritalStatus: response.data?.maritalStatus || "",
-          gender: response.data?.gender || "",
-          departmentId: response.data?.departmentId || "",
-          departmentName: response.data?.departmentName || "",
-          email: response.data?.email || "",
-          mobileNumber: response.data?.mobileNumber || "",
-          dob: response.data?.dob || "",
-          dateOfJoining: response.data?.dateOfJoining || "",
-          password: response.data?.password || "",
-          confirmPassword: response.data?.confirmPassword || "",
-        };
-        setEmployeeData(mappedResponse);
+       //   index:key,
+          employeeId:response.data?.employeeId || '',
+          managerId:response.data?.managerId || '',
+          addressId:response.data?.addressId || '',
+          active:response.data?.active || '',
+          userName:response.data?.userName || '',
+         firstName:response.data?.firstName || '',
+      middleName:response.data?.middleName || '',
+      lastName: response.data ?.lastName || '',
+      maritalStatus:response.data?.maritalStatus || '',
+      gender:response.data?.gender || '',
+      departmentId:response.data ?.departmentId || '',
+      departmentName:response.data?.departmentName || '',
+      email:response.data?.email || '',
+      mobileNumber:response.data?.mobileNumber|| "",
+      dob:response.data?.dob ||"",
+      dateOfJoining:response.data?.dateOfJoining || "",
+      password:response.data?.password|| "",
+      confirmPassword:response.data?.confirmPassword|| "",
+        } ;
+        setEmployeeData(mappedResponse)
+  
       }
-
-      // setIsLoading(false)
-
-      console.log("mangerdetails" + employeeData);
+      
+      
+     
+     // setIsLoading(false)
+    
+     
+     console.log("mangerdetails"+employeeData)
+     
     };
-    const getEmployeeAddressData = async () => {
+    const getEmployeeAddressData= async () => { 
       // setIsLoading(true)
+      
+      const response = await getApiData(`api/Address/GetAddressById/${addressId}`);
+     // setIsLoading(false)
+    
+   
+    const mappedResponse = {
+    //  index: index + 1,
+        country: response.data.country||"",
+        state:response.data.state|| "",
+        city:response.data.city|| "",
+        street:response.data.street|| "",
+        homeNo:response.data.homeNo|| "",
+        postalCode:response.data.postalCode|| "",
+        landMark:response.data.landMark|| "",
+  };
+     
 
-      const response = await getApiData(
-        `api/Address/GetAddressById/${addressId}`
-      );
-      // setIsLoading(false)
-
-      const mappedResponse = {
-        //  index: index + 1,
-        country: response.data.country || "",
-        state: response.data.state || "",
-        city: response.data.city || "",
-        street: response.data.street || "",
-        homeNo: response.data.homeNo || "",
-        postalCode: response.data.postalCode || "",
-        landMark: response.data.landMark || "",
-      };
-
-      setEmployeeAddressData(mappedResponse);
+     setEmployeeAddressData(mappedResponse)
+    
+     
     };
 
     getEmployeeData();
@@ -357,23 +385,25 @@ const ManageCompany = (props) => {
         accessor: "active",
         disableFilters: true,
         filterable: false,
-        //   Cell: ({ value }) => {
-        //     return (
-        //         <Badge className={`font-size-11 badge-${value.color}`}>
-        //             {value.label}
-        //         </Badge>
-        //     );
-        // },
-        Cell: (cellProps) => {
+      //   Cell: ({ value }) => {
+      //     return (
+      //         <Badge className={`font-size-11 badge-${value.color}`}>
+      //             {value.label}
+      //         </Badge>
+      //     );
+      // },
+        Cell: cellProps => {
           return (
-            <Badge
-              className={
-                "font-size-11 badge-" +
-                (cellProps.row.original.active === 1 ? "success" : "danger")
+              <Badge              
+                className={
+                 "font-size-11 badge-" +
+                  (cellProps.row.original.active === 1 ? "success" : "danger")
               }
-            >
+               >
               {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
-            </Badge>
+              </Badge>
+              
+           
           );
         },
       },
@@ -390,11 +420,12 @@ const ManageCompany = (props) => {
               title="View"
               style={{ marginRight: "5px" }}
               aria-label="view"
-              onClick={() => {
-                setViewMode(true);
+              onClick={()=>{
+                setViewMode(true)
                 viewEmployeeData(cellProps.row.original);
-                console.log(cellProps.row.original);
+                console.log(cellProps.row.original)
                 toggleViewEmployeeModal();
+            
               }}
             >
               {view()}
@@ -406,51 +437,45 @@ const ManageCompany = (props) => {
               className="btn-sm btn-rounded"
               title="Edit"
               style={{ marginRight: "5px" }}
-              onClick={() => {
-                setViewMode(false);
+              onClick={()=>{
+                setViewMode(false)
                 viewEmployeeData(cellProps.row.original);
                 toggleViewEmployeeModal();
+            
               }}
             >
               {edit()}
             </Button>
 
-            {cellProps.row.original.active === 1 && (
-              <Button
-                type="button"
-                color="danger"
-                className="btn-sm btn-rounded"
-                title="Deactivate"
-                onClick={() => {
-                  changeEmployeeStatus(
-                    cellProps.row.original.managerId,
-                    false,
-                    "deactivate"
-                  );
-                }}
-                style={{ marginRight: "5px" }}
-              >
-                <FontAwesomeIcon icon={faX} />
-              </Button>
-            )}
-            {cellProps.row.original.active === 0 && (
-              <Button
-                type="button"
-                color="success"
-                className="btn-sm btn-rounded"
-                title="Activate"
-                onClick={() => {
-                  changeEmployeeStatus(
-                    cellProps.row.original.managerId,
-                    true,
-                    "activate"
-                  );
-                }}
-                style={{ marginRight: "5px" }}
-              >
-                <FontAwesomeIcon icon={faCheck} />
-              </Button>
-            )}
+            {(cellProps.row.original.active === 1) && ( 
+        
+        <Button
+        type="button"
+        color="danger"
+        className="btn-sm btn-rounded"
+        title="Deactivate"
+        onClick={() => {                      
+              
+changeEmployeeStatus(cellProps.row.original.managerId,false,"deactivate");
+            } }                       
+        style={{ marginRight: "5px" }}
+        >
+        <FontAwesomeIcon icon={faX} />
+      </Button>)}
+       {cellProps.row.original.active === 0 && ( 
+        <Button
+        type="button"
+        color="success"
+        className="btn-sm btn-rounded"
+        title="Activate"
+        onClick={() => {                      
+              
+changeEmployeeStatus(cellProps.row.original.managerId,true,"activate");
+            } }
+        style={{ marginRight: "5px"  }}
+        >
+        <FontAwesomeIcon icon={faCheck} />
+    </Button>)}
           </React.Fragment>
         ),
       },
@@ -490,25 +515,28 @@ const ManageCompany = (props) => {
         accessor: "active",
         disableFilters: true,
         filterable: false,
-        //   Cell: ({ value }) => {
-        //     return (
-        //         <Badge className={`font-size-11 badge-${value.color}`}>
-        //             {value.label}
-        //         </Badge>
-        //     );
-        // },
-        Cell: (cellProps) => {
+      //   Cell: ({ value }) => {
+      //     return (
+      //         <Badge className={`font-size-11 badge-${value.color}`}>
+      //             {value.label}
+      //         </Badge>
+      //     );
+      // },
+        Cell: cellProps => {
           return (
-            <Badge
-              className={
-                "font-size-11 badge-" +
-                (cellProps.row.original.active === 1 ? "success" : "danger")
+              <Badge              
+                className={
+                 "font-size-11 badge-" +
+                  (cellProps.row.original.active === 1 ? "success" : "danger")
               }
-            >
+               >
               {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
-            </Badge>
+              </Badge>
+           
           );
         },
+        
+        
       },
       {
         Header: "Actions",
@@ -516,75 +544,69 @@ const ManageCompany = (props) => {
         accessor: "actions",
         Cell: (cellProps) => (
           <React.Fragment>
-            <Button
+             <Button
               type="button"
               color="primary"
               className="btn-sm btn-rounded"
               title="View"
               style={{ marginRight: "5px" }}
-              onClick={() => {
-                setViewMode(true);
+              onClick={()=>{
+                setViewMode(true)
                 viewEmployeeData(cellProps.row.original, "EMPLOYEE");
-                console.log(cellProps.row.original);
+                console.log(cellProps.row.original)
                 toggleViewEmployeeModal();
+            
               }}
               aria-label="view"
             >
               {view()}
-            </Button>
+              </Button>
 
-            <Button
+              <Button
               type="button"
               color="success"
               className="btn-sm btn-rounded"
               title="Edit"
               style={{ marginRight: "5px" }}
-              onClick={() => {
-                setViewMode(false);
+              onClick={()=>{
+                setViewMode(false)
                 viewEmployeeData(cellProps.row.original, "EMPLOYEE");
                 toggleViewEmployeeModal();
+            
               }}
             >
               {edit()}
             </Button>
-            {cellProps.row.original.active === 1 && (
-              <Button
-                type="button"
-                color="danger"
-                className="btn-sm btn-rounded"
-                title="Deactivate"
-                onClick={() => {
-                  changeEmployeeStatus(
-                    cellProps.row.original.employeeId,
-                    false,
-                    "deactivate",
-                    "EMPLOYEE"
-                  );
-                }}
-                style={{ marginRight: "5px" }}
-              >
-                <FontAwesomeIcon icon={faX} />
-              </Button>
-            )}
-            {cellProps.row.original.active === 0 && (
-              <Button
-                type="button"
-                color="success"
-                className="btn-sm btn-rounded"
-                title="Activate"
-                onClick={() => {
-                  changeEmployeeStatus(
-                    cellProps.row.original.employeeId,
-                    true,
-                    "activate",
-                    "EMPLOYEE"
-                  );
-                }}
-                style={{ marginRight: "5px" }}
-              >
-                <FontAwesomeIcon icon={faCheck} />
-              </Button>
-            )}
+            {(cellProps.row.original.active === 1) && ( 
+        
+                    <Button
+                    type="button"
+                    color="danger"
+                    className="btn-sm btn-rounded"
+                    title="Deactivate"
+                    onClick={() => {                      
+                          
+  changeEmployeeStatus(cellProps.row.original.employeeId,false,"deactivate","EMPLOYEE");
+                        } }                       
+                    style={{ marginRight: "5px" }}
+                    >
+                    <FontAwesomeIcon icon={faX} />
+                  </Button>)}
+                   {cellProps.row.original.active === 0 && ( 
+                    <Button
+                    type="button"
+                    color="success"
+                    className="btn-sm btn-rounded"
+                    title="Activate"
+                    onClick={() => {                      
+                          
+   changeEmployeeStatus(cellProps.row.original.employeeId,true,"activate","EMPLOYEE");
+                        } }
+                    style={{ marginRight: "5px" }}
+                    >
+                    <FontAwesomeIcon icon={faCheck} />
+                </Button>)}
+              
           </React.Fragment>
         ),
       },
@@ -599,15 +621,16 @@ const ManageCompany = (props) => {
         <Loader />
       ) : (
         <>
-          <div className="page-content">
-            <Container fluid>
-              <div className="page-title-box p-4">
-                <h4 className="mb-sm-0 font-size-18">Manage Company</h4>
-              </div>
-              <Card>
-                <CardBody>
-                  <div className="text-sm-end">
-                    {/*} <Button
+        <div className="page-content">
+          <Container fluid>
+            
+            <div className="page-title-box p-4">
+              <h4 className="mb-sm-0 font-size-18">Manage Company</h4>
+            </div>
+            <Card>
+              <CardBody>
+                <div className="text-sm-end">
+                  {/*} <Button
                     type="button"
                     color="primary"
                     onClick={toggleAddManagerModal}
@@ -623,63 +646,65 @@ const ManageCompany = (props) => {
                   >
                     Add Department
                   </Button>*/}
-                    <Button
-                      type="button"
-                      onClick={toggleAddEmployeeModal}
-                      className="btn mb-2 me-2"
+                  <Button
+                    type="button"
+                    onClick={toggleAddEmployeeModal}
+                    className="btn mb-2 me-2"
+                  >
+                    Add Employee
+                  </Button>
+                </div>
+                <Nav tabs>
+                {userType === 1 && (
+                  <NavItem>
+
+                    <NavLink
+                      className={activeTab === "1" ? "active" : ""}
+                      onClick={() => toggleTab("1")}
                     >
-                      Add Employee
-                    </Button>
-                  </div>
-                  <Nav tabs>
-                    {userType === 1 && (
-                      <NavItem>
-                        <NavLink
-                          className={activeTab === "1" ? "active" : ""}
-                          onClick={() => toggleTab("1")}
-                        >
-                          Manager
-                          <i className="fa fa-check text-success ms-2" />
-                        </NavLink>
-                      </NavItem>
-                    )}
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "2" ? "active" : ""}
-                        onClick={() => toggleTab("2")}
-                      >
-                        Employee
-                        <i className="fa fa-check text-success ms-2" />
-                      </NavLink>
-                    </NavItem>
-                  </Nav>
-                  <TabContent activeTab={activeTab}>
-                    {userType === 1 && (
-                      <TabPane tabId="1">
-                        <TableContainer
-                          data={managerDetails}
-                          columns={managerColumns}
-                          isGlobalFilter={true}
-                          isAddOptions={false}
-                          customPageSize={10}
-                          isPageSelect={false}
-                        />
-                      </TabPane>
-                    )}
-                    <TabPane tabId="2">
-                      <TableContainer
-                        data={employeeDetails}
-                        columns={employeeColumns}
-                        isGlobalFilter={true}
-                        isAddOptions={false}
-                        customPageSize={10}
-                        isPageSelect={false}
-                      />
-                    </TabPane>
-                  </TabContent>
-                </CardBody>
-              </Card>
-              {/* <AddManager
+                      Manager
+                      <i className="fa fa-check text-success ms-2" />
+                    </NavLink>
+                  </NavItem>
+                  )}
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "2" ? "active" : ""}
+                      onClick={() => toggleTab("2")}
+                    >
+                      Employee
+                      <i className="fa fa-check text-success ms-2" />
+                    </NavLink>
+                  </NavItem>
+                </Nav>
+                <TabContent activeTab={activeTab}>
+                {userType === 1 && (
+                  <TabPane tabId="1">
+                    <TableContainer
+                      data={managerDetails}
+                      columns={managerColumns}
+                      
+                      isGlobalFilter={true}
+                      isAddOptions={false}
+                      customPageSize={10}
+                      isPageSelect={false}
+                    />
+                  </TabPane>
+                      )}
+                  <TabPane tabId="2">
+                    <TableContainer
+                      data={employeeDetails}
+                      columns={employeeColumns}
+                      isGlobalFilter={true}
+                      isAddOptions={false}
+                      customPageSize={10}
+                      isPageSelect={false}
+                    />
+                  </TabPane>
+                </TabContent>
+              </CardBody>
+            </Card>
+            {/* <AddManager
               isOpen={isAddManagerModalOpen}
               toggle={toggleAddManagerModal}
             />
@@ -688,19 +713,22 @@ const ManageCompany = (props) => {
               toggle={toggleAddDepartmentModal}
             />
              <AddEmployee */}
-              <AddEmployee
-                isOpen={isAddEmployeeModalOpen}
-                toggle={toggleAddEmployeeModal}
-              />
-              <ViewEmployeeDetails
-                // data={selectedEmployee}
-                isOpen={isViewEmployeeModalOpen}
-                toggle={toggleViewEmployeeModal}
-                viewStatus={viewMode}
-                employeeData={employeeData}
-                employeeAddressData={employeeAddressData}
-              />
-              {/* <ViewManagerDetails
+             <AddEmployee
+        isOpen={isAddEmployeeModalOpen}
+       toggle={toggleAddEmployeeModal}
+      />
+       <ViewEmployeeDetails
+      // data={selectedEmployee} 
+      isOpen={isViewEmployeeModalOpen}
+      toggle={toggleViewEmployeeModal}
+      viewStatus={viewMode}
+      employeeData={employeeData}
+      employeeAddressData={employeeAddressData}
+     
+      
+
+       />
+        {/* <ViewManagerDetails
       // data={selectedEmployee} 
       isOpen={isViewManagerModalOpen}
       toggle={toggleViewEmployeeModal}
@@ -710,15 +738,15 @@ const ManageCompany = (props) => {
       
 
        /> */}
-              {/* newly added starts
+            {/* newly added starts
             <ViewEmployeeDetails
               data={selectedEmployee}
               isOpen={isViewEmployeeModalOpen}
               toggle={toggleViewEmployeeModal}
               viewStatus={viewMode}
             /> */}
-              {/*newly added end*/}
-            </Container>
+            {/*newly added end*/}
+          </Container>
           </div>
           {/*newly added starts*/}
         </>
