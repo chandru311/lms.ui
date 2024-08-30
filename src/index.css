@@ -278,7 +278,7 @@ html, body {
     font-family: "Poppins", sans-serif;
     background-color: #f1f1f1;
     padding: 5px;
-    position: relative; /* Ensure it doesn’t overlap content */
+    position: relative; /* Ensure it doesnâ€™t overlap content */
     bottom: 0;
     width: 100%;
 }
@@ -322,6 +322,7 @@ html, body {
 
 .header-right {
     display: flex;
+
     align-items: center;
     margin-left: auto;
     /* justify-content: flex-end; */
@@ -335,12 +336,23 @@ html, body {
 .header-item {
     display: flex;
     align-items: center;
+   
 }
 
     .header-item span {
         margin-right: 0.5rem;
     }
+/* Dropdown  styling */
 
+  .dropdown-menu .dropdown-item {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa; 
+    color: #5e2ced;
+  }
+  
 /* Sidebar */
 /*sidebar icon */
 /* Hide close icon on large screens */
@@ -444,7 +456,7 @@ html, body {
     transition: transform 0.3s ease-in-out;
     transform: translateX(-100%);
     z-index: 1000;
-}
+} 
 
 
     #sidebar.sidebar-responsive {
@@ -490,17 +502,35 @@ html, body {
     .sidebar-list-item:hover {
         cursor: pointer;
     }
-
+    .sidebar-list-item a {
+        color: black;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      
+      .sidebar-list-item a:hover {
+        color: #5e2ced; 
+        text-decoration: none; 
+      }
+      
 .submenu-item {
     margin-top: 1rem;
     display: block;
     list-style: none;
-    text-decoration: none;
     color: black;
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
-
+.submenu-item:hover {
+    color: #5e2ced; 
+    text-decoration: none; 
+}
+.submenu-title:hover {
+    color: #5e2ced; /* Hover color for submenu title */
+}
 .submenu-title {
     cursor: pointer;
+
 }
 
 submenu-list {
@@ -522,6 +552,10 @@ submenu-list {
         padding: 10px;
     }
 
+    .main-content {
+        margin-left: 0; /* No space for sidebar on mobile */
+        padding: 10px;
+      }
     .sidebar-list-item {
         font-size: 14px;
     }
@@ -584,6 +618,7 @@ submenu-list {
     justify-content: space-around;
     padding: 1rem;
     border-radius: 5px;
+     /* color: #eeebeb; */
     font-size: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;

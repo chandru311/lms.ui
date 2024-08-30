@@ -15,14 +15,15 @@ import {
 } from "react-icons/bs";
 import logo from "../../assets/ai4soln-logo.png";
 import "../../index.css";
+import logo from "../../assets/ai4soln-logo.png";
 
 const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
     const [isLeaveManagementOpen, setIsLeaveManagementOpen] = useState(false);
     const [isReportsOpen, setIsReportsOpen] = useState(false);
 
-    const toggleLeaveManagement = () => {
-        setIsLeaveManagementOpen(!isLeaveManagementOpen);
-    };
+  const toggleLeaveManagement = () => {
+    setIsLeaveManagementOpen(!isLeaveManagementOpen);
+  };
 
     const toggleReports = () => {
         setIsReportsOpen(!isReportsOpen);

@@ -30,6 +30,8 @@ import axios, {
 } from "../../../Common/helpers/axiosHelper";
 import logo from "../../../assets/ai4soln-logo.png";
 import SelectStyle from "../../../Common/common/SelectStyle";
+import { mapStatus } from "../../../Common/common/StatusLabels";
+import "../../../Common/common/status.css";
 
 const Reports = () => {
   const [state, setState] = useState({
@@ -96,27 +98,9 @@ const Reports = () => {
           endDate: data.endDate,
           leaveTypeName: data.leaveTypeName,
           reviewedBy: data.reviewedBy,
-          status: {
-            label:
-              data.status === 1
-                ? "Pending"
-                : data.status === 2
-                ? "Approved"
-                : data.status === 3
-                ? "Rejected"
-                : "Unknown",
-            color:
-              data.status === 1
-                ? "warning"
-                : data.status === 2
-                ? "success"
-                : data.status === 3
-                ? "danger"
-                : "secondary",
-          },
+          status: mapStatus(data.status),
         };
       });
-
       setState((prev) => ({
         ...prev,
         reports: mappedResponse,
@@ -127,7 +111,6 @@ const Reports = () => {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
-
   const fetchEmployees = async (inputValue) => {
     const Employees = {
       pageNumber: 1,
@@ -184,14 +167,17 @@ const Reports = () => {
       Header: "Approved By",
       accessor: "reviewedBy",
     },
+
     {
       Header: "Status",
       accessor: "status",
-      Cell: ({ value }) => (
-        <Badge color={value.color} className="font-size-11">
-          {value.label}
-        </Badge>
-      ),
+      Cell: ({ value }) => {
+        return (
+          <Badge className={`font-size-11 badge-${value.color}`}>
+            {value.label}
+          </Badge>
+        );
+      },
     },
   ];
 
@@ -223,7 +209,7 @@ const Reports = () => {
 
     // Title in center of the page
     doc.setFontSize(18);
-    doc.text("Leave Report", doc.internal.pageSize.getWidth() / 2, 20, {
+    doc.text("Leave Report-2024", doc.internal.pageSize.getWidth() / 2, 20, {
       align: "center",
     });
 
