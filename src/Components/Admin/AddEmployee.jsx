@@ -502,8 +502,14 @@ const AddEmployee = ({ isOpen, toggle }) => {
                     mx-20
                   >
                     <NavLink
+                      // className={activeTab === "1" ? "active" : ""}
                       className={classnames({ current: activeTab === 1 })}
                       color={activeTab === 1 ? "primary" : "secondary"}
+                      style={{
+                        backgroundColor: activeTab === 1 ? "#5e2ced" : "",
+                        // backgroundColor: activeTab === 1 ? "#007bff" : "",
+                        color: activeTab === 1 ? "#fff" : "",
+                      }}
                       onClick={() => setActiveTab(1)}
                       // style={{ backgroundColor: "#9060ff" }}
                       // #5e2ced
@@ -516,8 +522,15 @@ const AddEmployee = ({ isOpen, toggle }) => {
                     mx-20
                   >
                     <NavLink
+                      // className={activeTab === "2" ? "active" : ""}
                       className={classnames({ current: activeTab === 2 })}
                       color={activeTab === 2 ? "primary" : "secondary"}
+                      style={{
+                        backgroundColor: activeTab === 2 ? "#5e2ced" : "",
+
+                        // backgroundColor: activeTab === 2 ? "#007bff" : "",
+                        color: activeTab === 2 ? "#fff" : "",
+                      }}
                       onClick={() => setActiveTab(2)}
                     >
                       EmpAddress
@@ -613,7 +626,7 @@ const AddEmployee = ({ isOpen, toggle }) => {
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label htmlFor="middleName">Middle name</Label>
-                            <RequiredAsterisk />
+                            {/* <RequiredAsterisk /> */}
                             <Input
                               name="middleName"
                               placeholder="Enter the Middle name"

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import axios from "../../Common/helpers/axiosHelper.js";
 import {
   Button,
+  Badge,
   Card,
   CardBody,
   Container,
@@ -32,6 +33,8 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { mapStatus } from "../../Common/common/StatusLabels";
+import "../../Common/common/status.css";
 
 const ManageCompany = (props) => {
   const [activeTab, setActiveTab] = useState("1"); // To handle active tab
@@ -94,16 +97,15 @@ const ManageCompany = (props) => {
               position: "top-right",
               autoClose: 2000,
             });
-            getEmployeeDetails();
+            // getEmployeeDetails();
           } else {
-            {
-              toast.success("Employee activated successfully!", {
-                position: "top-right",
-                autoClose: 2000,
-              });
-              getEmployeeDetails();
-            }
+            toast.success("Employee activated successfully!", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+            //
           }
+          getEmployeeDetails();
         }
       } else {
         const response = await putApiData(
@@ -141,6 +143,7 @@ const ManageCompany = (props) => {
       console.log("entered");
       let response;
       if (userType === 1) {
+        //getting employee details for admin
         const response = await getApiData(`api/Employee/GetAllEmployees`);
         setIsLoading(false);
         const mappedResponse = response.data.map((item, index) => ({
@@ -154,11 +157,13 @@ const ManageCompany = (props) => {
           employeeId: item.employeeId,
           addressId: item.addressId,
           active: item.active,
+          //active:mapStatus(item.active),
 
           //console.log("employee details "+response.data);
         }));
         setEmployeeDetails(mappedResponse || []);
       } else {
+        //getting employee details based on manager
         const response = await getApiData(`api/Employee/GetEmployeesByManager`);
         setIsLoading(false);
         const mappedResponse = response.data.map((item, index) => ({
@@ -167,10 +172,12 @@ const ManageCompany = (props) => {
           sno: index + 1,
           name: item.firstName,
           email: item.email,
-          department: item.departments,
+          departmentId: item.departmentId,
+          department: item.departmentName,
           employeeId: item.employeeId,
           addressId: item.addressId,
           active: item.active,
+          //   active:mapStatus(item.active),
 
           //console.log("employee details "+response.data);
         }));
@@ -198,7 +205,8 @@ const ManageCompany = (props) => {
         managerId: item.managerId,
         addressId: item.addressId,
         email: item.email,
-        department: item.departments,
+        departmentId: item.departmentId,
+        department: item.departmentName,
         active: item.active,
 
         //console.log("employee details "+response.data);
@@ -223,26 +231,31 @@ const ManageCompany = (props) => {
           `api/Employee/GetEmployeeById/${employeeId}`
         );
         const mappedResponse = {
-          employeeId: response?.employeeId || "",
-          managerId: response?.managerId || "",
-          addressId: response?.addressId || "",
-          active: response?.active || "",
-          userName: response?.userName || "",
-          firstName: response?.firstName || "",
-          middleName: response?.middleName || "",
-          lastName: response?.lastName || "",
-          department: response?.department || "",
-          email: response?.email || "",
-          mobileNumber: response?.mobileNumber || "",
-          dob: response?.dob || "",
-          dateOfJoining: response?.dateOfJoining || "",
-          password: response?.password || "",
-          confirmPassword: response?.confirmPassword || "",
+          // index: key ,
+          employeeId: response.data.employeeId,
+          managerId: response.data.managerId,
+          addressId: response.data.addressId,
+          active: response.data.active,
+          userName: response.data.userName,
+          firstName: response.data.firstName,
+          middleName: response.data.middleName,
+          lastName: response.data.lastName,
+          departmentId: response.data?.departmentId || "",
+          departmentName: response.data?.departmentName || "",
+          maritalStatus: response.data?.maritalStatus || "",
+          gender: response.data?.gender || "",
+          email: response.data.email,
+          mobileNumber: response.data.mobileNumber,
+          dob: response.data.dob,
+          dateOfJoining: response.data.dateOfJoining,
+          password: response.data.password,
+          confirmPassword: response.data.confirmPassword,
         };
         setEmployeeData(mappedResponse);
       } else {
-        response = await getApiData(`api/Manager/GetManagerByUId/${managerId}`);
+        response = await getApiData(`api/Manager/GetManagerById/${managerId}`);
         const mappedResponse = {
+          //   index:key,
           employeeId: response.data?.employeeId || "",
           managerId: response.data?.managerId || "",
           addressId: response.data?.addressId || "",
@@ -251,7 +264,10 @@ const ManageCompany = (props) => {
           firstName: response.data?.firstName || "",
           middleName: response.data?.middleName || "",
           lastName: response.data?.lastName || "",
-          department: response.data?.department || "",
+          maritalStatus: response.data?.maritalStatus || "",
+          gender: response.data?.gender || "",
+          departmentId: response.data?.departmentId || "",
+          departmentName: response.data?.departmentName || "",
           email: response.data?.email || "",
           mobileNumber: response.data?.mobileNumber || "",
           dob: response.data?.dob || "",
@@ -336,25 +352,31 @@ const ManageCompany = (props) => {
         filterable: false,
         disableFilters: true,
       },
-      // {
-      //   Header: "Active",
-      //   accessor: "status",
-      //   disableFilters: true,
-      //   filterable: false,
-      //   Cell: cellProps => {
-      //     return (
-      //         <Badge
-      //           className={
-      //            "font-size-11 badge-soft-" +
-      //             (cellProps.row.original.active === 1 ? "success" : "danger")
-      //         }
-      //          >
-      //         {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
-      //         </Badge>
-
-      //     );
-      //   },
-      // },
+      {
+        Header: "Active",
+        accessor: "active",
+        disableFilters: true,
+        filterable: false,
+        //   Cell: ({ value }) => {
+        //     return (
+        //         <Badge className={`font-size-11 badge-${value.color}`}>
+        //             {value.label}
+        //         </Badge>
+        //     );
+        // },
+        Cell: (cellProps) => {
+          return (
+            <Badge
+              className={
+                "font-size-11 badge-" +
+                (cellProps.row.original.active === 1 ? "success" : "danger")
+              }
+            >
+              {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+            </Badge>
+          );
+        },
+      },
       {
         Header: "Actions",
         disableFilters: true,
@@ -463,25 +485,31 @@ const ManageCompany = (props) => {
         filterable: false,
         disableFilters: true,
       },
-      // {
-      //   Header: "Active",
-      //   accessor: "status",
-      //   disableFilters: true,
-      //   filterable: false,
-      //   Cell: cellProps => {
-      //     return (
-      //         <Badge
-      //           className={
-      //            "font-size-11 badge-soft-" +
-      //             (cellProps.row.original.active === 1 ? "success" : "danger")
-      //         }
-      //          >
-      //         {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
-      //         </Badge>
-
-      //     );
-      //   },
-      // },
+      {
+        Header: "Active",
+        accessor: "active",
+        disableFilters: true,
+        filterable: false,
+        //   Cell: ({ value }) => {
+        //     return (
+        //         <Badge className={`font-size-11 badge-${value.color}`}>
+        //             {value.label}
+        //         </Badge>
+        //     );
+        // },
+        Cell: (cellProps) => {
+          return (
+            <Badge
+              className={
+                "font-size-11 badge-" +
+                (cellProps.row.original.active === 1 ? "success" : "danger")
+              }
+            >
+              {cellProps.row.original.active === 1 ? "Active" : "Deactivated"}
+            </Badge>
+          );
+        },
+      },
       {
         Header: "Actions",
         disableFilters: true,
@@ -571,14 +599,15 @@ const ManageCompany = (props) => {
         <Loader />
       ) : (
         <>
-          <Container fluid>
-            <div className="page-title-box p-4">
-              <h4 className="mb-sm-0 font-size-18">Manage Company</h4>
-            </div>
-            <Card>
-              <CardBody>
-                <div className="text-sm-end">
-                  {/*} <Button
+          <div className="page-content">
+            <Container fluid>
+              <div className="page-title-box p-4">
+                <h4 className="mb-sm-0 font-size-18">Manage Company</h4>
+              </div>
+              <Card>
+                <CardBody>
+                  <div className="text-sm-end">
+                    {/*} <Button
                     type="button"
                     color="primary"
                     onClick={toggleAddManagerModal}
@@ -594,61 +623,63 @@ const ManageCompany = (props) => {
                   >
                     Add Department
                   </Button>*/}
-                  <Button
-                    type="button"
-                    onClick={toggleAddEmployeeModal}
-                    className="btn mb-2 me-2"
-                  >
-                    Add Employee
-                  </Button>
-                </div>
-                <Nav tabs>
-                  {userType === 1 && (
+                    <Button
+                      type="button"
+                      onClick={toggleAddEmployeeModal}
+                      className="btn mb-2 me-2"
+                    >
+                      Add Employee
+                    </Button>
+                  </div>
+                  <Nav tabs>
+                    {userType === 1 && (
+                      <NavItem>
+                        <NavLink
+                          className={activeTab === "1" ? "active" : ""}
+                          onClick={() => toggleTab("1")}
+                        >
+                          Manager
+                          <i className="fa fa-check text-success ms-2" />
+                        </NavLink>
+                      </NavItem>
+                    )}
                     <NavItem>
                       <NavLink
-                        className={activeTab === "1" ? "active" : ""}
-                        onClick={() => toggleTab("1")}
+                        className={activeTab === "2" ? "active" : ""}
+                        onClick={() => toggleTab("2")}
                       >
-                        Manager
+                        Employee
+                        <i className="fa fa-check text-success ms-2" />
                       </NavLink>
                     </NavItem>
-                  )}
-                  <NavItem>
-                    <NavLink
-                      className={activeTab === "2" ? "active" : ""}
-                      onClick={() => toggleTab("2")}
-                    >
-                      Employee
-                    </NavLink>
-                  </NavItem>
-                </Nav>
-                <TabContent activeTab={activeTab}>
-                  {userType === 1 && (
-                    <TabPane tabId="1">
+                  </Nav>
+                  <TabContent activeTab={activeTab}>
+                    {userType === 1 && (
+                      <TabPane tabId="1">
+                        <TableContainer
+                          data={managerDetails}
+                          columns={managerColumns}
+                          isGlobalFilter={true}
+                          isAddOptions={false}
+                          customPageSize={10}
+                          isPageSelect={false}
+                        />
+                      </TabPane>
+                    )}
+                    <TabPane tabId="2">
                       <TableContainer
-                        data={managerDetails}
-                        columns={managerColumns}
+                        data={employeeDetails}
+                        columns={employeeColumns}
                         isGlobalFilter={true}
                         isAddOptions={false}
                         customPageSize={10}
                         isPageSelect={false}
                       />
                     </TabPane>
-                  )}
-                  <TabPane tabId="2">
-                    <TableContainer
-                      data={employeeDetails}
-                      columns={employeeColumns}
-                      isGlobalFilter={true}
-                      isAddOptions={false}
-                      customPageSize={10}
-                      isPageSelect={false}
-                    />
-                  </TabPane>
-                </TabContent>
-              </CardBody>
-            </Card>
-            {/* <AddManager
+                  </TabContent>
+                </CardBody>
+              </Card>
+              {/* <AddManager
               isOpen={isAddManagerModalOpen}
               toggle={toggleAddManagerModal}
             />
@@ -657,19 +688,19 @@ const ManageCompany = (props) => {
               toggle={toggleAddDepartmentModal}
             />
              <AddEmployee */}
-            <AddEmployee
-              isOpen={isAddEmployeeModalOpen}
-              toggle={toggleAddEmployeeModal}
-            />
-            <ViewEmployeeDetails
-              // data={selectedEmployee}
-              isOpen={isViewEmployeeModalOpen}
-              toggle={toggleViewEmployeeModal}
-              viewStatus={viewMode}
-              employeeData={employeeData}
-              employeeAddressData={employeeAddressData}
-            />
-            {/* <ViewManagerDetails
+              <AddEmployee
+                isOpen={isAddEmployeeModalOpen}
+                toggle={toggleAddEmployeeModal}
+              />
+              <ViewEmployeeDetails
+                // data={selectedEmployee}
+                isOpen={isViewEmployeeModalOpen}
+                toggle={toggleViewEmployeeModal}
+                viewStatus={viewMode}
+                employeeData={employeeData}
+                employeeAddressData={employeeAddressData}
+              />
+              {/* <ViewManagerDetails
       // data={selectedEmployee} 
       isOpen={isViewManagerModalOpen}
       toggle={toggleViewEmployeeModal}
@@ -679,15 +710,16 @@ const ManageCompany = (props) => {
       
 
        /> */}
-            {/* newly added starts
+              {/* newly added starts
             <ViewEmployeeDetails
               data={selectedEmployee}
               isOpen={isViewEmployeeModalOpen}
               toggle={toggleViewEmployeeModal}
               viewStatus={viewMode}
             /> */}
-            {/*newly added end*/}
-          </Container>
+              {/*newly added end*/}
+            </Container>
+          </div>
           {/*newly added starts*/}
         </>
       )}

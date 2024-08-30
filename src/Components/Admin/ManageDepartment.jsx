@@ -18,6 +18,7 @@ import {
   FormFeedback,
 } from "reactstrap";
 import Loader from "../../Common/components/Loader";
+// import Loader from "../../Common/components/Loader";
 // import { debounce, values } from "lodash";
 import { debounce } from "lodash";
 // import { mapStatus } from '../../Common/common/StatusLabels';
@@ -302,7 +303,7 @@ const ManageDepartment = () => {
 
       // console.log("entered");
       const response = await getApiData(`api/Departments/GetAllDepartments`);
-      // setIsLoading(false);
+      setIsLoading(false);
       //   const managerOptions = response.data.map(dept => ({
       //     value: dept.managerId, // Assuming managerId exists
       //     label: dept.managerName
@@ -349,19 +350,26 @@ const ManageDepartment = () => {
   };
 
   const ManagerRemoval = async () => {
-    const response = await getApiData(
-      `api/Departments/RemoveManager/${deptDetails?.departmentId}`
-    );
-    if (response.success === true) {
-      toast.success(" Manager removed from Department Successfully", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } else {
-      toast.error("Error , Contact Admin", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+    try {
+      setIsLoading(true);
+      const response = await getApiData(
+        `api/Departments/RemoveManager/${deptDetails?.departmentId}`
+      );
+      setIsLoading(false);
+
+      if (response.success === true) {
+        toast.success(" Manager removed from Department Successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.error("Error , Contact Admin", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
   // const response = await getApiData(`api/Departments/GetAllDepartments`);

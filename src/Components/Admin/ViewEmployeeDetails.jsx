@@ -42,12 +42,47 @@ const ViewEmployeeDetails = (props) => {
   //const [employeeData,setEmployeeData]=useState([]);
   //const [Subdetails, setSubdetails] = useState();
   const [subdetails, setSubdetails] = useState();
-  const deptoptions = [
-    { label: "HR", value: 1 },
-    { label: "Finance", value: 2 },
-    { label: "IT", value: 3 },
-    { label: "Sales", value: 4 },
+  const [departDetails, setDepartDetails] = useState([]);
+  useEffect(() => {
+    getDepartmenDetails();
+  }, []);
+  const getDepartmenDetails = async () => {
+    try {
+      // setIsLoading(true);
+      console.log("entered");
+      const response = await getApiData(`api/Departments/GetAllDepartments`);
+      // const deptoptions = response.data.departmentName || [];
+      //  setIsLoading(false);
+      console.log("****************");
+
+      // console.log("Department" + deptoptions);
+      const mappedResponse = response.data.map((item) => ({
+        label: item.departmentName,
+        value: item.departmentId,
+      }));
+      setDepartDetails(mappedResponse);
+      console.log("DepartDetails" + departDetails);
+      // setIsLoading(false);
+    } catch (error) {
+      // Error handling scenario
+      console.error("Error fetching department data:", error);
+      // Implement additional error handling as needed (e.g., display an error message to the user)
+    }
+  };
+  const gender = [
+    { label: "Male", value: 1 },
+    { label: "Female", value: 2 },
   ];
+  const maritalStatus = [
+    { label: "Married", value: 3 },
+    { label: "Unmarried", value: 4 },
+  ];
+  // const deptoptions = [
+  //   { label: "HR", value: 1 },
+  //   { label: "Finance", value: 2 },
+  //   { label: "IT", value: 3 },
+  //   { label: "Sales", value: 4 },
+  // ];
   // const getEmployeeData= async (employeeId) => {
   //   // setIsLoading(true)
   //   const response = await getApiData(`/api/Employee/GetEmployeeById?EmployeeId=${employeeId}`);
@@ -76,7 +111,15 @@ const ViewEmployeeDetails = (props) => {
       firstName: employeeData?.firstName || "",
       middleName: employeeData?.middleName || "",
       lastName: employeeData?.lastName || "",
-      department: employeeData?.department || "",
+      maritalStatus: maritalStatus.find(
+        (status) => status.label === employeeData?.maritalStatus
+      ),
+      gender: gender.find((gender) => gender.label === employeeData?.gender),
+      //  departmentId: employeeData?.departmentId || '',
+      departmentId: departDetails.find(
+        (dept) => dept.value === employeeData.departmentId
+      ),
+      // departmentName: employeeData?.departmentName || '',
       email: employeeData?.email || "",
       mobileNumber: employeeData?.mobileNumber || "",
       dob: employeeData?.dob || "",
@@ -91,25 +134,32 @@ const ViewEmployeeDetails = (props) => {
       userName: Yup.string()
         .email("Username should be a Email")
         .required("Please Enter Email"),
-      // //  employeeId: Yup.string()
-      //     .required("Please Enter the EmployeeId")
-      //     .matches(/^[0-9]*$/, "Please enter only numbers"),
-      //   // // .matches(/^\+?\d{10}$/, "Mobile Number must be 10 digits")
+
       firstName: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "First Name should contain only letters")
         .required("Please Enter the First name"),
-      middleName: Yup.string()
-        .matches(/^[A-Za-z\s]+$/, "Middle Name should contain only letters")
-        .required("Please Enter the Middle name"),
+      middleName: Yup.string().matches(
+        /^[A-Za-z\s]+$/,
+        "Middle Name should contain only letters"
+      ),
+      // .required("Please Enter the Middle name"),
 
       lastName: Yup.string()
         .matches(/^[A-Za-z\s]+$/, "Last Name should contain only letters")
         .required("Please Enter the Last name"),
-      department: Yup.object().shape({
+      maritalStatus: Yup.object().shape({
+        label: Yup.string().required("Please Select a maritalStatus"),
+        value: Yup.string().required("Please Select a maritalStatus"),
+      }),
+      gender: Yup.object().shape({
+        label: Yup.string().required("Please Select a gender"),
+        value: Yup.string().required("Please Select a gender"),
+      }),
+      departmentId: Yup.object().shape({
         label: Yup.string().required("Please Select a Department"),
         value: Yup.string().required("Please Select a Department"),
       }),
-
+      // departmentId:,
       email: Yup.string()
         .email("Enter a Valid Email ID")
         .required("Please Enter the Email"),
@@ -124,24 +174,18 @@ const ViewEmployeeDetails = (props) => {
         .oneOf([Yup.ref("password"), null], "Passwords must match")
         .required("Confirm password is required"),
 
-      // personalEmail: Yup.string()
-      //   .email("Enter a Valid Email ID")
-      //   .required("Please Enter the PersonalEmail"),
-      // postalCode: Yup.string()
-      //   .required("Please Enter the postalCode")
-      //   .matches(/^[0-9]*$/, "Please enter only numbers"),
       mobileNumber: Yup.string()
         .required("Please Enter Mobile Number")
         .matches(/^[0-9]*$/, "Please enter only numbers")
         .matches(/^\+?\d{10}$/, "Mobile Number must be 10 digits"),
 
-      // // Add validation for dateOfBirth
+      // // // Add validation for dateOfBirth
       dob: Yup.date()
         .required("Date of Birth is required")
         .max(new Date(), "You cannot enter a future date")
         .required("Please select the DOB"),
 
-      // Add validation for dateOfJoining (similar to dateOfBirth)
+      // // Add validation for dateOfJoining (similar to dateOfBirth)
       dateOfJoining: Yup.date()
         .required("Date of Joining is required")
         .max(new Date(), "You cannot enter a future date")
@@ -149,10 +193,18 @@ const ViewEmployeeDetails = (props) => {
     }),
     onSubmit: async (values) => {
       //  if (newEmpRegValidation.isValid) {if()
+      let deptId = values.departmentId && values.departmentId.value;
+      let status = values.maritalStatus && values.maritalStatus.label;
+      let genderI = values.gender && values.gender.label;
 
       if (employeeData !== null) {
         if (employeeData.employeeId !== "") {
-          const combinedValues = { ...values };
+          const combinedValues = {
+            ...values,
+            departmentId: deptId,
+            maritalStatus: status,
+            gender: genderI,
+          };
           const hasChanges = Object.keys(values).some(
             (key) => values[key] !== newEmpRegValidation.initialValues[key]
           );
@@ -235,7 +287,7 @@ const ViewEmployeeDetails = (props) => {
     // }
     //},
   });
-  const updateEmployeeDetails = async (values) => {};
+  //  const updateEmployeeDetails = async (values) => { }
   // const getEmployeeAddressData= async (employeeId) => {
   //   // setIsLoading(true)
   //   const response = await getApiData(`/api/Address/GetAddressById?EmployeeId=${employeeId}`);
@@ -472,20 +524,25 @@ const ViewEmployeeDetails = (props) => {
                               value={newEmpRegValidation.values.firstName}
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
-                              invalid={!!newEmpRegValidation.errors.firstName}
+                              invalid={
+                                newEmpRegValidation.touched.firstName &&
+                                newEmpRegValidation.errors.firstName
+                                  ? true
+                                  : false
+                              }
                             />
-
-                            {newEmpRegValidation.errors.firstName && (
+                            {newEmpRegValidation.touched.firstName &&
+                            newEmpRegValidation.errors.firstName ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.firstName}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
                         <Col md="6">
                           <FormGroup className="mb-3">
                             <Label htmlFor="middleName">Middle name</Label>
-                            <RequiredAsterisk />
+                            {/* <RequiredAsterisk /> */}
                             <Input
                               name="middleName"
                               placeholder="Enter the Middle name"
@@ -495,14 +552,19 @@ const ViewEmployeeDetails = (props) => {
                               value={newEmpRegValidation.values.middleName}
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
-                              invalid={!!newEmpRegValidation.errors.middleName}
+                              invalid={
+                                newEmpRegValidation.touched.middleName &&
+                                newEmpRegValidation.errors.middleName
+                                  ? true
+                                  : false
+                              }
                             />
-
-                            {newEmpRegValidation.errors.middleName && (
+                            {newEmpRegValidation.touched.middleName &&
+                            newEmpRegValidation.errors.middleName ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.middleName}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
 
@@ -519,14 +581,96 @@ const ViewEmployeeDetails = (props) => {
                               value={newEmpRegValidation.values.lastName}
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
-                              invalid={!!newEmpRegValidation.errors.lastName}
+                              invalid={
+                                newEmpRegValidation.touched.lastName &&
+                                newEmpRegValidation.errors.lastName
+                                  ? true
+                                  : false
+                              }
                             />
-
-                            {newEmpRegValidation.errors.lastName && (
+                            {newEmpRegValidation.touched.lastName &&
+                            newEmpRegValidation.errors.lastName ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.lastName}
                               </FormFeedback>
-                            )}
+                            ) : null}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label for="gender"> Gender:</Label>
+                            <RequiredAsterisk />
+
+                            <ReactSelect
+                              name="gender"
+                              placeholder="Select the Gender"
+                              id="gender"
+                              options={gender}
+                              value={newEmpRegValidation.values.gender}
+                              // onChange={handleRoleChange}
+                              onChange={(selectedOption) => {
+                                newEmpRegValidation.setFieldValue(
+                                  "gender",
+                                  selectedOption
+                                );
+                              }}
+                              invalid={
+                                newEmpRegValidation.touched.gender &&
+                                newEmpRegValidation.errors.gender
+                                  ? true
+                                  : false
+                              }
+                              isDisabled={viewStatus}
+                            />
+                            {newEmpRegValidation.values.gender === null &&
+                              newEmpRegValidation.touched.gender &&
+                              newEmpRegValidation.errors.gender && (
+                                <span
+                                  className="text-danger"
+                                  style={{ fontSize: "80%" }}
+                                >
+                                  Please Select a Gender
+                                </span>
+                              )}
+                          </FormGroup>
+                        </Col>
+                        <Col md="6">
+                          <FormGroup className="mb-3">
+                            <Label for="maritalStatus"> MaritalStatus:</Label>
+                            <RequiredAsterisk />
+
+                            <ReactSelect
+                              name="maritalStatus"
+                              placeholder="Select the MaritalStatus"
+                              id="maritalStatus"
+                              options={maritalStatus}
+                              value={newEmpRegValidation.values.maritalStatus}
+                              // onChange={handleRoleChange}
+                              onChange={(selectedOption) => {
+                                newEmpRegValidation.setFieldValue(
+                                  "maritalStatus",
+                                  selectedOption
+                                );
+                              }}
+                              invalid={
+                                newEmpRegValidation.touched.maritalStatus &&
+                                newEmpRegValidation.errors.maritalStatus
+                                  ? true
+                                  : false
+                              }
+                              isDisabled={viewStatus}
+                            />
+                            {newEmpRegValidation.values.maritalStatus ===
+                              null &&
+                              newEmpRegValidation.touched.maritalStatus &&
+                              newEmpRegValidation.errors.maritalStatus && (
+                                <span
+                                  className="text-danger"
+                                  style={{ fontSize: "80%" }}
+                                >
+                                  Please Select a Marital Status
+                                </span>
+                              )}
                           </FormGroup>
                         </Col>
                         <Col md="6">
@@ -542,45 +686,51 @@ const ViewEmployeeDetails = (props) => {
                               value={newEmpRegValidation.values.dob}
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
-                              invalid={!!newEmpRegValidation.errors.dob}
+                              invalid={
+                                newEmpRegValidation.touched.dob &&
+                                newEmpRegValidation.errors.dob
+                                  ? true
+                                  : false
+                              }
                             />
-
-                            {newEmpRegValidation.errors.dob && (
+                            {newEmpRegValidation.touched.dob &&
+                            newEmpRegValidation.errors.dob ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.dob}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
                         <Col md="6">
                           <FormGroup className="mb-3">
-                            <Label for="department">
+                            <Label for="departmentId">
                               Select the Department:
                             </Label>
 
                             <ReactSelect
-                              name="department"
+                              name="departmentId"
                               placeholder="Enter the Department"
-                              id="department"
-                              options={deptoptions}
-                              value={newEmpRegValidation.values.department}
+                              id="departmentId"
+                              options={departDetails}
+                              value={newEmpRegValidation.values.departmentId}
+                              //  value={newEmpRegValidation.values.departmentName}
                               onChange={(selectedOption) => {
                                 newEmpRegValidation.setFieldValue(
-                                  "department",
+                                  "departmentId",
                                   selectedOption
                                 );
                               }}
                               invalid={
-                                newEmpRegValidation.touched.department &&
-                                newEmpRegValidation.errors.department
+                                newEmpRegValidation.touched.departmentId &&
+                                newEmpRegValidation.errors.departmentId
                                   ? true
                                   : false
                               }
                               isDisabled={viewStatus}
                             />
-                            {newEmpRegValidation.values.department === null &&
-                              newEmpRegValidation.touched.department &&
-                              newEmpRegValidation.errors.department && (
+                            {newEmpRegValidation.values.departmentId === null &&
+                              newEmpRegValidation.touched.departmentId &&
+                              newEmpRegValidation.errors.departmentId && (
                                 <span
                                   className="text-danger"
                                   style={{ fontSize: "80%" }}
@@ -607,15 +757,18 @@ const ViewEmployeeDetails = (props) => {
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
                               invalid={
-                                !!newEmpRegValidation.errors.dateOfJoining
+                                newEmpRegValidation.touched.dateOfJoining &&
+                                newEmpRegValidation.errors.dateOfJoining
+                                  ? true
+                                  : false
                               }
                             />
-
-                            {newEmpRegValidation.errors.dateOfJoining && (
+                            {newEmpRegValidation.touched.dateOfJoining &&
+                            newEmpRegValidation.errors.dateOfJoining ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.dateOfJoining}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
 
@@ -632,14 +785,19 @@ const ViewEmployeeDetails = (props) => {
                               value={newEmpRegValidation.values.email}
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
-                              invalid={!!newEmpRegValidation.errors.email}
+                              invalid={
+                                newEmpRegValidation.touched.email &&
+                                newEmpRegValidation.errors.email
+                                  ? true
+                                  : false
+                              }
                             />
-
-                            {newEmpRegValidation.errors.email && (
+                            {newEmpRegValidation.touched.email &&
+                            newEmpRegValidation.errors.email ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.email}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
                         {viewStatus === false && (
@@ -660,15 +818,18 @@ const ViewEmployeeDetails = (props) => {
                                   onChange={newEmpRegValidation.handleChange}
                                   onBlur={newEmpRegValidation.handleBlur}
                                   invalid={
-                                    !!newEmpRegValidation.errors.password
+                                    newEmpRegValidation.touched.password &&
+                                    newEmpRegValidation.errors.password
+                                      ? true
+                                      : false
                                   }
                                 />
-
-                                {newEmpRegValidation.errors.password && (
+                                {newEmpRegValidation.touched.password &&
+                                newEmpRegValidation.errors.password ? (
                                   <FormFeedback type="invalid">
                                     {newEmpRegValidation.errors.password}
                                   </FormFeedback>
-                                )}
+                                ) : null}
                               </FormGroup>
                             </Col>
                             <Col md="6">
@@ -690,15 +851,19 @@ const ViewEmployeeDetails = (props) => {
                                   onChange={newEmpRegValidation.handleChange}
                                   onBlur={newEmpRegValidation.handleBlur}
                                   invalid={
-                                    !!newEmpRegValidation.errors.confirmPassword
+                                    newEmpRegValidation.touched
+                                      .confirmPassword &&
+                                    newEmpRegValidation.errors.confirmPassword
+                                      ? true
+                                      : false
                                   }
                                 />
-
-                                {newEmpRegValidation.errors.confirmPassword && (
+                                {newEmpRegValidation.touched.confirmPassword &&
+                                newEmpRegValidation.errors.confirmPassword ? (
                                   <FormFeedback type="invalid">
                                     {newEmpRegValidation.errors.confirmPassword}
                                   </FormFeedback>
-                                )}
+                                ) : null}
                               </FormGroup>
                             </Col>
                           </>
@@ -741,15 +906,18 @@ const ViewEmployeeDetails = (props) => {
                               onChange={newEmpRegValidation.handleChange}
                               onBlur={newEmpRegValidation.handleBlur}
                               invalid={
-                                !!newEmpRegValidation.errors.mobileNumber
+                                newEmpRegValidation.touched.mobileNumber &&
+                                newEmpRegValidation.errors.mobileNumber
+                                  ? true
+                                  : false
                               }
                             />
-
-                            {newEmpRegValidation.errors.mobileNumber && (
+                            {newEmpRegValidation.touched.mobileNumber &&
+                            newEmpRegValidation.errors.mobileNumber ? (
                               <FormFeedback type="invalid">
                                 {newEmpRegValidation.errors.mobileNumber}
                               </FormFeedback>
-                            )}
+                            ) : null}
                           </FormGroup>
                         </Col>
                       </Row>
