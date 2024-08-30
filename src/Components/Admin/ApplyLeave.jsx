@@ -31,13 +31,13 @@ const ApplyLeaveModal = (props) => {
   const { leaveTypes, getLeaveTypes } = useLeaveTypes();
   const [docIsValid, setDocIsValid] = useState(true);
   const [docFormat, setDocFormat] = useState("");
-  const [fileData, setFileData] = useState(null);
+  // const [fileData, setFileData] = useState(null);
   const [supportingDocs, setSupportingDocs] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isEmp, setIsEmp] = useState(false);
   let bManager = false;
-
+  let successMsg = "";
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -87,33 +87,46 @@ const ApplyLeaveModal = (props) => {
         JSON.stringify(combinedValues)
       );
       if (response.success === true) {
-        if (fileData !== null) {
-          const docValues = {
-            leaveId: response.data.leaveId,
-            document: fileData,
-            contentType: docFormat,
-          };
-          const docResponse = await postApiData(
-            "api/LeaveDocuments",
-            JSON.stringify(docValues)
+        if (supportingDocs.length) {
+          const docResponses = await Promise.allSettled(
+            supportingDocs.map(async (sDoc) => {
+              const docValues = {
+                leaveId: response.data.leaveId,
+                document: sDoc.document,
+                contentType: sDoc.contentType,
+              };
+              return await postApiData(
+                "api/LeaveDocuments",
+                JSON.stringify(docValues)
+              );
+            })
           );
-          if (docResponse.success === true) {
+          console.log("docResponses", docResponses);
+          // supportingDocs.forEach(sDoc =>{
+
+          //   const docResponse = await postApiData(
+          //     "api/LeaveDocuments",
+          //     JSON.stringify(docValues)
+          //   );
+          docResponses.forEach((msg) => {
+            if (msg.value.success === true) successMsg = "true";
+            else successMsg = "false";
+          });
+          if (successMsg === "true") {
             toast.success("Leave Request Submitted", {
               position: "top-right",
               autoClose: 2000,
             });
             setIsLoading(false);
             resetForm();
-          } else if (docResponse.success === false) {
-            toast.error("Document upload failed, please retry", {
-              position: "top-right",
-              autoClose: 2000,
-            });
           } else {
-            toast.error(response.message, {
-              position: "top-right",
-              autoClose: 2000,
-            });
+            toast.error(
+              "Error in uploading documents, leave request not submitted",
+              {
+                position: "top-right",
+                autoClose: 2000,
+              }
+            );
           }
         } else {
           toast.success("Leave Request Submitted", {
@@ -139,13 +152,13 @@ const ApplyLeaveModal = (props) => {
     },
   });
 
-  // const uploadDoc = async (docValues) => {
-  //   const docResponse = await postApiData(
-  //     "api/LeaveDocuments",
-  //     JSON.stringify(docValues)
-  //   );
-  //   console.log("document upload" + docResponse.success);
-  // };
+  const uploadDoc = async (docValues) => {
+    const docResponse = await postApiData(
+      "api/LeaveDocuments",
+      JSON.stringify(docValues)
+    );
+    return docResponse;
+  };
 
   // const getLeaveTypes = async () => {
   //   setIsLoading(true);
@@ -166,12 +179,6 @@ const ApplyLeaveModal = (props) => {
 
     const bAdmin = userType === 1;
     const bManager = userType === 2;
-
-    // const endpoint = bAdmin
-    //   ? `api/Employee/GetAllEmployees`
-    //   : `api/Employee/GetEmployeesByManager`;
-
-    // console.log(bAdmin, bManager, endpoint);
     try {
       if (bManager) {
         const response = await getApiData("api/Employee/GetEmployeesByManager");
@@ -212,23 +219,21 @@ const ApplyLeaveModal = (props) => {
             item.firstName + " " + item.lastName + "(" + item.userName + ")",
         }));
         console.log("Emp details " + mappedEmpResponse);
-        const mgrResponse = await getApiData("api/Manager/GetAllManagers");
-        const mappedMgrResponse = mgrResponse.data.map((item, key) => ({
+        const mgrResponse = await postApiData(
+          "api/Manager/GetManagerByPagination",
+          data
+        );
+        const mappedMgrResponse = mgrResponse.model.map((item, key) => ({
           value: item.uId,
           label:
             item.firstName + " " + item.lastName + "(" + item.userName + ")",
         }));
         console.log("Manager details " + mappedMgrResponse);
-        const newList =
-          //  [{ value: 0, label: "Self" }].concat(
-          //   mappedMgrResponse,
-          //   mappedEmpResponse
-          // );
-          [
-            { value: 0, label: "Self" },
-            ...mappedMgrResponse,
-            ...mappedEmpResponse,
-          ];
+        const newList = [
+          { value: 0, label: "Self" },
+          ...mappedMgrResponse,
+          ...mappedEmpResponse,
+        ];
         setuNameOptions(newList);
       }
     } catch (error) {
@@ -263,50 +268,87 @@ const ApplyLeaveModal = (props) => {
   }, []);
 
   function handleFileChange(e) {
-    // const supportingDocs = e.target.files;
+    const supportingDocs = e.target.files;
+
     if (supportingDocs.length > 3) {
       alert("You can only select up to 3 files.");
-      // toast.error("Only Maximum 3 supporting docs allowed", {
-      //   position: "top-right",
-      //   autoClose: 3000,
-      // });
       e.target.value = "";
       return;
     }
-    setDocIsValid(true);
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5000 * 1024) {
-      toast.error("File Size Should be less than 5MB", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      // leaveValidation.resetForm();
-      setDocIsValid(false);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result;
-      const type = reader.result.split(";")[0];
-      const docType = type.split("/")[1];
-      let base64String = "";
-      const indexOfComma = reader.result.indexOf(",");
-      if (indexOfComma !== -1) {
-        base64String = reader.result.substring(indexOfComma + 1);
+
+    const docs = [];
+    if (supportingDocs.length === 1) {
+      const singleFile = supportingDocs[0];
+      setDocIsValid(true);
+      const file = e.target.files[0];
+      if (!singleFile) return;
+      if (singleFile.size > 5000 * 1024) {
+        toast.error("File Size Should be less than 5MB", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        // leaveValidation.resetForm();
+        setDocIsValid(false);
+        return;
       }
-      setDocFormat(docType);
-      let doc = {
-        document: base64String,
-        contentType: docType,
-        documentName: file.name,
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        const type = reader.result.split(";")[0];
+        const docType = type.split("/")[1];
+        let base64String = "";
+        const indexOfComma = reader.result.indexOf(",");
+        if (indexOfComma !== -1) {
+          base64String = reader.result.substring(indexOfComma + 1);
+        }
+        setDocFormat(docType);
+        let doc = {
+          document: base64String,
+          contentType: docType,
+          documentName: file.name,
+        };
+        docs.push(doc);
+        setSupportingDocs(docs);
+        setDocIsValid(true);
       };
-      let docs = supportingDocs.concat(doc);
-      setSupportingDocs(docs);
-      // setSupportingDocs(supportingDocs);
-      setFileData(base64String);
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(singleFile);
+    } else {
+      for (let i = 0; i < supportingDocs.length; i++) {
+        const file = supportingDocs[i];
+        if (!file) continue;
+
+        if (file.size > 5000 * 1024) {
+          toast.error("File Size Should be less than 5MB", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          setDocIsValid(false);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result;
+          const type = reader.result.split(";")[0];
+          const docType = type.split("/")[1];
+          let base64String = "";
+          const indexOfComma = reader.result.indexOf(",");
+          if (indexOfComma !== -1) {
+            base64String = reader.result.substring(indexOfComma + 1);
+          }
+          setDocFormat(docType);
+          let doc = {
+            document: base64String,
+            contentType: docType,
+            documentName: file.name,
+          };
+          docs.push(doc);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    setSupportingDocs(docs);
+    setDocIsValid(true);
   }
 
   const getFileType = (contentType) => {
@@ -483,7 +525,7 @@ const ApplyLeaveModal = (props) => {
                             type="textarea"
                             name="reason"
                             id="reason"
-                            rows={5}
+                            rows={3}
                             placeholder="Provide the reason for leave"
                             onBlur={leaveValidation.handleBlur}
                             onChange={handleInputChange}
@@ -532,21 +574,8 @@ const ApplyLeaveModal = (props) => {
                           <div className="col-md-12">
                             {supportingDocs.map((doc, index) => (
                               <Row key={index}>
-                                <div>
-                                  {/* <a
-                                      href=""
-                                      onClick={() => viewDoc(index, false)}
-                                    > */}
-                                  {index + 1} Document - {doc.documentName}
-                                  {/* </a> */}
-                                  {/* <Button
-                                        type="button"
-                                        color="primary"
-                                        className="btn-sm btn-rounded mx-2 ml-2"
-                                        onClick={() => viewDoc(fileData, true)}
-                                      >
-                                        {download()}
-                                      </Button> */}
+                                <div className="mt-2">
+                                  {index + 1} - {doc.documentName}
                                 </div>
                               </Row>
                             ))}

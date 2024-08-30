@@ -55,6 +55,7 @@ const LeaveRequestModal = (props) => {
       reason: leaveRequest?.reason || "",
       comments: leaveRequest?.comments || "",
       proof: leaveRequest?.proof || "",
+      reViewedBy: leaveRequest?.reViewedBy || "",
     },
     validationSchema: Yup.object({
       // comments: Yup.string().required("Please enter a valid comment"),
@@ -150,6 +151,13 @@ const LeaveRequestModal = (props) => {
     const response = await putApiData(
       `api/LeaveDocuments/ActivateDeactivate/${data.docId}?isActive=false`
     );
+    if (response.success === true) {
+      toast.success("Document deleted successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      toggle();
+    }
   };
   const viewDoc = (index, bDownbload) => {
     const data = docDetails[index];
@@ -164,6 +172,7 @@ const LeaveRequestModal = (props) => {
       byteNumbers[i] = byteChars.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
+
     const blob = new Blob([byteArray], { type: "image/png" });
     const imageUrl = URL.createObjectURL(blob);
 
@@ -184,13 +193,13 @@ const LeaveRequestModal = (props) => {
   const approveOrRejectLeave = async (flag, currentLeaveReqId) => {
     try {
       const data = { status: flag };
-      // console.log("Agent ID to approve " + approveAgentUid);
-      const response = await putApiData(
-        `api/Leave/Approve_Reject/${currentLeaveReqId}`,
-        JSON.stringify(data)
-      );
-      if (response.success === true) {
-        if (flag === "2") {
+      if (flag === "2") {
+        // console.log("Agent ID to approve " + approveAgentUid);
+        const response = await putApiData(
+          `api/Leave/Approve_Reject/${currentLeaveReqId}`,
+          JSON.stringify(data)
+        );
+        if (response.success === true) {
           toast.success("Leave Request approved", {
             position: "top-right",
             autoClose: 2000,
@@ -205,16 +214,24 @@ const LeaveRequestModal = (props) => {
         if (leaveValidation.values.comments === "") {
           alert("Please provide the rejection reason in the comments");
           return;
+        } else {
+          const response = await putApiData(
+            `api/Leave/Approve_Reject/${currentLeaveReqId}`,
+            JSON.stringify(data)
+          );
+
+          if (response.success === true) {
+            toast.success("Leave Request Rejected", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+            toggle();
+            // getPendingLeaveDetails();
+            const timer = setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
         }
-        toast.success("Leave Request Rejected", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-        toggle();
-        // getPendingLeaveDetails();
-        const timer = setTimeout(() => {
-          window.location.reload();
-        }, 3000);
       }
     } catch (error) {
       console.error(error);
@@ -363,6 +380,7 @@ const LeaveRequestModal = (props) => {
                         </Input>
                       </div>
                     </Col>
+
                     <Col lg="6">
                       <div className="mb-3">
                         <Label for="leaveDocs" hidden={viewMode}>
@@ -376,6 +394,7 @@ const LeaveRequestModal = (props) => {
                             aria-label="Upload"
                             accept=".png, .jpg, .jpeg, .pdf"
                             aria-describedby="inputGroupFileAddon04"
+                            multiple
                             onChange={(e) => {
                               handleFileChange(e);
                               leaveValidation.handleChange(e);
@@ -414,7 +433,7 @@ const LeaveRequestModal = (props) => {
                                       href=""
                                       onClick={() => viewDoc(index, false)}
                                     >
-                                      Document 1
+                                      Document {index + 1}
                                     </a>
                                     <i
                                       class="icon"
@@ -444,6 +463,31 @@ const LeaveRequestModal = (props) => {
                             </div>
                           </Label>
                         )}
+                      </div>
+                    </Col>
+                    <Col lg="6">
+                      <div className="mb-3">
+                        <Label for="reviewedBy" hidden={viewMode}>
+                          Reviewed By:
+                        </Label>
+                        <Input
+                          type="input"
+                          name="reviewedBy"
+                          id="reviewedBy"
+                          placeholder=""
+                          value={leaveValidation.values.reViewedBy}
+                          disabled={!viewMode}
+                          hidden={viewMode}
+                          onBlur={leaveValidation.handleBlur}
+                          onChange={leaveValidation.handleChange}
+                          invalid={!!leaveValidation.errors.reViewedBy}
+                        >
+                          {leaveValidation.errors.reViewedBy && (
+                            <FormFeedback type="invalid">
+                              {leaveValidation.errors.reViewedBy}
+                            </FormFeedback>
+                          )}
+                        </Input>
                       </div>
                     </Col>
                     <div className="mb-3">

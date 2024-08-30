@@ -43,36 +43,65 @@ const LeaveRequestsDashboard = () => {
   const [viewMode, setViewMode] = useState(false);
   const [proofDoc, setproofDoc] = useState(null);
   const [docDetails, setDocDetails] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isEmp, setIsEmp] = useState(false);
   const { leaveTypes, getLeaveTypes } = useLeaveTypes();
 
   const getPendingLeaveDetails = async () => {
-    setIsLoading(true);
-    const response = await getApiData(
-      `api/Leave/GetleavesByStatus?leaveStatus=1`
-    );
-    setIsLoading(false);
-    console.log("leave details " + response.data);
-    const mappedResponse = response.data.map((item, key) => ({
-      index: key + 1,
-      leaveId: item.leaveId,
-      uId: item.uId,
-      firstName: item.firstName + " " + item.lastName,
-      leaveTypeId: item.leaveTypeId,
-      userName: item.userName,
-      leaveTypeName: item.leaveTypeName,
-      fromDate: item.fromDate,
-      toDate: item.toDate,
-      status: item.status,
-      proof: item.proof,
-      reason: item.reason,
-    }));
-    console.log(mappedResponse);
-    // setAllLeaveRequests(mappedResponse);
-    // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
-    setPendingLeaveRequests(mappedResponse);
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const apiEndpoint =
+        userType === 2
+          ? "api/Leave/GetLeavesByManager?leaveStatus=1"
+          : "api/Leave/GetleavesByStatus?leaveStatus=1";
+      setIsLoading(true);
+      const response = await getApiData(apiEndpoint);
+      setIsLoading(false);
+      console.log("leave details " + response.data);
+      const mappedResponse = response.data.map((item, key) => ({
+        index: key + 1,
+        leaveId: item.leaveId,
+        uId: item.uId,
+        firstName: item.firstName + " " + item.lastName,
+        leaveTypeId: item.leaveTypeId,
+        userName: item.userName,
+        leaveTypeName: item.leaveTypeName,
+        fromDate: item.fromDate,
+        toDate: item.toDate,
+        status: item.status,
+        proof: item.proof,
+        reason: item.reason,
+      }));
+      console.log(mappedResponse);
+      // setAllLeaveRequests(mappedResponse);
+      // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
+      setPendingLeaveRequests(mappedResponse);
+    } catch (error) {
+      console.error("Error fetching pending leaves:", error);
+    }
   };
 
   const tog_leaveReq = () => setIsLeaveReqModalOpen(!isLeaveReqModalOpen);
+
+  const getCurrentUserType = async () => {
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const bAdmin = userType === 1;
+      const bManager = userType === 2;
+      const bEmp = userType === 3;
+
+      setIsAdmin(bAdmin);
+      setIsManager(bManager);
+      setIsEmp(bEmp);
+
+      // getUserList(userType);
+    } catch (error) {
+      console.error("Error getting user type:", error);
+    }
+  };
 
   const viewLeaveRequestDetails = async (leaveReqId) => {
     try {
@@ -174,7 +203,7 @@ const LeaveRequestsDashboard = () => {
     },
   });
 
-  const getDocDetails = async (leaveReqId, proof) => {
+  const getDocDetails = async (leaveReqId) => {
     try {
       if (leaveReqId !== null) {
         const response = await getApiData(
@@ -270,6 +299,7 @@ const LeaveRequestsDashboard = () => {
   };
 
   useEffect(() => {
+    getCurrentUserType();
     getLeaveTypes();
     getPendingLeaveDetails();
   }, []);
@@ -344,10 +374,7 @@ const LeaveRequestsDashboard = () => {
                   console.log("View Mode " + viewMode);
                   viewLeaveRequestDetails(cellProps.row.original.leaveId);
                   // setLeaveRequest(cellProps.row.original);
-                  getDocDetails(
-                    cellProps.row.original.leaveId,
-                    cellProps.row.original.proof
-                  );
+                  getDocDetails(cellProps.row.original.leaveId);
 
                   // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
