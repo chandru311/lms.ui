@@ -492,6 +492,13 @@ const AddEmployee = ({ isOpen, toggle }) => {
           //  }}
           >
             Employee Registration
+            <span
+              className="icon close_icon"
+              style={{ position: "absolute", top: 10, right: 10 }}
+              onClick={() => toggle()}
+            >
+              X
+            </span>
           </ModalHeader>
           <ModalBody>
             <div>
