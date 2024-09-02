@@ -154,6 +154,7 @@ const TableContainer = ({
     setCurrentPageNumber(adjustedPage);
     onPageChange(pageSize, adjustedPage);
   };
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (clearFilters) {
@@ -164,7 +165,6 @@ const TableContainer = ({
   useEffect(() => {
     setCurrentPageNumber(currentPage);
   }, [currentPage]);
-
   return (
     <Fragment>
       <Row className="mb-2">
@@ -266,6 +266,8 @@ const TableContainer = ({
                       style={{
                         width: `${100 / headerGroup.headers.length}%`,
                         maxWidth: "150px",
+                        background: "#7950eb",
+                        color: "#f1f1f1",
                         whiteSpace:
                           columnIndex === headerGroup.headers.length - 1
                             ? "nowrap"
@@ -282,9 +284,11 @@ const TableContainer = ({
                 </tr>
               ))}
             </thead>
+
             <tbody {...getTableBodyProps()}>
               {page.map((row) => {
                 prepareRow(row);
+
                 return (
                   <Fragment key={row.getRowProps().key}>
                     <tr>
@@ -344,7 +348,8 @@ const TableContainer = ({
               }
             >
               <Button
-                color="primary"
+                // color="primary"
+                style={{ background: "#5e2ced" }}
                 className="me-1"
                 size="sm"
                 onClick={(e) => {
@@ -368,7 +373,8 @@ const TableContainer = ({
               aria-label="Next"
             >
               <Button
-                color="primary"
+                // color="primary"
+                style={{ background: "#5e2ced" }}
                 className="me-1"
                 size="sm"
                 onClick={(e) => {
@@ -394,8 +400,8 @@ const TableContainer = ({
             >
               {!canPreviousPage ? null : (
                 <Button
-                                      color="primary"
-                                   
+                  // color="primary"
+                  style={{ background: "#5e2ced" }}
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={previousPage}
@@ -417,11 +423,21 @@ const TableContainer = ({
                   <li
                     key={index}
                     className={pageIndex === index ? "active" : ""}
+                    // style={pageIndex === index ? { background: "#5e2ced" } : {}}
                   >
                     <Link
                       to="#"
                       className="page-link"
                       onClick={() => gotoPage(index)}
+                      style={
+                        pageIndex === index
+                          ? {
+                              color: "#fff",
+                              background: "#5e2ced",
+                              borderColor: "#5e2ced",
+                            }
+                          : {}
+                      }
                     >
                       {index + 1}
                     </Link>
@@ -442,8 +458,8 @@ const TableContainer = ({
             >
               {!canNextPage ? null : (
                 <Button
-                                      color="primary"
-                                    
+                  // color="primary"
+                  style={{ background: "#5e2ced", marginLeft: "4px" }}
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={nextPage}
