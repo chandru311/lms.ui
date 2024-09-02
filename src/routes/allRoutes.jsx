@@ -18,6 +18,8 @@ import LeaveHistroy from "../Components/Admin/LeaveHistroy";
 import ManageDepartment from "../Components/Admin/ManageDepartment";
 import LeaveType from "../Components/Admin/LeaveType";
 
+import ChangePassword from "../Components/ChangePassword/ChangePassword";
+
 const authProtectedRoutes = [
   { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
@@ -44,6 +46,7 @@ const publicRoutes = [
   { path: "/login", component: <Login /> },
   { path: "/forget-password", component: <ForgotPassword /> },
   { path: "/logout", component: <Logout /> },
+  { path: "/change-password", component: <ChangePassword /> },
 ];
 
 export { authProtectedRoutes, publicRoutes };

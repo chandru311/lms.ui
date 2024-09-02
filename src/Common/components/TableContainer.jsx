@@ -21,7 +21,6 @@ import { Filter, DefaultColumnFilter } from "./filters";
 import JobListGlobalFilter from "./GlobalSearchFilter";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import {
   faArrowLeft,
   faArrowRight,
@@ -276,7 +275,7 @@ const TableContainer = ({
                         {column.render("Header")}
                         {generateSortingIndicator(column)}
                       </div>
-                      {/* <Filter column={column} /> */}
+                 
                     </th>
                   ))}
                 </tr>
@@ -332,7 +331,9 @@ const TableContainer = ({
                   width: "40px",
                   height: "29px",
                   marginTop: "auto",
-                  marginBottom: "auto",
+                    marginBottom: "auto",
+                  
+
                 }}
                 onChange={onInputChange}
                 onBlur={onInputChange}
@@ -345,7 +346,8 @@ const TableContainer = ({
             >
               <Button
                 color="primary"
-                className="me-1"
+                              className="me-1"
+                            
                 size="sm"
                 onClick={(e) => {
                   e.preventDefault();
@@ -383,7 +385,7 @@ const TableContainer = ({
                 aria-label="next"
                 disabled={currentPageNumber === totalPage ? true : false}
               >
-                <FontAwesomeIcon icon={faArrowRight} className="fa-lg" />
+                              <FontAwesomeIcon icon={faArrowRight} className="fa-lg"  />
               </Button>
             </li>
           </ul>
@@ -395,6 +397,11 @@ const TableContainer = ({
               {!canPreviousPage ? null : (
                 <Button
                                       color="primary"
+                                      style={{
+                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
+                                          border: 'none',
+                                          color: 'white',
+                                      }} 
                                    
                   className="me-1 mt-1 mb-1"
                   size="sm"
@@ -402,7 +409,12 @@ const TableContainer = ({
                   aria-label="Previous"
                   disabled={!canPreviousPage ? true : false}
                 >
-                  <FontAwesomeIcon icon={faArrowLeft} className="fa-lg" />
+                                      <FontAwesomeIcon icon={faArrowLeft} className="fa-lg"
+                                          style={{
+                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
+                                          border: 'none',
+                                          color: 'white',
+                                      }} />
                 </Button>
               )}
             </li>
@@ -419,8 +431,10 @@ const TableContainer = ({
                     className={pageIndex === index ? "active" : ""}
                   >
                     <Link
-                      to="#"
-                      className="page-link"
+                            to="#"
+                           
+                            className="page-link"
+
                       onClick={() => gotoPage(index)}
                     >
                       {index + 1}
@@ -442,7 +456,11 @@ const TableContainer = ({
             >
               {!canNextPage ? null : (
                 <Button
-                                      color="primary"
+                                      style={{
+                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
+                                          border: 'none', 
+                                          color: 'white',
+                                      }} 
                                     
                   className="me-1 mt-1 mb-1"
                   size="sm"
@@ -466,3 +484,5 @@ TableContainer.propTypes = {
 };
 
 export default TableContainer;
+
+

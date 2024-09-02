@@ -9,16 +9,24 @@ import {
     BsClipboardCheck,
     BsEye,
     BsPlusLg,
+    BsSearch,
+    BsCalendar,
     BsBarChartFill,
 } from "react-icons/bs";
 import "../../index.css";
+import logo from "../../assets/ai4soln-logo.png";
 
 const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
     const [isLeaveManagementOpen, setIsLeaveManagementOpen] = useState(false);
+    const [isReportsOpen, setIsReportsOpen] = useState(false);
 
     const toggleLeaveManagement = () => {
         setIsLeaveManagementOpen(!isLeaveManagementOpen);
     };
+    const toggleReports = () => {
+        setIsReportsOpen(!isReportsOpen);
+    };
+
 
     return (
         <aside
@@ -26,9 +34,10 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
             className={openSidebarToggle ? "sidebar-responsive" : ""}
         >
             <div className="sidebar-title">
-                <div className="sidebar-brand">
-                    <img src="" alt="" />
-                </div>
+                {/* <div className="sidebar-brand"> */}
+                <img src={logo} alt="AI4Soln Logo" style={{ width: "80px",  }} />
+                {/* <img src="" alt="" /> */}
+                {/* </div> */}
                 <span className="icon close_icon" onClick={OpenSidebar}>
                     X
                 </span>
@@ -39,7 +48,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                         <li className="sidebar-list-item">
                             <Link
                                 to="/admin-dashboard"
-                                style={{ color: "black", textDecoration: "none" }}
+                            // style={{ color: "black", textDecoration: "none" }}
                             >
                                 <BsBarChartFill className="icon" /> Dashboard
                             </Link>
@@ -47,7 +56,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                         <li className="sidebar-list-item">
                             <Link
                                 to="/employee-administration"
-                                style={{ color: "black", textDecoration: "none" }}
+                            // style={{ color: "black", textDecoration: "none" }}
                             >
                                 <BsPeopleFill className="icon" /> Emp Management
                             </Link>
@@ -55,7 +64,7 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                         <li className="sidebar-list-item">
                             <div className="submenu">
                                 <div className="submenu-title" onClick={toggleLeaveManagement}>
-                                    <BsMenuButtonWideFill className="icon" /> Leave Management{" "}
+                                    <BsMenuButtonWideFill className="icon" /> Leave Management
                                     <BsChevronDown />
                                 </div>
                                 {isLeaveManagementOpen && (
@@ -84,18 +93,36 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                         <li className="sidebar-list-item">
                             <Link
                                 to="/department-administration"
-                                style={{ color: "black", textDecoration: "none" }}
+                            // style={{ color: "black", textDecoration: "none" }}
                             >
                                 <BsBuilding className="icon" /> Depart Management
                             </Link>
                         </li>
                         <li className="sidebar-list-item">
-                            <Link
-                                to="/reports"
-                                style={{ color: "black", textDecoration: "none" }}
-                            >
-                                <BsFileText className="icon" /> Reports
-                            </Link>
+                            <div className="submenu">
+                                <div className="submenu-title" onClick={toggleReports}>
+                                    <Link
+                                        to="/reports"
+                                        style={{ color: "black", textDecoration: "none" }}
+                                    >
+                                        <BsFileText className="icon" /> Reports  <BsChevronDown />
+                                    </Link>
+                                </div>
+                                {isReportsOpen && (
+                                    <ul className="submenu-list">
+                                        <li>
+                                            <Link to="/overall-employee-report" className="submenu-item">
+                                                <BsSearch className="icon" /> Emp Report
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link to="/annual-report" className="submenu-item">
+                                                <BsCalendar className="icon" /> Annual Report
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
                         </li>
                     </>
                 )}
@@ -126,12 +153,30 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar, userRole }) => {
                             </Link>
                         </li>
                         <li className="sidebar-list-item">
-                            <Link
-                                to="/reports"
-                                style={{ color: "black", textDecoration: "none" }}
-                            >
-                                <BsFileText className="icon" /> Reports
-                            </Link>
+                            <div className="submenu">
+                                <div className="submenu-title" onClick={toggleReports}>
+                                    <Link
+                                        to="/reports"
+                                        style={{ color: "black", textDecoration: "none" }}
+                                    >
+                                        <BsFileText className="icon" /> Reports  <BsChevronDown />
+                                    </Link>
+                                </div>
+                                {isReportsOpen && (
+                                    <ul className="submenu-list">
+                                        <li>
+                                            <Link to="/overall-employee-report" className="submenu-item">
+                                                <BsSearch className="icon" /> Emp Report
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link to="/annual-report" className="submenu-item">
+                                                <BsCalendar className="icon" /> Annual Report
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
                         </li>
                     </>
                 )}

@@ -1,11 +1,11 @@
 export const roleList = [
-  { label: "Admin", value: "1" },
-  { label: "Manager", value: "2" },
-  { label: "Employee", value: "3" },
+    { label: "Admin", value: "Admin" },
+    { label: "Manager", value: "Manager" },
+    { label: "Employee", value: "Employee" },
 ];
 
 export const roles = {
-  1: "Admin",
-  2: "Manager",
-  3: "Employee",
+    1: "Admin",
+    2: "Manager",
+    3: "Employee",
 };
