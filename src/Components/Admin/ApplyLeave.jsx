@@ -21,6 +21,7 @@ import { getApiData, postApiData } from "../../Common/helpers/axiosHelper";
 import Select from "react-select";
 import { useLeaveTypes } from "../../Common/common/commonFunctions.js";
 import { userRole } from "../../Common/common/commonFunctions.js";
+import { deactivate } from "../../Common/common/icons.js";
 
 const ApplyLeaveModal = (props) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -268,19 +269,22 @@ const ApplyLeaveModal = (props) => {
   }, []);
 
   function handleFileChange(e) {
-    const supportingDocs = e.target.files;
+    const selectedFiles = e.target.files;
 
-    if (supportingDocs.length > 3) {
+    if (
+      selectedFiles.length > 3 ||
+      selectedFiles.length + supportingDocs.length > 3
+    ) {
       alert("You can only select up to 3 files.");
       e.target.value = "";
       return;
     }
 
-    const docs = [];
-    if (supportingDocs.length === 1) {
-      const singleFile = supportingDocs[0];
+    const docs = supportingDocs;
+    if (selectedFiles.length === 1) {
+      const singleFile = selectedFiles[0];
       setDocIsValid(true);
-      const file = e.target.files[0];
+      // const file = e.target.files[0];
       if (!singleFile) return;
       if (singleFile.size > 5000 * 1024) {
         toast.error("File Size Should be less than 5MB", {
@@ -305,7 +309,7 @@ const ApplyLeaveModal = (props) => {
         let doc = {
           document: base64String,
           contentType: docType,
-          documentName: file.name,
+          documentName: singleFile.name,
         };
         docs.push(doc);
         setSupportingDocs(docs);
@@ -313,8 +317,8 @@ const ApplyLeaveModal = (props) => {
       };
       reader.readAsDataURL(singleFile);
     } else {
-      for (let i = 0; i < supportingDocs.length; i++) {
-        const file = supportingDocs[i];
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
         if (!file) continue;
 
         if (file.size > 5000 * 1024) {
@@ -350,6 +354,12 @@ const ApplyLeaveModal = (props) => {
     setSupportingDocs(docs);
     setDocIsValid(true);
   }
+
+  const removeDoc = (index) => {
+    const currentDocs = [...supportingDocs];
+    currentDocs.splice(index, 1);
+    setSupportingDocs(currentDocs);
+  };
 
   const getFileType = (contentType) => {
     switch (contentType) {
@@ -575,7 +585,18 @@ const ApplyLeaveModal = (props) => {
                             {supportingDocs.map((doc, index) => (
                               <Row key={index}>
                                 <div className="mt-2">
-                                  {index + 1} - {doc.documentName}
+                                  {index + 1} - {doc.documentName}{" "}
+                                  <i
+                                    class="icon"
+                                    className="m-2"
+                                    style={{
+                                      color: "red",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => removeDoc(index)}
+                                  >
+                                    {deactivate()}
+                                  </i>
                                 </div>
                               </Row>
                             ))}

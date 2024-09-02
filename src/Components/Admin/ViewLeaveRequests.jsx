@@ -36,7 +36,6 @@ const LeaveRequestsDashboard = () => {
   const [pendingLeaveRequests, setPendingLeaveRequests] = useState([]);
   const [isLeaveReqModalOpen, setIsLeaveReqModalOpen] = useState(false);
   const [leaveRequest, setLeaveRequest] = useState(null);
-  const [docIsValid, setDocIsValid] = useState(false);
   const [docFormat, setDocFormat] = useState("");
   const [fileData, setFileData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,8 +74,6 @@ const LeaveRequestsDashboard = () => {
         reason: item.reason,
       }));
       console.log(mappedResponse);
-      // setAllLeaveRequests(mappedResponse);
-      // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
       setPendingLeaveRequests(mappedResponse);
     } catch (error) {
       console.error("Error fetching pending leaves:", error);
@@ -92,12 +89,9 @@ const LeaveRequestsDashboard = () => {
       const bAdmin = userType === 1;
       const bManager = userType === 2;
       const bEmp = userType === 3;
-
       setIsAdmin(bAdmin);
       setIsManager(bManager);
       setIsEmp(bEmp);
-
-      // getUserList(userType);
     } catch (error) {
       console.error("Error getting user type:", error);
     }
@@ -145,9 +139,7 @@ const LeaveRequestsDashboard = () => {
       comments: "",
       proof: leaveRequest?.proof || "",
     },
-    validationSchema: Yup.object({
-      // comments: Yup.string().required("Please enter a valid comment"),
-    }),
+    validationSchema: Yup.object({}),
     onSubmit: async (values, { resetForm }) => {
       console.log("button clicked");
       if (values.leaveId > 0) {
@@ -167,7 +159,6 @@ const LeaveRequestsDashboard = () => {
         try {
           setIsLoading(true);
           const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
-          // const uIdValue = values.uId && values.uId.value;
           const combinedValues = {
             ...values,
             leaveId: leaveRequest.leaveId,
@@ -218,12 +209,6 @@ const LeaveRequestsDashboard = () => {
           } else {
             setproofDoc(true);
           }
-          // if (proof !== null && docDetails !== null) {
-
-          //   setFileData(proof);
-          // } else {
-          //   setproofDoc(false);
-          // }
         } else {
           setproofDoc(false);
           setDocDetails([]);
@@ -234,70 +219,6 @@ const LeaveRequestsDashboard = () => {
     }
   };
 
-  function handleFileChange(e) {
-    setDocIsValid(true);
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5000 * 1024) {
-      toast.error("File Size Should be less than 5MB", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      // leaveValidation.resetForm();
-      setDocIsValid(false);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const type = reader.result.split(";")[0];
-      const docType = type.split("/")[1];
-      let base64String = "";
-      const indexOfComma = reader.result.indexOf(",");
-      if (indexOfComma !== -1) {
-        base64String = reader.result.substring(indexOfComma + 1);
-      }
-      setDocFormat(docType);
-      setFileData(base64String);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  const delDoc = async (index) => {
-    const data = docDetails[index];
-    const response = await putApiData(
-      `api/LeaveDocuments/ActivateDeactivate/${data.docId}?isActive=false`
-    );
-  };
-  const viewDoc = (index, bDownbload) => {
-    const data = docDetails[index];
-    handleDownloadFile(data, bDownbload);
-  };
-
-  const handleDownloadFile = (data, bDownload) => {
-    // const data = viewResponse[index];
-    const byteChars = atob(data.document);
-    const byteNumbers = new Array(byteChars.length);
-    for (let i = 0; i < byteChars.length; i++) {
-      byteNumbers[i] = byteChars.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: "image/png" });
-    const imageUrl = URL.createObjectURL(blob);
-
-    if (bDownload) {
-      const link = document.createElement("a");
-      link.href = imageUrl;
-      link.download = `${data.documentName || "document"}.${
-        data.contentType !== null ? data.contentType : "png"
-      }`;
-      link.click();
-    } else {
-      window.open(imageUrl, "_blank");
-    }
-
-    URL.revokeObjectURL(imageUrl);
-  };
-
   useEffect(() => {
     getCurrentUserType();
     getLeaveTypes();
@@ -305,7 +226,7 @@ const LeaveRequestsDashboard = () => {
   }, []);
 
   useEffect(() => {
-    console.log("leave Request: ", leaveRequest); //[Avengers, Fast X, Batman]
+    console.log("leave Request: ", leaveRequest);
     if (leaveRequest) tog_leaveReq();
   }, [leaveRequest]);
 
@@ -373,10 +294,7 @@ const LeaveRequestsDashboard = () => {
                   setViewMode(true);
                   console.log("View Mode " + viewMode);
                   viewLeaveRequestDetails(cellProps.row.original.leaveId);
-                  // setLeaveRequest(cellProps.row.original);
                   getDocDetails(cellProps.row.original.leaveId);
-
-                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {view()}
@@ -395,9 +313,6 @@ const LeaveRequestsDashboard = () => {
                     cellProps.row.original.leaveId,
                     cellProps.row.original.proof
                   );
-                  // setLeaveRequest(cellProps.row.original);
-                  // tog_leaveReq();
-                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {edit()}

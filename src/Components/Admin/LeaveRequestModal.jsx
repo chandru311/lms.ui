@@ -243,7 +243,7 @@ const LeaveRequestModal = (props) => {
         <Container fluid>
           <ToastContainer closeButton={false} limit={1} />
           <div className="page-title-box p-4">
-            <h4 className="mb-sm-0 font-size-18">Leave Requests</h4>
+            {/* <h4 className="mb-sm-0 font-size-18">Leave Requests</h4> */}
           </div>
           <Modal
             isOpen={isOpen}
