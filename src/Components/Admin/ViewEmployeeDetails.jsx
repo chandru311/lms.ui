@@ -37,14 +37,10 @@ import { getApiData, postApiData } from "../../Common/helpers/axiosHelper.js";
 
 const ViewEmployeeDetails = (props) => {
   const { isOpen, toggle, viewStatus, employeeAddressData, employeeData } = props
+  console.log(toggle);
   console.log(employeeData);
   console.log(employeeAddressData)
-  //const [employeeData,setEmployeeData]=useState([]);
-  //const [Subdetails, setSubdetails] = useState();
-  const [subdetails, setSubdetails] = useState();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [departDetails, setDepartDetails] = useState([]);
+   const [departDetails, setDepartDetails] = useState([]);
   useEffect(() => {
     getDepartmenDetails();
   }, []);
@@ -80,13 +76,7 @@ const ViewEmployeeDetails = (props) => {
     { label: "Married", value: 3 },
     { label: "Unmarried", value: 4 },
   ];
-  // const deptoptions = [
-  //   { label: "HR", value: 1 },
-  //   { label: "Finance", value: 2 },
-  //   { label: "IT", value: 3 },
-  //   { label: "Sales", value: 4 },
-  // ];
-  // const getEmployeeData= async (employeeId) => {
+    // const getEmployeeData= async (employeeId) => {
   //   // setIsLoading(true)
   //   const response = await getApiData(`/api/Employee/GetEmployeeById?EmployeeId=${employeeId}`);
   //  // setIsLoading(false)
@@ -160,7 +150,7 @@ const ViewEmployeeDetails = (props) => {
        .email("Enter a Valid Email ID")
        .required("Please Enter the Email"),
       password: Yup.string()
-        .required("Please Enter Password")
+       // .required("Please Enter Password")
          .matches(
           /^(?=.*\d)(?=.*[A-Z])(?=.*\W).{8,}$/,
           "Password must be at least 8 characters and must contain at least one digit, one uppercase letter, and one special character"
@@ -258,21 +248,7 @@ const ViewEmployeeDetails = (props) => {
       }
     
     }
-    // if (newEmpRegValidation.isValid) {
-    //   console.log("save validation true");
-
-    //   setSubdetails({ ...values, email: values.userName });
-
-    //   setActiveTab(2);
-    //   console.log("save toggle to emp address");
-    //   console.log(subdetails);
-    //   // return Subdetails;
-    // }
-    //},
-
-
-
-  });
+     });
 //  const updateEmployeeDetails = async (values) => { }
   // const getEmployeeAddressData= async (employeeId) => {
   //   // setIsLoading(true)
@@ -336,7 +312,7 @@ const ViewEmployeeDetails = (props) => {
       //   "Street Name should contain only Alphanumeric with hypens"
       // ),
     }),
-    onSubmit: async (values) => {
+    onSubmit: async (values, {resetForm}) => {
       try{
         if (employeeAddressData !== null) {
         const combinedValues = { ...values };
@@ -347,9 +323,10 @@ const ViewEmployeeDetails = (props) => {
             console.log("address")
             toast.success("Employee Address details info Updated Successfully", {
               position: "top-right",
-              autoClose: 3000,
+              autoClose: 1000,
              
             });
+            setActiveTab(1);
             toggle()
             return;
             
@@ -361,6 +338,8 @@ const ViewEmployeeDetails = (props) => {
             autoClose: 2000,
            
           });
+          setActiveTab(1);
+          toggle()
           empAddressRegValidation.setValues(empAddressRegValidation.initialValues);
         }
         
@@ -391,9 +370,14 @@ const ViewEmployeeDetails = (props) => {
   //const { isOpen, toggle } = props;
   const [activeTab, setActiveTab] = useState(1);
 
+
   const handlePrevious = () => {
     setActiveTab(1);
   };
+
+  const onCloseFun = () => {
+    alert("Hi")
+  }
 
   //
   useEffect(() => {
@@ -403,7 +387,7 @@ const ViewEmployeeDetails = (props) => {
 
   return (
     <>
-      <ToastContainer closeButton={false} limit={1} />
+      <ToastContainer containerId="viewEmpContainer" closeButton={false} limit={1} />
 
 
       <Modal
@@ -415,12 +399,12 @@ const ViewEmployeeDetails = (props) => {
         centered={true}
         className="exampleModal"
         tabIndex="-1"
+        onClose={onCloseFun}
       
       >
         <div className="modal-content">
        
-        <ModalHeader toggle={toggle}
-          >
+        <ModalHeader toggle={toggle}>
             Employee Details
           </ModalHeader>
           <ModalBody>
@@ -796,7 +780,7 @@ const ViewEmployeeDetails = (props) => {
                             <Col md="6">
                               <FormGroup className="mb-3">
                                 <Label htmlFor="password">Password</Label>
-                                <RequiredAsterisk />
+                          
                                 <Input
                                   name="password"
                                   placeholder="********"
@@ -826,7 +810,7 @@ const ViewEmployeeDetails = (props) => {
                                 <Label htmlFor="confirmPassword">
                                   Confirm Password
                                 </Label>
-                                <RequiredAsterisk />
+                              
                                 <Input
                                   name="confirmPassword"
                                   placeholder="********"

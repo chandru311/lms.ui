@@ -27,7 +27,8 @@ import {
   FormFeedback,
 } from "reactstrap";
 import ReactSelect from "react-select";
-const AddEmployee = ({ isOpen, toggle }) => {
+const AddEmployee = (props) => {
+  const { isOpen, toggle }=props
   const [isUid, setIsUid] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -412,7 +413,7 @@ const AddEmployee = ({ isOpen, toggle }) => {
             });
 
             resetForm();
-            toggle();
+           toggle();
             // setSubmitting(true);
 
             newEmpRegValidation.resetForm();
@@ -466,34 +467,20 @@ const AddEmployee = ({ isOpen, toggle }) => {
       <Modal
         size="lg"
         isOpen={isOpen}
+        toggle={toggle}
         // role="dialog"
         autoFocus={true}
         centered={true}
         className="exampleModal"
         tabIndex="-1"
-        toggle={() => {
-          toggle();
-
-          // EmpAddressRegValidation.resetForm();
-        }}
-        // toggle={toggle}
+       
         onClosed={() => {
           EmpAddressRegValidation.resetForm();
         }}
       >
         <div className="modal-content">
           <ModalHeader
-           toggle={()=>{
-            toggle()
-          //  addNewSystemUserValidation.resetForm()
-          }}
-          //  {/* toggle={toggle}*/}
-          //changes on 1208 toggle
-          // toggle={() => {
-          //   toggle();
-
-          // EmpAddressRegValidation.resetForm();
-          //  }}
+          toggle={toggle}
           >
             Employee Registration
           </ModalHeader>
