@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Container } from "reactstrap";
 import { getApiData } from "../../Common/helpers/axiosHelper";
 
 const LeaveBalance = () => {
@@ -29,43 +30,45 @@ const LeaveBalance = () => {
   }, []);
 
   return (
-    <div className="container mt-2">
-      <div className="row">
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          leaves.map((leave, index) => (
-            <div key={index} className="col-sm-6 col-lg-3 mb-4">
-              <div className="card">
-                <div
-                  className="card-header text-white"
-                  style={{
-                    backgroundColor: "#5e2ced",
-                    fontSize: "20px",
-                  }}
-                >
-                  {leave.leaveTypeName}
-                </div>
-                <div className="card-body">
-                  <h4 className="mt-2">
-                    {leave.remainingDays}/{leave.totalDays}
-                  </h4>
-                  <p
-                    className="mt-4 mb-2"
+    <Container fluid style={{ fontFamily: "Poppins" }}>
+      <div className="container mt-2">
+        <div className="row">
+          {isLoading ? (
+            <div>Loading...</div>
+          ) : (
+            leaves.map((leave, index) => (
+              <div key={index} className="col-sm-6 col-lg-3 mb-4">
+                <div className="card">
+                  <div
+                    className="card-header text-white"
                     style={{
-                      fontSize: "15px",
-                      color: "green",
+                      backgroundColor: "#5e2ced",
+                      fontSize: "20px",
                     }}
                   >
-                    Currently Available
-                  </p>
+                    {leave.leaveTypeName}
+                  </div>
+                  <div className="card-body">
+                    <h4 className="mt-2">
+                      {leave.remainingDays}/{leave.totalDays}
+                    </h4>
+                    <p
+                      className="mt-4 mb-2"
+                      style={{
+                        fontSize: "15px",
+                        color: "green",
+                      }}
+                    >
+                      Currently Available
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

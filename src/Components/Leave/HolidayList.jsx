@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardBody, CardTitle } from "reactstrap";
+import { Card, CardBody, CardTitle, Container } from "reactstrap";
 import TableContainer from "../../Common/components/TableContainer";
 import Loader from "../../Common/components/Loader";
 import { getApiData } from "../../Common/helpers/axiosHelper";
@@ -57,7 +57,7 @@ const HolidayList = () => {
 
   return (
     // <Card style={{ marginTop: "30px" }}>
-    <div style={{ marginLeft: "15px" }}>
+    <Container fluid style={{ fontFamily: "Poppins" }}>
       <CardBody>
         <CardTitle>
           <h4 className="mt-2">Holiday List</h4>
@@ -77,8 +77,7 @@ const HolidayList = () => {
           />
         )}
       </CardBody>
-    </div>
-    //</Card>
+    </Container>
   );
 };
 

@@ -316,7 +316,7 @@ const Reports = () => {
   };
 
   return (
-    <Container>
+    <Container fluid style={{ fontFamily: "Poppins" }}>
       <Row className="justify-content-center mt-4">
         <Col md={12}>
           <Formik
