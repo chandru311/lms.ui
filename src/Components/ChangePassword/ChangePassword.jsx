@@ -5,7 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { postApiData } from "../../../Common/helpers/axiosHelper";
+import { postApiData } from "../../Common/helpers/axiosHelper";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
@@ -56,25 +56,22 @@ const ChangePassword = () => {
   });
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="d-flex align-items-center justify-content-center vh-100">
       <div
-        className="w-full max-w-lg p-8 space-y-8 bg-white rounded-lg shadow-lg"
+        className="card p-4"
         style={{ borderRadius: "20px", width: "480px" }}
       >
-        <h4 className="text-2xl font-bold text-center">Change Password</h4>
+        <h4 className="card-title text-center mb-3">Change Password</h4>
         <ToastContainer closeButton={false} limit={1} />
         <form
-          className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
             validation.handleSubmit();
           }}
         >
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Current Password
-            </label>
-            <div className="relative">
+          <div className="mb-3">
+            <label className="form-label">Current Password</label>
+            <div className="input-group">
               <input
                 name="oldPassword"
                 type={passwordShown ? "text" : "password"}
@@ -82,28 +79,32 @@ const ChangePassword = () => {
                 onChange={validation.handleChange}
                 onBlur={validation.handleBlur}
                 value={validation.values.oldPassword || ""}
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-0 focus:border-blue-500 sm:text-sm border-gray-300"
-                style={{ borderRadius: "20px" }}
+                className={`form-control ${
+                  validation.touched.oldPassword &&
+                  validation.errors.oldPassword
+                    ? "is-invalid"
+                    : ""
+                }`}
+                // style={{ borderRadius: "10px" }}
               />
               <span
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400"
+                className="input-group-text"
+                // style={{ cursor: "pointer" }}
               >
                 {passwordShown ? <FaEye /> : <FaEyeSlash />}
               </span>
+              {validation.touched.oldPassword &&
+                validation.errors.oldPassword && (
+                  <div className="invalid-feedback">
+                    {validation.errors.oldPassword}
+                  </div>
+                )}
             </div>
-            {validation.touched.oldPassword &&
-              validation.errors.oldPassword && (
-                <p className="mt-2 text-sm text-red-600">
-                  {validation.errors.oldPassword}
-                </p>
-              )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              New Password
-            </label>
-            <div className="relative">
+          <div className="mb-3">
+            <label className="form-label">New Password</label>
+            <div className="input-group">
               <input
                 name="newPassword"
                 type={passwordShown ? "text" : "password"}
@@ -111,28 +112,32 @@ const ChangePassword = () => {
                 onChange={validation.handleChange}
                 onBlur={validation.handleBlur}
                 value={validation.values.newPassword || ""}
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-0 focus:border-blue-500 sm:text-sm border-gray-300"
-                style={{ borderRadius: "20px" }}
+                className={`form-control ${
+                  validation.touched.newPassword &&
+                  validation.errors.newPassword
+                    ? "is-invalid"
+                    : ""
+                }`}
+                // style={{ borderRadius: "10px" }}
               />
               <span
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400"
+                className="input-group-text"
+                // style={{ cursor: "pointer" }}
               >
                 {passwordShown ? <FaEye /> : <FaEyeSlash />}
               </span>
+              {validation.touched.newPassword &&
+                validation.errors.newPassword && (
+                  <div className="invalid-feedback">
+                    {validation.errors.newPassword}
+                  </div>
+                )}
             </div>
-            {validation.touched.newPassword &&
-              validation.errors.newPassword && (
-                <p className="mt-2 text-sm text-red-600">
-                  {validation.errors.newPassword}
-                </p>
-              )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <div className="relative">
+          <div className="mb-3">
+            <label className="form-label">Confirm Password</label>
+            <div className="input-group">
               <input
                 name="password_confirmation"
                 type={passwordShown ? "text" : "password"}
@@ -140,32 +145,36 @@ const ChangePassword = () => {
                 onChange={validation.handleChange}
                 onBlur={validation.handleBlur}
                 value={validation.values.password_confirmation || ""}
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-0 focus:border-blue-500 sm:text-sm border-gray-300"
-                style={{ borderRadius: "20px" }}
+                className={`form-control ${
+                  validation.touched.password_confirmation &&
+                  validation.errors.password_confirmation
+                    ? "is-invalid"
+                    : ""
+                }`}
+                // style={{ borderRadius: "10px" }}
               />
               <span
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400"
+                className="input-group-text"
+                // style={{ cursor: "pointer" }}
               >
                 {passwordShown ? <FaEye /> : <FaEyeSlash />}
               </span>
+              {validation.touched.password_confirmation &&
+                validation.errors.password_confirmation && (
+                  <div className="invalid-feedback">
+                    {validation.errors.password_confirmation}
+                  </div>
+                )}
             </div>
-            {validation.touched.password_confirmation &&
-              validation.errors.password_confirmation && (
-                <p className="mt-2 text-sm text-red-600">
-                  {validation.errors.password_confirmation}
-                </p>
-              )}
           </div>
-          <div>
-            <button
-              type="submit"
-              className="w-full py-2 px-4 bg-custom-purple text-white rounded-md shadow-sm hover:bg-custom-purple-dark focus:outline-none focus:ring-0 focus:border-custom-purple"
-              style={{ borderRadius: "20px" }}
-            >
-              Reset Password
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="btn text-white w-100"
+            style={{ backgroundColor: "#5e2ced", borderRadius: "10px" }}
+          >
+            Reset Password
+          </button>
         </form>
       </div>
     </div>

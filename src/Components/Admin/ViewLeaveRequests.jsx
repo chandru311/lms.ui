@@ -13,6 +13,7 @@ import {
   Input,
   Label,
   Modal,
+  ModalHeader,
   Row,
   Table,
 } from "reactstrap";
@@ -21,70 +22,108 @@ import Select from "react-select";
 import { useFormik } from "formik";
 import TableContainer from "../../Common/components/TableContainer";
 import { getApiData, putApiData } from "../../Common/helpers/axiosHelper";
-import { edit, view, deactivate } from "../../Common/common/icons.js";
+import {
+  edit,
+  view,
+  deactivate,
+  download,
+  trash,
+} from "../../Common/common/icons.js";
 import { useLeaveTypes } from "../../Common/common/commonFunctions.js";
+import LeaveRequestModal from "./LeaveRequestModal.jsx";
 
 const LeaveRequestsDashboard = () => {
-  const [allLeaveRequests, setAllLeaveRequests] = useState(null);
   const [pendingLeaveRequests, setPendingLeaveRequests] = useState([]);
-  const [leaveRequest, setLeaveRequest] = useState({
-    uId: null,
-    userName: null,
-    leaveTypeName: null,
-    leaveTypeId: null,
-    fromDate: null,
-    toDate: null,
-    reason: "",
-  });
+  const [isLeaveReqModalOpen, setIsLeaveReqModalOpen] = useState(false);
+  const [leaveRequest, setLeaveRequest] = useState(null);
+  const [docIsValid, setDocIsValid] = useState(false);
+  const [docFormat, setDocFormat] = useState("");
+  const [fileData, setFileData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [modal_viewLeaveRequest, setModal_viewLeaveRequest] = useState(false);
-  const [currentLeaveReqId, setCurrentLeaveReqId] = useState("");
   const [viewMode, setViewMode] = useState(false);
+  const [proofDoc, setproofDoc] = useState(null);
+  const [docDetails, setDocDetails] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isEmp, setIsEmp] = useState(false);
   const { leaveTypes, getLeaveTypes } = useLeaveTypes();
 
   const getPendingLeaveDetails = async () => {
-    setIsLoading(true);
-    const response = await getApiData(
-      `api/Leave/GetleavesByStatus?leaveStatus=1`
-    );
-    setIsLoading(false);
-    console.log("leave details " + response.data);
-    const mappedResponse = response.data.map((item, key) => ({
-      index: key + 1,
-      leaveId: item.leaveId,
-      uId: item.uId,
-      firstName: item.firstName + " " + item.lastName,
-      userName: item.userName,
-      leaveTypeName: item.leaveTypeName,
-      fromDate: item.fromDate,
-      toDate: item.toDate,
-      status: item.status,
-      proof: item.proof,
-      reason: item.reason,
-    }));
-    console.log(mappedResponse);
-    // setAllLeaveRequests(mappedResponse);
-    // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
-    setPendingLeaveRequests(mappedResponse);
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const apiEndpoint =
+        userType === 2
+          ? "api/Leave/GetLeavesByManager?leaveStatus=1"
+          : "api/Leave/GetleavesByStatus?leaveStatus=1";
+      setIsLoading(true);
+      const response = await getApiData(apiEndpoint);
+      setIsLoading(false);
+      console.log("leave details " + response.data);
+      const mappedResponse = response.data.map((item, key) => ({
+        index: key + 1,
+        leaveId: item.leaveId,
+        uId: item.uId,
+        firstName: item.firstName + " " + item.lastName,
+        leaveTypeId: item.leaveTypeId,
+        userName: item.userName,
+        leaveTypeName: item.leaveTypeName,
+        fromDate: item.fromDate,
+        toDate: item.toDate,
+        status: item.status,
+        proof: item.proof,
+        reason: item.reason,
+      }));
+      console.log(mappedResponse);
+      // setAllLeaveRequests(mappedResponse);
+      // const pendingStatus = mappedResponse.filter((item) => item.status === 0);
+      setPendingLeaveRequests(mappedResponse);
+    } catch (error) {
+      console.error("Error fetching pending leaves:", error);
+    }
   };
-  function tog_leaveReq() {
-    setModal_viewLeaveRequest(!modal_viewLeaveRequest);
-  }
 
-  const handleClose = (event) => {
-    event.stopPropagation(); // Prevent event bubbling if needed
-    tog_leaveReq();
+  const tog_leaveReq = () => setIsLeaveReqModalOpen(!isLeaveReqModalOpen);
+
+  const getCurrentUserType = async () => {
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const bAdmin = userType === 1;
+      const bManager = userType === 2;
+      const bEmp = userType === 3;
+
+      setIsAdmin(bAdmin);
+      setIsManager(bManager);
+      setIsEmp(bEmp);
+
+      // getUserList(userType);
+    } catch (error) {
+      console.error("Error getting user type:", error);
+    }
   };
 
   const viewLeaveRequestDetails = async (leaveReqId) => {
     try {
-      if (leaveReqId != null) {
+      if (leaveReqId !== null) {
         const response = await getApiData(
           `api/Leave/GetLeaveById/${leaveReqId}`
         );
-        setLeaveRequest(response.data);
+        let mappedResponse = {
+          leaveId: response.data?.leaveId || "",
+          uId: response.data?.uId || "",
+          uName: response.data?.userName || "",
+          leaveTypeId: response.data?.leaveTypeId || "",
+          fromDate: response.data?.fromDate || "",
+          toDate: response.data?.toDate || "",
+          reason: response.data?.reason || "",
+          comments: "",
+          proof: response.data?.proof || "",
+        };
+        console.log("Mapped response " + JSON.stringify(mappedResponse));
+        setLeaveRequest(mappedResponse);
+        getDocDetails(leaveReqId);
       }
-      tog_leaveReq();
     } catch (error) {
       alert(error);
     }
@@ -93,32 +132,182 @@ const LeaveRequestsDashboard = () => {
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
+      leaveId: leaveRequest?.leaveId || null,
       uId: leaveRequest?.uId || null,
       uName: leaveRequest?.userName || null,
-      leaveTypeName: leaveRequest?.leaveTypeName || null,
       leaveTypeId:
         leaveTypes.find(
           (option) => option.value === leaveRequest?.leaveTypeId
         ) || null,
-      fromDate: leaveRequest?.fromDate || null,
-      toDate: leaveRequest?.toDate || null,
-      reason: leaveRequest?.reason || null,
+      fromDate: leaveRequest?.fromDate || "",
+      toDate: leaveRequest?.toDate || "",
+      reason: leaveRequest?.reason || "",
       comments: "",
+      proof: leaveRequest?.proof || "",
     },
     validationSchema: Yup.object({
-      comments: Yup.string().required("Please enter a valid comment"),
+      // comments: Yup.string().required("Please enter a valid comment"),
     }),
     onSubmit: async (values, { resetForm }) => {
       console.log("button clicked");
-      const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
-      const uIdValue = values.uId && values.uId.value;
+      if (values.leaveId > 0) {
+        if (
+          JSON.stringify(values) ===
+          JSON.stringify(leaveValidation.initialValues)
+        ) {
+          toast.info("No changes to save", {
+            position: "top-right",
+            autoClose: 1000,
+          });
+          resetForm();
+          tog_leaveReq();
+          window.location.reload();
+          return;
+        }
+        try {
+          setIsLoading(true);
+          const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
+          // const uIdValue = values.uId && values.uId.value;
+          const combinedValues = {
+            ...values,
+            leaveId: leaveRequest.leaveId,
+            leaveTypeId: leaveTypeValue,
+            proof: fileData,
+          };
+          const response = await putApiData(
+            `api/Leave/UpdateLeave/${leaveRequest.leaveId}`,
+            JSON.stringify(combinedValues)
+          );
+          if (response.success === true) {
+            toast.success("Leave Request Updated", {
+              position: "top-right",
+              autoClose: 1000,
+            });
+            setIsLoading(false);
+            resetForm();
+            tog_leaveReq();
+            const timer = setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
+        } catch (error) {
+          console.error("Error updating leave request", error);
+          toast.error("Failed to update leave request", {
+            position: "top-right",
+            autoClose: 2000,
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
     },
   });
 
+  const getDocDetails = async (leaveReqId) => {
+    try {
+      if (leaveReqId !== null) {
+        const response = await getApiData(
+          `api/LeaveDocuments/GetDocByLeaveId/${leaveReqId}`
+        );
+        console.log(response.data);
+        if (response.data !== null) {
+          setDocDetails(response.data);
+          setDocFormat(response.data.contentType);
+          if (response.data.length === 0) {
+            setproofDoc(false);
+          } else {
+            setproofDoc(true);
+          }
+          // if (proof !== null && docDetails !== null) {
+
+          //   setFileData(proof);
+          // } else {
+          //   setproofDoc(false);
+          // }
+        } else {
+          setproofDoc(false);
+          setDocDetails([]);
+        }
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  function handleFileChange(e) {
+    setDocIsValid(true);
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5000 * 1024) {
+      toast.error("File Size Should be less than 5MB", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      // leaveValidation.resetForm();
+      setDocIsValid(false);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const type = reader.result.split(";")[0];
+      const docType = type.split("/")[1];
+      let base64String = "";
+      const indexOfComma = reader.result.indexOf(",");
+      if (indexOfComma !== -1) {
+        base64String = reader.result.substring(indexOfComma + 1);
+      }
+      setDocFormat(docType);
+      setFileData(base64String);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const delDoc = async (index) => {
+    const data = docDetails[index];
+    const response = await putApiData(
+      `api/LeaveDocuments/ActivateDeactivate/${data.docId}?isActive=false`
+    );
+  };
+  const viewDoc = (index, bDownbload) => {
+    const data = docDetails[index];
+    handleDownloadFile(data, bDownbload);
+  };
+
+  const handleDownloadFile = (data, bDownload) => {
+    // const data = viewResponse[index];
+    const byteChars = atob(data.document);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) {
+      byteNumbers[i] = byteChars.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "image/png" });
+    const imageUrl = URL.createObjectURL(blob);
+
+    if (bDownload) {
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = `${data.documentName || "document"}.${
+        data.contentType !== null ? data.contentType : "png"
+      }`;
+      link.click();
+    } else {
+      window.open(imageUrl, "_blank");
+    }
+
+    URL.revokeObjectURL(imageUrl);
+  };
+
   useEffect(() => {
+    getCurrentUserType();
     getLeaveTypes();
     getPendingLeaveDetails();
   }, []);
+
+  useEffect(() => {
+    console.log("leave Request: ", leaveRequest); //[Avengers, Fast X, Batman]
+    if (leaveRequest) tog_leaveReq();
+  }, [leaveRequest]);
 
   const columns = useMemo(
     () => [
@@ -167,24 +356,6 @@ const LeaveRequestsDashboard = () => {
           return cellProps.value ? cellProps.value : "";
         },
       },
-      //   {
-      //     Header: "Reason",
-      //     accessor: "reason",
-      //     disableFilters: true,
-      //     filterable: false,
-      //     Cell: (cellProps) => {
-      //       return cellProps.value ? cellProps.value : "";
-      //     },
-      //   },
-      //   {
-      //     Header: "Supporting Docs",
-      //     accessor: "proof",
-      //     disableFilters: true,
-      //     filterable: false,
-      //     Cell: (cellProps) => {
-      //       return cellProps.value ? cellProps.value : "";
-      //     },
-      //   },
       {
         Header: "Action",
         accessor: "status",
@@ -202,6 +373,10 @@ const LeaveRequestsDashboard = () => {
                   setViewMode(true);
                   console.log("View Mode " + viewMode);
                   viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  // setLeaveRequest(cellProps.row.original);
+                  getDocDetails(cellProps.row.original.leaveId);
+
+                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {view()}
@@ -216,6 +391,13 @@ const LeaveRequestsDashboard = () => {
                   setViewMode(false);
                   console.log("View Mode " + viewMode);
                   viewLeaveRequestDetails(cellProps.row.original.leaveId);
+                  getDocDetails(
+                    cellProps.row.original.leaveId,
+                    cellProps.row.original.proof
+                  );
+                  // setLeaveRequest(cellProps.row.original);
+                  // tog_leaveReq();
+                  // viewLeaveRequestDetails(cellProps.row.original.leaveId);
                 }}
               >
                 {edit()}
@@ -228,34 +410,6 @@ const LeaveRequestsDashboard = () => {
     []
   );
 
-  const approveOrRejectLeave = async (flag) => {
-    try {
-      const data = { status: flag };
-      // console.log("Agent ID to approve " + approveAgentUid);
-      const response = await putApiData(
-        `api/Leave/Approve_Reject/${currentLeaveReqId}`,
-        JSON.stringify(data)
-      );
-      if (response.success === true) {
-        if (flag === "2") {
-          toast.success("Leave Request approved", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-          getPendingLeaveDetails();
-        } else {
-          toast.success("Leave Request Rejected", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-          getPendingLeaveDetails();
-        }
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -264,216 +418,6 @@ const LeaveRequestsDashboard = () => {
           <div className="page-title-box p-4">
             <h4 className="mb-sm-0 font-size-18">Leave Requests</h4>
           </div>
-          <Modal
-            isOpen={modal_viewLeaveRequest}
-            toggle={() => {
-              tog_leaveReq();
-            }}
-            name="Apply Leave"
-            size="lg"
-          >
-            <div className="modal-header d-flex justify-content-between">
-              <h5 className="modal-title mt-0" id="myModalLabel">
-                View the leave Requests
-              </h5>
-              {/* <button
-                                        type="button"
-                                        onClick={() => {
-                                            handleClose();
-                                        }}
-                                        className="close"
-                                        data-dismiss="modal"
-                                        aria-label="Close"
-                                        style={{ border: "none"}}
-                                    >
-                                        <span aria-hidden="true">&times;</span>
-                                    </button> */}
-            </div>
-            <Card className="overflow-hidden">
-              <div className="modal-body">
-                <Form
-                  className="needs-validation"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                  }}
-                >
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="uName">UserName</Label>
-                        <Input
-                          type="input"
-                          name="userName"
-                          id="userName"
-                          value={leaveValidation.values.uName}
-                          disabled={true}
-                        ></Input>
-                      </div>
-                    </Col>
-                    {/* <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="leaveType">Leave Type</Label>
-                        <Select
-                          name="leaveTypeId"
-                          id="leaveTypeId"
-                          value={leaveValidation.values.leaveTypeName}
-                          onChange={(selectedOption) => {
-                            leaveValidation.setFieldValue(
-                              "leaveTypeId",
-                              selectedOption
-                            );
-                          }}
-                          disabled={viewMode}
-                          options={leaveTypes}
-                        ></Select>
-                      </div>
-                    </Col> */}
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3"></div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="startDate" className="text-left">
-                          Leave start Date
-                        </Label>
-                        <Input
-                          type="date"
-                          name="startDate"
-                          id="startDate"
-                          value={leaveValidation.values.fromDate}
-                          disabled={viewMode}
-                        ></Input>
-                      </div>
-                    </Col>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="endDate" className="text-left">
-                          Leave End Date
-                        </Label>
-                        <Input
-                          type="date"
-                          name="endDate"
-                          id="endDate"
-                          value={leaveValidation.values.toDate}
-                          disabled={viewMode}
-                        ></Input>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="reason">Reason for Leave</Label>
-                        <Input
-                          type="textarea"
-                          name="reason"
-                          id="reason"
-                          rows={5}
-                          placeholder="Provide the reason for leave"
-                          value={leaveValidation.values.reason}
-                          disabled={viewMode}
-                          // value={formData.reason}
-                          // onChange={handleChange}
-                        />
-                      </div>
-                    </Col>
-                    <Col lg="6">
-                      <div className="mb-3">
-                        <Label for="leaveDocs" hidden={viewMode}>
-                          Upload Supporting Docs
-                        </Label>
-                        <Input
-                          type="file"
-                          //   onChange={FileUpload}
-                          className="mb-3"
-                          disabled={viewMode}
-                          hidden={viewMode}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <Label for="viewleaveDocs" hidden={!viewMode}>
-                          Supporting Docs:
-                        </Label>
-                      </div>
-                      <div hidden={!viewMode}>
-                        <p>Document Name: {leaveValidation.values.uName}</p>
-                      </div>
-                    </Col>
-                    <div className="mb-3">
-                      <Label for="comments" hidden={!viewMode}>
-                        {" "}
-                        Approver Comments
-                      </Label>
-                      <Input
-                        type="textarea"
-                        name="comments"
-                        id="comments"
-                        rows={2}
-                        placeholder="Please provide comments if any!"
-                        value={leaveValidation.values.comments || null}
-                        hidden={!viewMode}
-                        // value={formData.reason}
-                        // onChange={handleChange}
-                      />
-                    </div>
-                  </Row>
-                  <Row>
-                    <div className="d-flex justify-content-center">
-                      <Button
-                        type="button"
-                        className="btn btn-primary m-3 "
-                        hidden={!viewMode}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          console.log("Approve button clicked");
-                          approveOrRejectLeave("2");
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        type="button"
-                        className="btn btn-primary m-3 "
-                        hidden={!viewMode}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          console.log("Reject button clicked");
-                          approveOrRejectLeave("3");
-                        }}
-                      >
-                        Reject
-                      </Button>
-                      <Button
-                        type="button"
-                        className="btn btn-primary m-3 "
-                        hidden={viewMode}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          console.log("Save Changes clicked");
-                          leaveValidation.handleSubmit();
-                        }}
-                      >
-                        Save Changes
-                      </Button>
-                      <Button
-                        type="button"
-                        className="btn btn-primary m-3 "
-                        onClick={handleClose}
-                        // hidden={viewMode}
-                        // disabled={staffValidation.isSubmitting}
-                      >
-                        Close
-                      </Button>
-                    </div>
-                  </Row>
-                </Form>
-              </div>
-            </Card>
-          </Modal>
 
           <Card>
             <CardBody>
@@ -485,6 +429,15 @@ const LeaveRequestsDashboard = () => {
               />
             </CardBody>
           </Card>
+
+          <LeaveRequestModal
+            isOpen={isLeaveReqModalOpen}
+            toggle={tog_leaveReq}
+            viewMode={viewMode}
+            leaveRequest={leaveRequest}
+            proofDoc={proofDoc}
+            docDetails={docDetails}
+          />
         </Container>
       </div>
     </React.Fragment>

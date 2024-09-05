@@ -18,24 +18,26 @@ import LeaveHistroy from "../Components/Admin/LeaveHistroy";
 import ManageDepartment from "../Components/Admin/ManageDepartment";
 import LeaveType from "../Components/Admin/LeaveType";
 
+import ChangePassword from "../Components/ChangePassword/ChangePassword";
 
 const authProtectedRoutes = [
-    { path: "/admin-dashboard", component: <AdminDashboard /> },
+  { path: "/admin-dashboard", component: <AdminDashboard /> },
   { path: "/manager-dashboard", component: <ManagerDashboard /> },
-    { path: "/employee-dashboard", component: <EmployeeDashboard /> },
-    { path: "/leave-administration", component: <LeaveAdministration /> },
-    { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
-    { path: "/allocated-leaves", component: <LeaveType /> },
-    { path: "/employee-administration", component: <EmployeeAdministration /> },
+  { path: "/employee-dashboard", component: <EmployeeDashboard /> },
+  { path: "/leave-administration", component: <LeaveAdministration /> },
+  { path: "/view-leave-requests", component: <LeaveRequestsDashboard /> },
+  { path: "/allocated-leaves", component: <LeaveType /> },
+  { path: "/employee-administration", component: <EmployeeAdministration /> },
 
   { path: "/holiday-list", component: <HolidayList /> },
-    { path: "/leave-balance", component: <LeaveBalance /> },
-    { path: "/apply-leave", component: <ApplyLeaveModal /> },
-    { path: "/department-administration", component: <ManageDepartment /> },
+  { path: "/leave-balance", component: <LeaveBalance /> },
+  { path: "/apply-leave", component: <ApplyLeaveModal /> },
+  { path: "/department-administration", component: <ManageDepartment /> },
 
-    {
-        path: "/leave-history", component: <LeaveHistroy />
-    },
+  {
+    path: "/leave-history",
+    component: <LeaveHistroy />,
+  },
   { path: "/reports", component: <Reports /> },
 ];
 
@@ -44,6 +46,7 @@ const publicRoutes = [
   { path: "/login", component: <Login /> },
   { path: "/forget-password", component: <ForgotPassword /> },
   { path: "/logout", component: <Logout /> },
+  { path: "/change-password", component: <ChangePassword /> },
 ];
 
 export { authProtectedRoutes, publicRoutes };

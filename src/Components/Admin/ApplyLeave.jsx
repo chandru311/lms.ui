@@ -31,11 +31,13 @@ const ApplyLeaveModal = (props) => {
   const { leaveTypes, getLeaveTypes } = useLeaveTypes();
   const [docIsValid, setDocIsValid] = useState(true);
   const [docFormat, setDocFormat] = useState("");
-  const [fileData, setFileData] = useState(null);
+  // const [fileData, setFileData] = useState(null);
+  const [supportingDocs, setSupportingDocs] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const [isEmp, setIsEmp] = useState(false);
-
+  let bManager = false;
+  let successMsg = "";
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -56,7 +58,17 @@ const ApplyLeaveModal = (props) => {
         value: Yup.string().required("Please Select a leaveType"),
       }),
       fromDate: Yup.string().required("Please select the leave start date"),
-      toDate: Yup.string().required("Please select the leave end date"),
+      toDate: Yup.string()
+        .required("Please select the leave end date")
+        .test(
+          "is-after",
+          "specify a date is/after the Leave start date",
+          (value, context) => {
+            const fromDate = new Date(context.parent.fromDate);
+            const toDate = new Date(value);
+            return toDate >= fromDate;
+          }
+        ),
       reason: Yup.string().required("Please provide the reason for the leave"),
     }),
     onSubmit: async (values, { resetForm }) => {
@@ -69,20 +81,61 @@ const ApplyLeaveModal = (props) => {
         ...values,
         uId: uIdValue,
         leaveTypeId: leaveTypeValue,
-        // proof: fileData,
       };
       const response = await postApiData(
         "api/Leave/ApplyLeave",
         JSON.stringify(combinedValues)
       );
       if (response.success === true) {
-        toast.success("Leave Request Submitted", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+        if (supportingDocs.length) {
+          const docResponses = await Promise.allSettled(
+            supportingDocs.map(async (sDoc) => {
+              const docValues = {
+                leaveId: response.data.leaveId,
+                document: sDoc.document,
+                contentType: sDoc.contentType,
+              };
+              return await postApiData(
+                "api/LeaveDocuments",
+                JSON.stringify(docValues)
+              );
+            })
+          );
+          console.log("docResponses", docResponses);
+          // supportingDocs.forEach(sDoc =>{
 
-        setIsLoading(false);
-        resetForm();
+          //   const docResponse = await postApiData(
+          //     "api/LeaveDocuments",
+          //     JSON.stringify(docValues)
+          //   );
+          docResponses.forEach((msg) => {
+            if (msg.value.success === true) successMsg = "true";
+            else successMsg = "false";
+          });
+          if (successMsg === "true") {
+            toast.success("Leave Request Submitted", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+            setIsLoading(false);
+            resetForm();
+          } else {
+            toast.error(
+              "Error in uploading documents, leave request not submitted",
+              {
+                position: "top-right",
+                autoClose: 2000,
+              }
+            );
+          }
+        } else {
+          toast.success("Leave Request Submitted", {
+            position: "top-right",
+            autoClose: 2000,
+          });
+          setIsLoading(false);
+          resetForm();
+        }
       } else {
         toast.error(response.message, {
           position: "top-right",
@@ -92,10 +145,20 @@ const ApplyLeaveModal = (props) => {
         setIsLoading(false);
       }
       const timer = setTimeout(() => {
-        navigate("/admin-dashboard");
+        if (isAdmin) navigate("/admin-dashboard");
+        else if (isManager) navigate("/manager-dashboard");
+        else navigate("/employee-dashboard");
       }, 3000);
     },
   });
+
+  const uploadDoc = async (docValues) => {
+    const docResponse = await postApiData(
+      "api/LeaveDocuments",
+      JSON.stringify(docValues)
+    );
+    return docResponse;
+  };
 
   // const getLeaveTypes = async () => {
   //   setIsLoading(true);
@@ -110,65 +173,182 @@ const ApplyLeaveModal = (props) => {
   //   setLeaveTypeOptions(leaveTypesList);
   // };
 
-  const getUserList = async () => {
+  const getUserList = async (userType) => {
+    let response = null;
     setIsLoading(true);
-    const response = await getApiData(`api/Employee/GetAllEmployees`);
-    setIsLoading(false);
-    console.log("emp details " + response.data);
-    const mappedResponse = response.data.map((item, key) => ({
-      value: item.uId,
-      label: item.firstName + " " + item.lastName + "(" + item.userName + ")",
-    }));
-    const newList = [{ value: 0, label: "Self" }, ...mappedResponse];
-    console.log(newList);
-    setuNameOptions(newList);
+
+    const bAdmin = userType === 1;
+    const bManager = userType === 2;
+    try {
+      if (bManager) {
+        const response = await getApiData("api/Employee/GetEmployeesByManager");
+        setIsLoading(false);
+        const mappedResponse = response.data.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        const newList = [{ value: 0, label: "Self" }, ...mappedResponse];
+        console.log(newList);
+        setuNameOptions(newList);
+      } else if (bAdmin) {
+        const data = {
+          pageNumber: 1,
+          pageCount: 50,
+          filterColumns: [
+            {
+              columnName: "firstName",
+              filterValue: "",
+              filterType: 6,
+            },
+            {
+              columnName: "lastName",
+              filterValue: "",
+              filterType: 6,
+            },
+          ],
+        };
+        const empResponse = await postApiData(
+          "api/Employee/GetEmployeeByPagination",
+          data
+        );
+        // const empResponse = await getApiData("api/Employee/GetAllEmployees");
+        const mappedEmpResponse = empResponse.model.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        console.log("Emp details " + mappedEmpResponse);
+        const mgrResponse = await postApiData(
+          "api/Manager/GetManagerByPagination",
+          data
+        );
+        const mappedMgrResponse = mgrResponse.model.map((item, key) => ({
+          value: item.uId,
+          label:
+            item.firstName + " " + item.lastName + "(" + item.userName + ")",
+        }));
+        console.log("Manager details " + mappedMgrResponse);
+        const newList = [
+          { value: 0, label: "Self" },
+          ...mappedMgrResponse,
+          ...mappedEmpResponse,
+        ];
+        setuNameOptions(newList);
+      }
+    } catch (error) {
+      console.error("Error fetching user list:", error);
+      // Handle error appropriately (e.g., display an error message to the user)
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getCurrentUserType = async () => {
-    const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
-    const userType = authUser?.userType;
-    switch (userType) {
-      case 1:
-        setIsAdmin(true);
-      case 2:
-        setIsManager(true);
-      case "jpeg":
-        setIsEmp(true);
+    try {
+      const authUser = await JSON.parse(sessionStorage.getItem("authUser"));
+      const userType = authUser?.userType;
+      const bAdmin = userType === 1;
+      const bManager = userType === 2;
+      const bEmp = userType === 3;
+
+      setIsAdmin(bAdmin);
+      setIsManager(bManager);
+      setIsEmp(bEmp);
+
+      getUserList(userType);
+    } catch (error) {
+      console.error("Error getting user type:", error);
     }
   };
 
   useEffect(() => {
     getCurrentUserType();
     getLeaveTypes();
-    getUserList();
   }, []);
 
   function handleFileChange(e) {
-    setDocIsValid(true);
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5000 * 1024) {
-      toast.error("File Size Should be less than 5MB", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      // leaveValidation.resetForm();
-      setDocIsValid(false);
+    const supportingDocs = e.target.files;
+
+    if (supportingDocs.length > 3) {
+      alert("You can only select up to 3 files.");
+      e.target.value = "";
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const type = reader.result.split(";")[0];
-      const docType = type.split("/")[1];
-      let base64String = "";
-      const indexOfComma = reader.result.indexOf(",");
-      if (indexOfComma !== -1) {
-        base64String = reader.result.substring(indexOfComma + 1);
+
+    const docs = [];
+    if (supportingDocs.length === 1) {
+      const singleFile = supportingDocs[0];
+      setDocIsValid(true);
+      const file = e.target.files[0];
+      if (!singleFile) return;
+      if (singleFile.size > 5000 * 1024) {
+        toast.error("File Size Should be less than 5MB", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        // leaveValidation.resetForm();
+        setDocIsValid(false);
+        return;
       }
-      setDocFormat(docType);
-      setFileData(base64String);
-    };
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        const type = reader.result.split(";")[0];
+        const docType = type.split("/")[1];
+        let base64String = "";
+        const indexOfComma = reader.result.indexOf(",");
+        if (indexOfComma !== -1) {
+          base64String = reader.result.substring(indexOfComma + 1);
+        }
+        setDocFormat(docType);
+        let doc = {
+          document: base64String,
+          contentType: docType,
+          documentName: file.name,
+        };
+        docs.push(doc);
+        setSupportingDocs(docs);
+        setDocIsValid(true);
+      };
+      reader.readAsDataURL(singleFile);
+    } else {
+      for (let i = 0; i < supportingDocs.length; i++) {
+        const file = supportingDocs[i];
+        if (!file) continue;
+
+        if (file.size > 5000 * 1024) {
+          toast.error("File Size Should be less than 5MB", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          setDocIsValid(false);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result;
+          const type = reader.result.split(";")[0];
+          const docType = type.split("/")[1];
+          let base64String = "";
+          const indexOfComma = reader.result.indexOf(",");
+          if (indexOfComma !== -1) {
+            base64String = reader.result.substring(indexOfComma + 1);
+          }
+          setDocFormat(docType);
+          let doc = {
+            document: base64String,
+            contentType: docType,
+            documentName: file.name,
+          };
+          docs.push(doc);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    setSupportingDocs(docs);
+    setDocIsValid(true);
   }
 
   const getFileType = (contentType) => {
@@ -215,7 +395,7 @@ const ApplyLeaveModal = (props) => {
                     onSubmit={leaveValidation.handleSubmit}
                   >
                     <Row>
-                      {isAdmin && (
+                      {(isAdmin || isManager) && (
                         <Col lg="6">
                           <div className="mb-3">
                             <Label for="empID">
@@ -345,7 +525,7 @@ const ApplyLeaveModal = (props) => {
                             type="textarea"
                             name="reason"
                             id="reason"
-                            rows={5}
+                            rows={3}
                             placeholder="Provide the reason for leave"
                             onBlur={leaveValidation.handleBlur}
                             onChange={handleInputChange}
@@ -371,6 +551,7 @@ const ApplyLeaveModal = (props) => {
                               aria-label="Upload"
                               accept=".png, .jpg, .jpeg, .pdf"
                               aria-describedby="inputGroupFileAddon04"
+                              multiple
                               onChange={(e) => {
                                 handleFileChange(e);
                                 leaveValidation.handleChange(e);
@@ -390,6 +571,15 @@ const ApplyLeaveModal = (props) => {
                               </FormFeedback>
                             ) : null}
                           </div>
+                          <div className="col-md-12">
+                            {supportingDocs.map((doc, index) => (
+                              <Row key={index}>
+                                <div className="mt-2">
+                                  {index + 1} - {doc.documentName}
+                                </div>
+                              </Row>
+                            ))}
+                          </div>
                         </div>
                       </Col>
                     </Row>
@@ -397,9 +587,12 @@ const ApplyLeaveModal = (props) => {
                   <Row>
                     <div className="mt-4 mb-3 text-center">
                       <Button
-                        className="btn btn-primary btn-block"
                         // type="submit"
-
+                        style={{
+                          backgroundColor: "#5e2ced",
+                          color: "white",
+                          border: "none",
+                        }}
                         onClick={() => {
                           leaveValidation.handleSubmit();
                         }}

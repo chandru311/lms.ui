@@ -9,6 +9,7 @@ import { mapStatus } from '../../Common/common/StatusLabels';
 import '../../Common/common/status.css';
 
 const LeaveHistory = () => {
+    document.title = "Leave Histroy";
     const [leaveData, setLeaveData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [modal, setModal] = useState(false);
