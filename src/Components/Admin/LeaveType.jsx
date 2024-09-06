@@ -113,7 +113,7 @@ const LeaveType = () => {
             color="primary"
             className="btn-sm btn-rounded"
             title="View"
-            style={{ marginRight: "5px" }}
+            style={{  background: "linear-gradient(100deg, #9152f5, #7950eb,#8f6cf0)",marginRight: "5px" }}
             aria-label="view"
               // type="button"
               // style={{ background: "#5e2ced", borderColor: "#5e2ced" }}

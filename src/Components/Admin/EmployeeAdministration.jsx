@@ -420,7 +420,7 @@ const EmployeeAdministration = (props) => {
               className="btn-sm btn-rounded"
               title="View"
               style={{
-                backgroundColor: "#5e2ced",
+                background: "linear-gradient(100deg, #9152f5, #7950eb,#8f6cf0)",
                 color: "white",
                 border: "none",
                 marginRight: "5px" 
@@ -442,7 +442,7 @@ const EmployeeAdministration = (props) => {
               color="success"
               className="btn-sm btn-rounded"
               title="Edit"
-              style={{ marginRight: "5px" }}
+              style={{ marginRight: "5px",background:"#f46a6a" }}
               onClick={() => {
                 setViewMode(false)
                 viewEmployeeData(cellProps.row.original);

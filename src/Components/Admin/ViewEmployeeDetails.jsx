@@ -20,11 +20,11 @@ import {
   FormFeedback
 } from "reactstrap";
 import { useFormik } from "formik";
-import * as Yup from "yup";
+import * as Yup from 'yup'
 import classnames from "classnames";
-import { putApiData } from "../../Common/helpers/axiosHelper.js";
+import { putApiData } from "../../Common/helpers/axiosHelper.js"
 // import { postApiData } from "../../../../helpers/axiosHelper";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
 import RequiredAsterisk from "../../Common/components/RequiredAsterisk.jsx";
 import ReactSelect from "react-select";
 //import { postApiData } from "../../../Common/helpers/axiosHelper";
@@ -33,6 +33,7 @@ import { getApiData, postApiData } from "../../Common/helpers/axiosHelper.js";
 // import reactSelect from "react-select";
 // import SelectStyle from '../../../../common/data/SelectStyle'
 // import { roleList } from "../../../../common/data/roles";
+
 
 const ViewEmployeeDetails = (props) => {
   const { isOpen, toggle, viewStatus, employeeAddressData, employeeData } = props
