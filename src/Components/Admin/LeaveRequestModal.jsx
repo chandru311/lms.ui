@@ -39,7 +39,10 @@ const LeaveRequestModal = (props) => {
   const [fileData, setFileData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { leaveTypes, getLeaveTypes } = useLeaveTypes();
-
+  const [supportingDocs, setSupportingDocs] = useState(docDetails);
+  const docCopy = [...docDetails.map((doc) => ({ ...doc }))]; // deep copy
+  const [prevSupportingDocs, setPrevSupportingDocs] = useState(docCopy);
+  let successMsg = "";
   const leaveValidation = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -62,19 +65,54 @@ const LeaveRequestModal = (props) => {
     }),
     onSubmit: async (values, { resetForm }) => {
       console.log("button clicked");
+      let newDocsTobeSaved = supportingDocs.filter((sDoc) => !sDoc.id);
+
       if (values.leaveId > 0) {
         if (
           JSON.stringify(values) ===
           JSON.stringify(leaveValidation.initialValues)
         ) {
-          toast.info("No changes to save", {
-            position: "top-right",
-            autoClose: 1000,
-          });
-          resetForm();
-          toggle();
-          // window.location.reload();
-          return;
+          if (newDocsTobeSaved.length === 0) {
+            toast.info("No changes to save", {
+              position: "top-right",
+              autoClose: 1000,
+            });
+            resetForm();
+            toggle();
+            // window.location.reload();
+            return;
+          } else {
+            //call save leave api for ecah newly added doc
+            const docResponses = await Promise.allSettled(
+              newDocsTobeSaved.map(async (sDoc) => {
+                const docValues = {
+                  leaveId: leaveValidation.leaveId,
+                  document: sDoc.document,
+                  contentType: sDoc.contentType,
+                };
+                return await postApiData(
+                  "api/LeaveDocuments",
+                  JSON.stringify(docValues)
+                );
+              })
+            );
+            docResponses.forEach((msg) => {
+              if (msg.value.success === true) successMsg = "true";
+              else successMsg = "false";
+            });
+            if (successMsg === "true") {
+              toast.success("Leave Request updated with new documents", {
+                position: "top-right",
+                autoClose: 2000,
+              });
+              setIsLoading(false);
+              resetForm();
+            }
+            resetForm();
+            toggle();
+            // window.location.reload();
+            return;
+          }
         }
         try {
           setIsLoading(true);
@@ -91,16 +129,22 @@ const LeaveRequestModal = (props) => {
             JSON.stringify(combinedValues)
           );
           if (response.success === true) {
+            newDocsTobeSaved.forEach((newDoc) => {});
+
             toast.success("Leave Request Updated", {
               position: "top-right",
-              autoClose: 1000,
+              autoClose: 3000,
             });
             setIsLoading(false);
             resetForm();
             toggle();
-            const timer = setTimeout(() => {
-              window.location.reload();
-            }, 3000);
+            // setTimeout(() => {
+            //   toggle();
+            // }, 3000);
+            // toggle();
+            // const timer = setTimeout(() => {
+            //   window.location.reload();
+            // }, 3000);
           }
         } catch (error) {
           console.error("Error updating leave request", error);
@@ -120,34 +164,93 @@ const LeaveRequestModal = (props) => {
   }, [leaveRequest]);
 
   function handleFileChange(e) {
-    setDocIsValid(true);
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5000 * 1024) {
-      toast.error("File Size Should be less than 5MB", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      // leaveValidation.resetForm();
-      setDocIsValid(false);
+    const selectedFiles = e.target.files;
+
+    if (
+      selectedFiles.length > 3 ||
+      selectedFiles.length + supportingDocs.length > 3
+    ) {
+      alert("You can only select up to 3 files.");
+      e.target.value = "";
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const type = reader.result.split(";")[0];
-      const docType = type.split("/")[1];
-      let base64String = "";
-      const indexOfComma = reader.result.indexOf(",");
-      if (indexOfComma !== -1) {
-        base64String = reader.result.substring(indexOfComma + 1);
+
+    const docs = supportingDocs;
+    if (selectedFiles.length === 1) {
+      const singleFile = selectedFiles[0];
+      setDocIsValid(true);
+      // const file = e.target.files[0];
+      if (!singleFile) return;
+      if (singleFile.size > 5000 * 1024) {
+        toast.error("File Size Should be less than 5MB", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        // leaveValidation.resetForm();
+        setDocIsValid(false);
+        return;
       }
-      setDocFormat(docType);
-      setFileData(base64String);
-    };
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result;
+        const type = reader.result.split(";")[0];
+        const docType = type.split("/")[1];
+        let base64String = "";
+        const indexOfComma = reader.result.indexOf(",");
+        if (indexOfComma !== -1) {
+          base64String = reader.result.substring(indexOfComma + 1);
+        }
+        setDocFormat(docType);
+        let doc = {
+          document: base64String,
+          contentType: docType,
+          documentName: singleFile.name,
+        };
+        docs.push(doc);
+        setSupportingDocs(docs);
+        setDocIsValid(true);
+      };
+      reader.readAsDataURL(singleFile);
+    } else {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        if (!file) continue;
+
+        if (file.size > 5000 * 1024) {
+          toast.error("File Size Should be less than 5MB", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          setDocIsValid(false);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result;
+          const type = reader.result.split(";")[0];
+          const docType = type.split("/")[1];
+          let base64String = "";
+          const indexOfComma = reader.result.indexOf(",");
+          if (indexOfComma !== -1) {
+            base64String = reader.result.substring(indexOfComma + 1);
+          }
+          setDocFormat(docType);
+          let doc = {
+            document: base64String,
+            contentType: docType,
+            documentName: file.name,
+          };
+          docs.push(doc);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    setSupportingDocs(docs);
+    setDocIsValid(true);
   }
   const delDoc = async (index) => {
-    const data = docDetails[index];
+    const data = supportingDocs[index];
     const response = await putApiData(
       `api/LeaveDocuments/ActivateDeactivate/${data.docId}?isActive=false`
     );
@@ -160,7 +263,7 @@ const LeaveRequestModal = (props) => {
     }
   };
   const viewDoc = (index, bDownbload) => {
-    const data = docDetails[index];
+    const data = supportingDocs[index];
     handleDownloadFile(data, bDownbload);
   };
 
@@ -241,10 +344,14 @@ const LeaveRequestModal = (props) => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <ToastContainer closeButton={false} limit={1} />
-          <div className="page-title-box p-4">
-            {/* <h4 className="mb-sm-0 font-size-18">Leave Requests</h4> */}
-          </div>
+          <ToastContainer
+            // containerId="container1"
+            closeButton={false}
+            limit={1}
+          />
+          {/* <div className="page-title-box p-4">
+            <h4 className="mb-sm-0 font-size-18">Leave Requests</h4>
+          </div> */}
           <Modal
             isOpen={isOpen}
             toggle={toggle}
@@ -426,7 +533,7 @@ const LeaveRequestModal = (props) => {
                                   Click to view/download the document(s)
                                 </small>
                               </p>
-                              {docDetails.map((arr, index) => (
+                              {supportingDocs.map((arr, index) => (
                                 <Row key={index}>
                                   <div>
                                     <a
@@ -568,6 +675,7 @@ const LeaveRequestModal = (props) => {
             </Card>
           </Modal>
         </Container>
+        {/* <ToastContainer /> */}
       </div>
     </React.Fragment>
   );

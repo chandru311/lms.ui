@@ -123,77 +123,6 @@ const LeaveRequestsDashboard = () => {
     }
   };
 
-  const leaveValidation = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      leaveId: leaveRequest?.leaveId || null,
-      uId: leaveRequest?.uId || null,
-      uName: leaveRequest?.userName || null,
-      leaveTypeId:
-        leaveTypes.find(
-          (option) => option.value === leaveRequest?.leaveTypeId
-        ) || null,
-      fromDate: leaveRequest?.fromDate || "",
-      toDate: leaveRequest?.toDate || "",
-      reason: leaveRequest?.reason || "",
-      comments: "",
-      proof: leaveRequest?.proof || "",
-    },
-    validationSchema: Yup.object({}),
-    onSubmit: async (values, { resetForm }) => {
-      console.log("button clicked");
-      if (values.leaveId > 0) {
-        if (
-          JSON.stringify(values) ===
-          JSON.stringify(leaveValidation.initialValues)
-        ) {
-          toast.info("No changes to save", {
-            position: "top-right",
-            autoClose: 1000,
-          });
-          resetForm();
-          tog_leaveReq();
-          window.location.reload();
-          return;
-        }
-        try {
-          setIsLoading(true);
-          const leaveTypeValue = values.leaveTypeId && values.leaveTypeId.value;
-          const combinedValues = {
-            ...values,
-            leaveId: leaveRequest.leaveId,
-            leaveTypeId: leaveTypeValue,
-            proof: fileData,
-          };
-          const response = await putApiData(
-            `api/Leave/UpdateLeave/${leaveRequest.leaveId}`,
-            JSON.stringify(combinedValues)
-          );
-          if (response.success === true) {
-            toast.success("Leave Request Updated", {
-              position: "top-right",
-              autoClose: 1000,
-            });
-            setIsLoading(false);
-            resetForm();
-            tog_leaveReq();
-            const timer = setTimeout(() => {
-              window.location.reload();
-            }, 3000);
-          }
-        } catch (error) {
-          console.error("Error updating leave request", error);
-          toast.error("Failed to update leave request", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    },
-  });
-
   const getDocDetails = async (leaveReqId) => {
     try {
       if (leaveReqId !== null) {
@@ -287,9 +216,14 @@ const LeaveRequestsDashboard = () => {
             <>
               <Button
                 type="button"
-                color="primary"
                 className="btn-sm btn-rounded"
-                style={{ marginRight: "5px", marginBottom: "5px" }}
+                style={{
+                  marginRight: "5px",
+                  marginBottom: "5px",
+                  backgroundColor: "#5e2ced",
+                  border: "none",
+                  color: "white",
+                }}
                 onClick={() => {
                   setViewMode(true);
                   console.log("View Mode " + viewMode);
@@ -329,7 +263,11 @@ const LeaveRequestsDashboard = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          <ToastContainer closeButton={false} limit={1} />
+          <ToastContainer
+            containerId="container1"
+            closeButton={false}
+            limit={1}
+          />
           <div className="page-title-box p-4">
             <h4 className="mb-sm-0 font-size-18">Leave Requests</h4>
           </div>
@@ -345,14 +283,16 @@ const LeaveRequestsDashboard = () => {
             </CardBody>
           </Card>
 
-          <LeaveRequestModal
-            isOpen={isLeaveReqModalOpen}
-            toggle={tog_leaveReq}
-            viewMode={viewMode}
-            leaveRequest={leaveRequest}
-            proofDoc={proofDoc}
-            docDetails={docDetails}
-          />
+          {isLeaveReqModalOpen && (
+            <LeaveRequestModal
+              isOpen={isLeaveReqModalOpen}
+              toggle={tog_leaveReq}
+              viewMode={viewMode}
+              leaveRequest={leaveRequest}
+              proofDoc={proofDoc}
+              docDetails={docDetails}
+            />
+          )}
         </Container>
       </div>
     </React.Fragment>

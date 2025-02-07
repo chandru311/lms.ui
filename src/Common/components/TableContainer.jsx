@@ -119,7 +119,7 @@ const TableContainer = ({
       initialState: {
         pageIndex: 0,
         pageSize: customPageSize,
-        //Madhangi - commented to fix sorting issue
+        // Madhangi - commented to fix sorting issue
         // sortBy: [
         //   {
         //     id: customId,
@@ -275,7 +275,6 @@ const TableContainer = ({
                         {column.render("Header")}
                         {generateSortingIndicator(column)}
                       </div>
-                 
                     </th>
                   ))}
                 </tr>
@@ -331,9 +330,7 @@ const TableContainer = ({
                   width: "40px",
                   height: "29px",
                   marginTop: "auto",
-                    marginBottom: "auto",
-                  
-
+                  marginBottom: "auto",
                 }}
                 onChange={onInputChange}
                 onBlur={onInputChange}
@@ -346,8 +343,7 @@ const TableContainer = ({
             >
               <Button
                 color="primary"
-                              className="me-1"
-                            
+                className="me-1"
                 size="sm"
                 onClick={(e) => {
                   e.preventDefault();
@@ -385,7 +381,7 @@ const TableContainer = ({
                 aria-label="next"
                 disabled={currentPageNumber === totalPage ? true : false}
               >
-                              <FontAwesomeIcon icon={faArrowRight} className="fa-lg"  />
+                <FontAwesomeIcon icon={faArrowRight} className="fa-lg" />
               </Button>
             </li>
           </ul>
@@ -396,25 +392,29 @@ const TableContainer = ({
             >
               {!canPreviousPage ? null : (
                 <Button
-                                      color="primary"
-                                      style={{
-                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
-                                          border: 'none',
-                                          color: 'white',
-                                      }} 
-                                   
+                  color="primary"
+                  style={{
+                    background:
+                      "linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)",
+                    border: "none",
+                    color: "white",
+                  }}
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={previousPage}
                   aria-label="Previous"
                   disabled={!canPreviousPage ? true : false}
                 >
-                                      <FontAwesomeIcon icon={faArrowLeft} className="fa-lg"
-                                          style={{
-                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
-                                          border: 'none',
-                                          color: 'white',
-                                      }} />
+                  <FontAwesomeIcon
+                    icon={faArrowLeft}
+                    className="fa-lg"
+                    style={{
+                      background:
+                        "linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)",
+                      border: "none",
+                      color: "white",
+                    }}
+                  />
                 </Button>
               )}
             </li>
@@ -431,10 +431,8 @@ const TableContainer = ({
                     className={pageIndex === index ? "active" : ""}
                   >
                     <Link
-                            to="#"
-                           
-                            className="page-link"
-
+                      to="#"
+                      className="page-link"
                       onClick={() => gotoPage(index)}
                     >
                       {index + 1}
@@ -456,12 +454,12 @@ const TableContainer = ({
             >
               {!canNextPage ? null : (
                 <Button
-                                      style={{
-                                          background: 'linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)',
-                                          border: 'none', 
-                                          color: 'white',
-                                      }} 
-                                    
+                  style={{
+                    background:
+                      "linear-gradient(100deg, #9152f5, #7950eb, #8f6cf0)",
+                    border: "none",
+                    color: "white",
+                  }}
                   className="me-1 mt-1 mb-1"
                   size="sm"
                   onClick={nextPage}
@@ -484,5 +482,3 @@ TableContainer.propTypes = {
 };
 
 export default TableContainer;
-
-

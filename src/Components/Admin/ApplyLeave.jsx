@@ -395,7 +395,7 @@ const ApplyLeaveModal = (props) => {
           <Card className="overflow-hidden mt-7 mb-3">
             <CardBody>
               <div className="modal-header d-flex justify-content-between">
-                <h1 className="mt-0 mb-3 fw-bold">Leave Application Form</h1>
+                <h4 className="mb-3 font-size-18">Leave Application Form</h4>
               </div>
 
               <Card className="overflow-hidden">
